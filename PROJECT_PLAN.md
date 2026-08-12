@@ -188,17 +188,17 @@ Die Phasen bauen aufeinander auf. Jede Phase wird mit Build + Smoke-Test abgesch
 - [x] Explosion-/Fluid-Containment an der Border (inkl. Enderperlen, Pistons über die Border)
 - [x] Fallback-Owner (VOID-Owner) für unregistrierte Chunks
 - [ ] Owner-konfigurierbare Interact-Whitelist für Besucher — kommt mit den Island-Settings (Phase 5+)
-- [ ] `PermissionChangeEvent` über API-Bus — feuert sinnvoll erst, wenn sich Rollen ändern können (Party, Phase 5)
+- [x] `PermissionChangeEvent` über API-Bus (feuert bei Member-Add/-Remove, seit Phase 5)
 - [x] Permission-Nodes für alle zugehörigen Commands
 - [x] Öffentliches `PermissionManager`-Interface
 
 ### Phase 5 — Party/Co-op
-- [ ] Invite/Accept/Deny/Kick-Flow
-- [ ] Invite-Timeout (konfigurierbar)
-- [ ] Max-Member-Limit (aus Wizard-Config)
-- [ ] Owner-Reset/-Leave-Verhalten für verbleibende Members
-- [ ] `PartyJoinEvent`, `PartyLeaveEvent` über API-Bus
-- [ ] Öffentliches `PartyManager`-Interface
+- [x] Invite/Accept/Deny/Kick-Flow
+- [x] Invite-Timeout (konfigurierbar)
+- [x] Max-Member-Limit (aus Wizard-Config)
+- [x] Owner-Reset/-Leave-Verhalten für verbleibende Members
+- [x] `PartyJoinEvent`, `PartyLeaveEvent` über API-Bus
+- [x] Öffentliches `PartyManager`-Interface
 
 ### Phase 6 — Progression (Border-Level 1-8)
 - [ ] Punkte-Formel: **nur Mining, alle Party-Members zählen für die Insel** (kein Playtime);
