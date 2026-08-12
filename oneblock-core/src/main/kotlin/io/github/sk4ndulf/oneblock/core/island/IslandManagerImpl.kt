@@ -2,11 +2,17 @@ package io.github.sk4ndulf.oneblock.core.island
 
 import io.github.sk4ndulf.oneblock.api.event.IslandCreatedEvent
 import io.github.sk4ndulf.oneblock.api.event.OneBlockBreakEvent
+import io.github.sk4ndulf.oneblock.api.event.PartyJoinEvent
+import io.github.sk4ndulf.oneblock.api.event.PartyLeaveEvent
+import io.github.sk4ndulf.oneblock.api.event.PermissionChangeEvent
 import io.github.sk4ndulf.oneblock.api.island.Island
 import io.github.sk4ndulf.oneblock.api.island.IslandManager
+import io.github.sk4ndulf.oneblock.api.permission.IslandRole
 import io.github.sk4ndulf.oneblock.core.OneBlockCore
 import io.github.sk4ndulf.oneblock.core.config.MainConfig
+import io.github.sk4ndulf.oneblock.core.lang.ServerLang
 import io.github.sk4ndulf.oneblock.core.world.GridMath
+import io.github.sk4ndulf.oneblock.core.world.HubManager
 import io.github.sk4ndulf.oneblock.core.world.OneBlockDimension
 import net.minecraft.core.BlockPos
 import net.minecraft.server.MinecraftServer
@@ -106,6 +112,8 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
 
     fun islandDataOf(player: UUID): IslandData? = activeByPlayer[player]
 
+    fun islandDataById(id: Long): IslandData? = byId[id]
+
     // --- lifecycle -------------------------------------------------------------------------
 
     /** Lowest never-used spiral slot whose full footprint clears the hub circle. */
@@ -144,15 +152,52 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
         return island
     }
 
-    /** Archives the current island. Returns false if the player has none. */
-    fun archive(player: UUID): Boolean {
-        val island = activeByPlayer[player] ?: return false
-        if (island.owner() != player) return false
+    // --- party membership -----------------------------------------------------------------
+
+    /** Adds a member. Caller has validated invite, limits and that the player is island-less. */
+    fun addMember(island: IslandData, member: UUID) {
+        island.memberSet.add(member)
+        activeByPlayer[member] = island
+        repository.insertMemberAsync(island.id, member)
+        OneBlockCore.eventBus.post(PartyJoinEvent(island, member))
+        OneBlockCore.eventBus.post(PermissionChangeEvent(island, member, IslandRole.VISITOR, IslandRole.MEMBER))
+    }
+
+    /** Removes a member (leave or kick). Returns false if not a member. */
+    fun removeMember(island: IslandData, member: UUID, reason: PartyLeaveEvent.Reason): Boolean {
+        if (!island.memberSet.remove(member)) return false
+        activeByPlayer.remove(member)
+        repository.deleteMemberAsync(island.id, member)
+        OneBlockCore.eventBus.post(PartyLeaveEvent(island, member, reason))
+        OneBlockCore.eventBus.post(PermissionChangeEvent(island, member, IslandRole.MEMBER, IslandRole.VISITOR))
+        return true
+    }
+
+    /**
+     * Archives the owner's island. Members are released (event + hub respawn for online
+     * players); their DB rows stay so a restore brings the party back intact.
+     */
+    fun archive(owner: UUID, server: MinecraftServer): Boolean {
+        val island = activeByPlayer[owner] ?: return false
+        if (island.owner() != owner) return false
+
+        val members = island.memberSet.toList()
         island.state = IslandState.ARCHIVED
         island.archivedAt = System.currentTimeMillis()
         unindex(island)
         repository.updateStateAsync(island.id, IslandState.ARCHIVED, island.archivedAt)
-        OneBlockCore.LOGGER.info("Island {} (slot {}) archived.", island.id, island.slot())
+
+        for (member in members) {
+            OneBlockCore.eventBus.post(PartyLeaveEvent(island, member, PartyLeaveEvent.Reason.ISLAND_ARCHIVED))
+            OneBlockCore.eventBus.post(
+                PermissionChangeEvent(island, member, IslandRole.MEMBER, IslandRole.VISITOR),
+            )
+            server.playerList.getPlayer(member)?.let { online ->
+                HubManager.sendToHub(online)
+                online.displayClientMessage(ServerLang.msg("oneblock.party.archived_member"), false)
+            }
+        }
+        OneBlockCore.LOGGER.info("Island {} (slot {}) archived, {} members released.", island.id, island.slot(), members.size)
         return true
     }
 
@@ -203,7 +248,7 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
                 if (inactiveOwners.isEmpty()) return@thenAccept
                 server.execute {
                     for (owner in inactiveOwners) {
-                        if (archive(owner)) {
+                        if (archive(owner, server)) {
                             OneBlockCore.LOGGER.info("Archived island of inactive owner {}.", owner)
                         }
                     }

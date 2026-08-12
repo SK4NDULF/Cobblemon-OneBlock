@@ -59,6 +59,19 @@ class MigrationRunner(private val database: Database, private val logger: Logger
                 "CREATE INDEX idx_islands_slot ON islands(slot)",
             )
         },
+        Migration(4, "island_members table (party/co-op membership)") { _ ->
+            listOf(
+                """
+                CREATE TABLE IF NOT EXISTS island_members (
+                    island_id   BIGINT   NOT NULL,
+                    member_uuid CHAR(36) NOT NULL,
+                    added_at    BIGINT   NOT NULL,
+                    PRIMARY KEY (island_id, member_uuid)
+                )
+                """.trimIndent(),
+                "CREATE INDEX idx_members_uuid ON island_members(member_uuid)",
+            )
+        },
     )
 
     fun run() {

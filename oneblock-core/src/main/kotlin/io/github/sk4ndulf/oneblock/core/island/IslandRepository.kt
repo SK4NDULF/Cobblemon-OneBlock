@@ -8,13 +8,13 @@ import java.util.UUID
 /** Persistence for islands. Reads happen at startup (sync); all writes are async. */
 class IslandRepository(private val database: Database) {
 
-    /** Synchronous full load — startup path only. */
+    /** Synchronous full load including memberships — startup path only. */
     fun loadAll(config: MainConfig): List<IslandData> = database.sync { connection ->
+        val islands = ArrayList<IslandData>()
         connection.createStatement().use { statement ->
             statement.executeQuery(
                 "SELECT id, slot, owner_uuid, state, border_level, break_count, created_at, archived_at FROM islands",
             ).use { result ->
-                val islands = ArrayList<IslandData>()
                 while (result.next()) {
                     islands.add(
                         IslandData(
@@ -30,7 +30,40 @@ class IslandRepository(private val database: Database) {
                         ),
                     )
                 }
-                islands
+            }
+        }
+        val byId = islands.associateBy { it.id }
+        connection.createStatement().use { statement ->
+            statement.executeQuery("SELECT island_id, member_uuid FROM island_members").use { result ->
+                while (result.next()) {
+                    byId[result.getLong("island_id")]?.memberSet?.add(UUID.fromString(result.getString("member_uuid")))
+                }
+            }
+        }
+        islands
+    }
+
+    fun insertMemberAsync(islandId: Long, member: UUID) {
+        database.async { connection ->
+            connection.prepareStatement(
+                "INSERT INTO island_members (island_id, member_uuid, added_at) VALUES (?, ?, ?)",
+            ).use {
+                it.setLong(1, islandId)
+                it.setString(2, member.toString())
+                it.setLong(3, System.currentTimeMillis())
+                it.executeUpdate()
+            }
+        }
+    }
+
+    fun deleteMemberAsync(islandId: Long, member: UUID) {
+        database.async { connection ->
+            connection.prepareStatement(
+                "DELETE FROM island_members WHERE island_id = ? AND member_uuid = ?",
+            ).use {
+                it.setLong(1, islandId)
+                it.setString(2, member.toString())
+                it.executeUpdate()
             }
         }
     }

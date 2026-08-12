@@ -4,6 +4,7 @@ import com.mojang.brigadier.Command
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import io.github.sk4ndulf.oneblock.core.OneBlockCore
+import io.github.sk4ndulf.oneblock.core.island.PartyService
 import io.github.sk4ndulf.oneblock.core.lang.ServerLang
 import io.github.sk4ndulf.oneblock.core.wizard.SetupWizard
 import io.github.sk4ndulf.oneblock.core.wizard.WizardQuestions
@@ -13,6 +14,8 @@ import net.minecraft.ChatFormatting
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
 import net.minecraft.commands.SharedSuggestionProvider
+import net.minecraft.commands.arguments.EntityArgument
+import net.minecraft.commands.arguments.GameProfileArgument
 import net.minecraft.network.chat.ClickEvent
 import java.util.concurrent.CompletableFuture
 
@@ -53,6 +56,40 @@ object ObCommands {
                             .requires { ObPermissions.check(it, ObPermissions.COMMAND_DELETE, 0) }
                             .executes { requestDestructive(it, "delete", "oneblock.island.delete_confirm") }
                             .then(Commands.literal("confirm").executes { confirmDelete(it) })
+                    )
+                    .then(
+                        Commands.literal("party")
+                            .requires { ObPermissions.check(it, ObPermissions.COMMAND_PARTY, 0) }
+                            .then(
+                                Commands.literal("invite").then(
+                                    Commands.argument("player", EntityArgument.player())
+                                        .executes {
+                                            PartyService.invite(
+                                                it.source.playerOrException,
+                                                EntityArgument.getPlayer(it, "player"),
+                                            )
+                                            Command.SINGLE_SUCCESS
+                                        }
+                                )
+                            )
+                            .then(Commands.literal("accept")
+                                .executes { PartyService.accept(it.source.playerOrException); Command.SINGLE_SUCCESS })
+                            .then(Commands.literal("deny")
+                                .executes { PartyService.deny(it.source.playerOrException); Command.SINGLE_SUCCESS })
+                            .then(
+                                Commands.literal("kick").then(
+                                    Commands.argument("player", GameProfileArgument.gameProfile())
+                                        .executes { context ->
+                                            val profiles = GameProfileArgument.getGameProfiles(context, "player")
+                                            profiles.forEach { PartyService.kick(context.source.playerOrException, it) }
+                                            Command.SINGLE_SUCCESS
+                                        }
+                                )
+                            )
+                            .then(Commands.literal("leave")
+                                .executes { PartyService.leave(it.source.playerOrException); Command.SINGLE_SUCCESS })
+                            .then(Commands.literal("list")
+                                .executes { PartyService.list(it.source.playerOrException); Command.SINGLE_SUCCESS })
                     )
                     .then(
                         Commands.literal("reload")
@@ -183,7 +220,7 @@ object ObCommands {
             context.source.sendFailure(ServerLang.msg("oneblock.confirm.expired"))
             return 0
         }
-        if (!manager.archive(player.uuid)) {
+        if (!manager.archive(player.uuid, player.server)) {
             context.source.sendFailure(ServerLang.msg("oneblock.island.none"))
             return 0
         }
@@ -201,7 +238,7 @@ object ObCommands {
             context.source.sendFailure(ServerLang.msg("oneblock.confirm.expired"))
             return 0
         }
-        if (!manager.archive(player.uuid)) {
+        if (!manager.archive(player.uuid, player.server)) {
             context.source.sendFailure(ServerLang.msg("oneblock.island.none"))
             return 0
         }

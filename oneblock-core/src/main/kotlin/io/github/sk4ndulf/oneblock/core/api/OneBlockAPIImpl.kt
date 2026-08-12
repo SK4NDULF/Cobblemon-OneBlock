@@ -3,8 +3,10 @@ package io.github.sk4ndulf.oneblock.core.api
 import io.github.sk4ndulf.oneblock.api.OneBlockAPI
 import io.github.sk4ndulf.oneblock.api.event.OneBlockEventBus
 import io.github.sk4ndulf.oneblock.api.island.IslandManager
+import io.github.sk4ndulf.oneblock.api.party.PartyManager
 import io.github.sk4ndulf.oneblock.api.permission.PermissionManager
 import io.github.sk4ndulf.oneblock.core.OneBlockCore
+import io.github.sk4ndulf.oneblock.core.island.PartyManagerImpl
 import io.github.sk4ndulf.oneblock.core.permission.PermissionManagerImpl
 
 class OneBlockAPIImpl(private val eventBus: OneBlockEventBus) : OneBlockAPI {
@@ -14,6 +16,7 @@ class OneBlockAPIImpl(private val eventBus: OneBlockEventBus) : OneBlockAPI {
     }
 
     private val permissionManager = PermissionManagerImpl()
+    private val partyManager = PartyManagerImpl()
 
     override fun eventBus(): OneBlockEventBus = eventBus
 
@@ -22,6 +25,8 @@ class OneBlockAPIImpl(private val eventBus: OneBlockEventBus) : OneBlockAPI {
             ?: throw IllegalStateException("IslandManager is not available before the server has started.")
 
     override fun permissionManager(): PermissionManager = permissionManager
+
+    override fun partyManager(): PartyManager = partyManager
 
     override fun apiVersion(): String = API_VERSION
 }

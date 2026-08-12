@@ -3,6 +3,7 @@ package io.github.sk4ndulf.oneblock.api;
 import io.github.sk4ndulf.oneblock.api.event.OneBlockEventBus;
 import io.github.sk4ndulf.oneblock.api.internal.OneBlockAPIHolder;
 import io.github.sk4ndulf.oneblock.api.island.IslandManager;
+import io.github.sk4ndulf.oneblock.api.party.PartyManager;
 import io.github.sk4ndulf.oneblock.api.permission.PermissionManager;
 
 /**
@@ -50,6 +51,11 @@ public interface OneBlockAPI {
      * Protection queries (roles, modify checks). Only call on the server thread.
      */
     PermissionManager permissionManager();
+
+    /**
+     * Party/co-op queries (invites, size limits). Only call on the server thread.
+     */
+    PartyManager partyManager();
 
     /**
      * Semantic version of the API implementation (e.g. {@code "0.1.0"}).
