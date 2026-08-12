@@ -21,6 +21,7 @@ object ObPermissions {
     const val COMMAND_PARTY = "oneblock.command.party"
     const val COMMAND_INFO = "oneblock.command.info"
     const val COMMAND_SETTINGS = "oneblock.command.settings"
+    const val COMMAND_BIOME = "oneblock.command.biome"
     const val ADMIN_BUFF = "oneblock.admin.buff"
     const val ADMIN_RELOAD = "oneblock.admin.reload"
     const val ADMIN_SETUP = "oneblock.admin.setup"

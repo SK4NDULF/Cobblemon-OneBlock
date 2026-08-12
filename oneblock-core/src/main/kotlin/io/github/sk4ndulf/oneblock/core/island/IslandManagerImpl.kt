@@ -9,6 +9,7 @@ import io.github.sk4ndulf.oneblock.api.island.Island
 import io.github.sk4ndulf.oneblock.api.island.IslandManager
 import io.github.sk4ndulf.oneblock.api.permission.IslandRole
 import io.github.sk4ndulf.oneblock.core.OneBlockCore
+import io.github.sk4ndulf.oneblock.core.biome.BiomeService
 import io.github.sk4ndulf.oneblock.core.config.MainConfig
 import io.github.sk4ndulf.oneblock.core.lang.ServerLang
 import io.github.sk4ndulf.oneblock.core.trigger.TriggerEventService
@@ -192,6 +193,7 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
         island.archivedAt = System.currentTimeMillis()
         unindex(island)
         repository.updateStateAsync(island.id, IslandState.ARCHIVED, island.archivedAt)
+        BiomeService.clearIsland(island.id)
 
         for (member in members) {
             OneBlockCore.eventBus.post(PartyLeaveEvent(island, member, PartyLeaveEvent.Reason.ISLAND_ARCHIVED))

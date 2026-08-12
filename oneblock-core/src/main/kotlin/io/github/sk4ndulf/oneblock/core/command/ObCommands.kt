@@ -9,7 +9,11 @@ import com.mojang.brigadier.context.CommandContext
 import io.github.sk4ndulf.oneblock.core.OneBlockCore
 import io.github.sk4ndulf.oneblock.core.cobblemon.BuffService
 import io.github.sk4ndulf.oneblock.core.cobblemon.BuffType
+import io.github.sk4ndulf.oneblock.core.biome.BiomeEditor
+import io.github.sk4ndulf.oneblock.core.biome.BiomeService
 import io.github.sk4ndulf.oneblock.core.cobblemon.CobblemonIntegration
+import io.github.sk4ndulf.oneblock.core.island.IslandData
+import io.github.sk4ndulf.oneblock.core.world.OneBlockDimension
 import io.github.sk4ndulf.oneblock.core.island.PartyService
 import io.github.sk4ndulf.oneblock.core.lang.ServerLang
 import io.github.sk4ndulf.oneblock.core.trigger.TriggerEventService
@@ -68,6 +72,33 @@ object ObCommands {
                         Commands.literal("info")
                             .requires { ObPermissions.check(it, ObPermissions.COMMAND_INFO, 0) }
                             .executes(::info)
+                    )
+                    .then(
+                        Commands.literal("biome")
+                            .requires { ObPermissions.check(it, ObPermissions.COMMAND_BIOME, 0) }
+                            .then(Commands.literal("pos1")
+                                .executes { BiomeService.setCorner(it.source.playerOrException, true); Command.SINGLE_SUCCESS })
+                            .then(Commands.literal("pos2")
+                                .executes { BiomeService.setCorner(it.source.playerOrException, false); Command.SINGLE_SUCCESS })
+                            .then(
+                                Commands.literal("set").then(
+                                    Commands.argument("biome", StringArgumentType.string())
+                                        .suggests { context, builder ->
+                                            val level = OneBlockDimension.level(context.source.server)
+                                            SharedSuggestionProvider.suggest(
+                                                level?.let { BiomeEditor.knownBiomeIds(it) } ?: emptyList(), builder,
+                                            )
+                                        }
+                                        .executes(::biomeSet)
+                                )
+                            )
+                            .then(Commands.literal("list").executes(::biomeList))
+                            .then(
+                                Commands.literal("remove").then(
+                                    Commands.argument("index", IntegerArgumentType.integer(1))
+                                        .executes(::biomeRemove)
+                                )
+                            )
                     )
                     .then(
                         Commands.literal("settings")
@@ -261,6 +292,77 @@ object ObCommands {
         TriggerEventService.activeTypeOn(island.id)?.let { eventId ->
             context.source.sendSystemMessage(ServerLang.msg("oneblock.info.event_active", eventId.toString()))
         }
+        return Command.SINGLE_SUCCESS
+    }
+
+    // --- biome editor ----------------------------------------------------------------------
+
+    /** Shared guard: the player must be owner or member of an active island. */
+    private fun islandForEditing(context: CommandContext<CommandSourceStack>): IslandData? {
+        val player = context.source.playerOrException
+        val island = OneBlockCore.islandManager?.islandDataOf(player.uuid)
+        if (island == null) {
+            context.source.sendFailure(ServerLang.msg("oneblock.island.none"))
+            return null
+        }
+        return island
+    }
+
+    private fun biomeSet(context: CommandContext<CommandSourceStack>): Int {
+        val player = context.source.playerOrException
+        val island = islandForEditing(context) ?: return 0
+        val biomeId = StringArgumentType.getString(context, "biome")
+
+        return when (val result = BiomeService.applySelection(player, island, biomeId)) {
+            is BiomeService.SetResult.Error -> {
+                context.source.sendFailure(net.minecraft.network.chat.Component.literal(result.message))
+                0
+            }
+            is BiomeService.SetResult.Success -> {
+                context.source.sendSuccess(
+                    {
+                        ServerLang.msg(
+                            "oneblock.biome.applied",
+                            result.region.biomeId, result.region.sizeDescription, result.cells,
+                        ).withStyle(ChatFormatting.GREEN)
+                    },
+                    false,
+                )
+                Command.SINGLE_SUCCESS
+            }
+        }
+    }
+
+    private fun biomeList(context: CommandContext<CommandSourceStack>): Int {
+        val island = islandForEditing(context) ?: return 0
+        val regions = BiomeService.regionsOf(island.id)
+        val limit = OneBlockCore.configManager.mainConfig.maxBiomeRegions
+        context.source.sendSystemMessage(
+            ServerLang.msg("oneblock.biome.list_header", regions.size, limit).withStyle(ChatFormatting.GOLD),
+        )
+        regions.forEachIndexed { index, region ->
+            context.source.sendSystemMessage(
+                ServerLang.msg(
+                    "oneblock.biome.list_entry",
+                    index + 1, region.biomeId, region.sizeDescription,
+                    region.minX, region.minY, region.minZ,
+                ),
+            )
+        }
+        return Command.SINGLE_SUCCESS
+    }
+
+    private fun biomeRemove(context: CommandContext<CommandSourceStack>): Int {
+        val island = islandForEditing(context) ?: return 0
+        val index = IntegerArgumentType.getInteger(context, "index")
+        val removed = BiomeService.removeRegion(island, index)
+        if (removed == null) {
+            context.source.sendFailure(ServerLang.msg("oneblock.biome.no_such_region", index))
+            return 0
+        }
+        context.source.sendSuccess(
+            { ServerLang.msg("oneblock.biome.removed", removed.biomeId) }, false,
+        )
         return Command.SINGLE_SUCCESS
     }
 

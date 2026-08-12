@@ -92,6 +92,28 @@ class MigrationRunner(private val database: Database, private val logger: Logger
                 "ALTER TABLE islands ADD COLUMN allow_visitor_battle INT NOT NULL DEFAULT 0",
             )
         },
+        Migration(7, "island_biome_regions table (biome editor)") { dialect ->
+            val idColumn = when (dialect) {
+                SqlDialect.SQLITE -> "id INTEGER PRIMARY KEY AUTOINCREMENT"
+                SqlDialect.MYSQL -> "id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY"
+            }
+            listOf(
+                """
+                CREATE TABLE IF NOT EXISTS island_biome_regions (
+                    $idColumn,
+                    island_id BIGINT       NOT NULL,
+                    min_x     INT          NOT NULL,
+                    min_y     INT          NOT NULL,
+                    min_z     INT          NOT NULL,
+                    max_x     INT          NOT NULL,
+                    max_y     INT          NOT NULL,
+                    max_z     INT          NOT NULL,
+                    biome     VARCHAR(128) NOT NULL
+                )
+                """.trimIndent(),
+                "CREATE INDEX idx_biome_regions_island ON island_biome_regions(island_id)",
+            )
+        },
     )
 
     fun run() {

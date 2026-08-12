@@ -81,6 +81,18 @@
   "oneblock.buff.granted": "Buff %s (%s) granted for %d minutes to %s's island.",
   "oneblock.buff.received": "Your island received the buff %s (%s) for %d minutes!",
 
+  "oneblock.biome.pos1_set": "Position 1 set: %d, %d, %d",
+  "oneblock.biome.pos2_set": "Position 2 set: %d, %d, %d",
+  "oneblock.biome.no_selection": "Select two corners first: /ob biome pos1 and /ob biome pos2.",
+  "oneblock.biome.unknown": "Unknown biome '%s'.",
+  "oneblock.biome.outside_island": "The selection has to stay inside your island border.",
+  "oneblock.biome.limit_reached": "Region limit reached (%d). Remove one with /ob biome remove <number>.",
+  "oneblock.biome.applied": "Biome %s applied to a %s area (%d cells).",
+  "oneblock.biome.list_header": "Biome regions: %d/%d",
+  "oneblock.biome.list_entry": " %d. %s (%s) at %d, %d, %d",
+  "oneblock.biome.no_such_region": "There is no region %d.",
+  "oneblock.biome.removed": "Region removed (%s). The biome stays until you overwrite it.",
+
   "oneblock.reload.start": "Reloading configuration...",
   "oneblock.reload.ok": "Reload complete, database connection OK.",
   "oneblock.reload.failed": "Reload finished with errors: %s",

@@ -239,10 +239,10 @@ Die Phasen bauen aufeinander auf. Jede Phase wird mit Build + Smoke-Test abgesch
 - [x] Mindest-Cobblemon-Version dokumentieren + Startup-Check
 
 ### Phase 9 — Biome-Editor
-- [ ] 2-Punkt-Raycast-Selection, 3D (inkl. Y-Achse), snappt auf das 4er-Biome-Raster
-- [ ] `/ob biome set <biome>`, harter Cut zwischen Regionen (auf 4×4×4-Zellen-Ebene)
-- [ ] Max. Biome-Regionen pro Island (aus Wizard-Config) durchsetzen
-- [ ] Auswirkung auf Cobblemon-Spawns in der Region
+- [x] 2-Punkt-Raycast-Selection, 3D (inkl. Y-Achse), snappt auf das 4er-Biome-Raster
+- [x] `/ob biome set <biome>`, harter Cut zwischen Regionen (auf 4×4×4-Zellen-Ebene)
+- [x] Max. Biome-Regionen pro Island (aus Wizard-Config) durchsetzen
+- [x] Auswirkung auf Cobblemon-Spawns in der Region
 
 ### Phase 10 — Moderation & Admin-Tools
 - [ ] Ban/Kick von Islands (Admin-Only)

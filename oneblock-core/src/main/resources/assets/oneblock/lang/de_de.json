@@ -81,6 +81,18 @@
   "oneblock.buff.granted": "Buff %s (%s) für %d Minuten an die Insel von %s vergeben.",
   "oneblock.buff.received": "Deine Insel hat den Buff %s (%s) für %d Minuten erhalten!",
 
+  "oneblock.biome.pos1_set": "Position 1 gesetzt: %d, %d, %d",
+  "oneblock.biome.pos2_set": "Position 2 gesetzt: %d, %d, %d",
+  "oneblock.biome.no_selection": "Wähle zuerst zwei Ecken: /ob biome pos1 und /ob biome pos2.",
+  "oneblock.biome.unknown": "Unbekanntes Biom '%s'.",
+  "oneblock.biome.outside_island": "Die Auswahl muss innerhalb deiner Insel-Border liegen.",
+  "oneblock.biome.limit_reached": "Regionen-Limit erreicht (%d). Entferne eine mit /ob biome remove <Nummer>.",
+  "oneblock.biome.applied": "Biom %s auf einen %s großen Bereich angewendet (%d Zellen).",
+  "oneblock.biome.list_header": "Biome-Regionen: %d/%d",
+  "oneblock.biome.list_entry": " %d. %s (%s) bei %d, %d, %d",
+  "oneblock.biome.no_such_region": "Es gibt keine Region %d.",
+  "oneblock.biome.removed": "Region entfernt (%s). Das Biom bleibt, bis du es überschreibst.",
+
   "oneblock.reload.start": "Konfiguration wird neu geladen...",
   "oneblock.reload.ok": "Reload abgeschlossen, Datenbank-Verbindung OK.",
   "oneblock.reload.failed": "Reload mit Fehlern beendet: %s",

@@ -11,6 +11,8 @@ import io.github.sk4ndulf.oneblock.core.island.IslandManagerImpl
 import io.github.sk4ndulf.oneblock.core.island.IslandRepository
 import io.github.sk4ndulf.oneblock.core.island.OneBlockLootTable
 import io.github.sk4ndulf.oneblock.core.lang.ServerLang
+import io.github.sk4ndulf.oneblock.core.biome.BiomeRepository
+import io.github.sk4ndulf.oneblock.core.biome.BiomeService
 import io.github.sk4ndulf.oneblock.core.cobblemon.BuffService
 import io.github.sk4ndulf.oneblock.core.cobblemon.CobblemonIntegration
 import io.github.sk4ndulf.oneblock.core.cobblemon.LegendaryEncounterEvent
@@ -20,6 +22,7 @@ import io.github.sk4ndulf.oneblock.core.trigger.MobWaveEvent
 import io.github.sk4ndulf.oneblock.core.trigger.ResourceBurstEvent
 import io.github.sk4ndulf.oneblock.core.trigger.TriggerEventService
 import io.github.sk4ndulf.oneblock.core.world.HubManager
+import io.github.sk4ndulf.oneblock.core.world.OneBlockDimension
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
@@ -98,6 +101,7 @@ object OneBlockCore : ModInitializer {
             lootTable.buildPool(server)
             CobblemonIntegration.checkVersion()
             CobblemonIntegration.applySpawnMultiplier()
+            OneBlockDimension.level(server)?.let { BiomeService.reapplyAll(it) }
             islandManager?.runMaintenance(server)
         }
 
@@ -164,6 +168,7 @@ object OneBlockCore : ModInitializer {
         }
         islandManager = IslandManagerImpl(IslandRepository(db)).also { it.loadAll() }
         BuffService.loadAll(db)
+        BiomeService.reload(BiomeRepository(db))
     }
 
     fun connectDatabase(): String? {
