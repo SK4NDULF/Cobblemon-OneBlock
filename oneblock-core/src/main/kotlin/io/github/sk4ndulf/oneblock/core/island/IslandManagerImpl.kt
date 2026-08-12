@@ -218,7 +218,8 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
         if (level.dimension() != OneBlockDimension.WORLD_KEY) return
         val island = activeByAnchor[pos] ?: return
 
-        val next = OneBlockCore.lootTable.next(level.random)
+        // Addon loot providers get the first say; otherwise the configured pool decides.
+        val next = LootRegistryImpl.query(island, level) ?: OneBlockCore.lootTable.next(level.random)
         level.setBlockAndUpdate(pos, next)
         island.breakCount++
         ProgressionService.onBreak(island, level.server)

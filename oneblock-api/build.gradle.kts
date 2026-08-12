@@ -38,12 +38,41 @@ tasks.processResources {
     }
 }
 
-// Addon-Devs entwickeln gegen dieses Artefakt (Publishing-Ziel wird in Phase 11 final konfiguriert).
+// Addon developers build against this artifact. `./gradlew publish` pushes it to
+// GitHub Packages; JitPack works without any extra configuration because the module
+// is a plain java-library publication.
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             artifactId = "oneblock-api"
             from(components["java"])
+
+            pom {
+                name = "Cobblemon OneBlock API"
+                description = "Public API for the Cobblemon OneBlock core mod: events, managers and extension points."
+                url = "https://github.com/SK4NDULF/Cobblemon-OneBlock"
+                licenses {
+                    license {
+                        name = "MIT License"
+                        url = "https://opensource.org/licenses/MIT"
+                    }
+                }
+                scm {
+                    url = "https://github.com/SK4NDULF/Cobblemon-OneBlock"
+                    connection = "scm:git:https://github.com/SK4NDULF/Cobblemon-OneBlock.git"
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/SK4NDULF/Cobblemon-OneBlock")
+            credentials {
+                // Set via env vars or ~/.gradle/gradle.properties — never commit these.
+                username = (project.findProperty("gpr.user") as String?) ?: System.getenv("GITHUB_ACTOR")
+                password = (project.findProperty("gpr.key") as String?) ?: System.getenv("GITHUB_TOKEN")
+            }
         }
     }
 }

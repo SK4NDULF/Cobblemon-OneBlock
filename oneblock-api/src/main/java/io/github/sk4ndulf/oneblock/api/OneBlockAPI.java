@@ -3,6 +3,7 @@ package io.github.sk4ndulf.oneblock.api;
 import io.github.sk4ndulf.oneblock.api.event.OneBlockEventBus;
 import io.github.sk4ndulf.oneblock.api.internal.OneBlockAPIHolder;
 import io.github.sk4ndulf.oneblock.api.island.IslandManager;
+import io.github.sk4ndulf.oneblock.api.loot.LootRegistry;
 import io.github.sk4ndulf.oneblock.api.party.PartyManager;
 import io.github.sk4ndulf.oneblock.api.permission.PermissionManager;
 import io.github.sk4ndulf.oneblock.api.progression.ProgressionManager;
@@ -69,6 +70,11 @@ public interface OneBlockAPI {
      * your mod's initialization. Only call query methods on the server thread.
      */
     EventManager eventManager();
+
+    /**
+     * Registry for custom OneBlock loot providers. Register during your mod's init.
+     */
+    LootRegistry lootRegistry();
 
     /**
      * Semantic version of the API implementation (e.g. {@code "0.1.0"}).

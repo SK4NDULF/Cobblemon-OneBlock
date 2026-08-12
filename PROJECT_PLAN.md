@@ -271,12 +271,12 @@ Die Phasen bauen aufeinander auf. Jede Phase wird mit Build + Smoke-Test abgesch
 - [x] Permission-Precedence dokumentiert + getestet
 
 ### Phase 11 — Public API Finalisierung & Doku
-- [ ] Alle Manager-Interfaces vollständig + stabil im `-api`-Modul
-- [ ] Vollständige Event-Liste dokumentiert (JavaDoc + separates `API.md`)
-- [ ] Extension-Points dokumentiert (Custom Loot Tables, Custom Event-Typen, Custom Reward-Provider)
-- [ ] `oneblock-api` als Maven-Artefakt publizieren (GitHub Packages oder JitPack)
-- [ ] Minimaler Beispiel-Addon-Mod als Referenz für zukünftige Devs
-- [ ] Versionierung/Semver-Strategie für Breaking Changes
+- [x] Alle Manager-Interfaces vollständig + stabil im `-api`-Modul
+- [x] Vollständige Event-Liste dokumentiert (JavaDoc + separates `API.md`)
+- [x] Extension-Points dokumentiert (Custom Loot Tables, Custom Event-Typen, Custom Reward-Provider)
+- [x] `oneblock-api` als Maven-Artefakt publizieren (GitHub Packages oder JitPack)
+- [x] Minimaler Beispiel-Addon-Mod als Referenz für zukünftige Devs
+- [x] Versionierung/Semver-Strategie für Breaking Changes
 
 ### Phase 12 — Polish & Drag-and-Drop-Readiness
 - [ ] Vollständiger `/ob`-Command-Tree final durchtesten

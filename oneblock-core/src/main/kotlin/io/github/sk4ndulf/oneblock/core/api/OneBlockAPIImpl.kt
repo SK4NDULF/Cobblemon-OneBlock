@@ -3,6 +3,8 @@ package io.github.sk4ndulf.oneblock.core.api
 import io.github.sk4ndulf.oneblock.api.OneBlockAPI
 import io.github.sk4ndulf.oneblock.api.event.OneBlockEventBus
 import io.github.sk4ndulf.oneblock.api.island.IslandManager
+import io.github.sk4ndulf.oneblock.api.loot.LootRegistry
+import io.github.sk4ndulf.oneblock.core.island.LootRegistryImpl
 import io.github.sk4ndulf.oneblock.api.party.PartyManager
 import io.github.sk4ndulf.oneblock.api.permission.PermissionManager
 import io.github.sk4ndulf.oneblock.api.progression.ProgressionManager
@@ -37,6 +39,8 @@ class OneBlockAPIImpl(private val eventBus: OneBlockEventBus) : OneBlockAPI {
     override fun progressionManager(): ProgressionManager = progressionManager
 
     override fun eventManager(): EventManager = eventManager
+
+    override fun lootRegistry(): LootRegistry = LootRegistryImpl
 
     override fun apiVersion(): String = API_VERSION
 }

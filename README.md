@@ -10,12 +10,19 @@ Trigger-Events, Biome-Editor und Setup-Wizard in einer einzigen Drag-and-Drop-Se
 
 | Modul | Sprache | Zweck |
 |---|---|---|
-| `oneblock-api` | Java | Öffentliche API für Addon-Entwickler (Events, Manager-Interfaces). Addons hängen nur von diesem Modul ab. |
+| `oneblock-api` | Java | Öffentliche API für Addon-Entwickler (Events, Manager-Interfaces, Extension-Points). Addons hängen nur von diesem Modul ab. |
 | `oneblock-core` | Kotlin | Vollständige Implementierung. Harte Dependency auf Cobblemon. |
+| `example-addon` | Java | Referenz-Addon für Dritt-Entwickler. Baut nur gegen `oneblock-api`. |
+
+## Für Addon-Entwickler
+
+Vollständige Dokumentation: [`API.md`](API.md) — Events, Manager, Extension-Points
+(eigene Trigger-Events, eigene Loot-Provider) und die Semver-Strategie.
+Lauffähiges Beispiel: [`example-addon/`](example-addon)
 
 ## Status
 
-In Entwicklung — Phase 1 (Fundament). Roadmap und alle Design-Entscheidungen: [`PROJECT_PLAN.md`](PROJECT_PLAN.md)
+In Entwicklung. Roadmap und alle Design-Entscheidungen: [`PROJECT_PLAN.md`](PROJECT_PLAN.md)
 
 ## Build
 
