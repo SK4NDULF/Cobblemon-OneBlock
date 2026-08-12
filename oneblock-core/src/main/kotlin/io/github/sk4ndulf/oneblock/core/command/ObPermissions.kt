@@ -20,6 +20,7 @@ object ObPermissions {
     const val COMMAND_CREATE = "oneblock.command.create"
     const val COMMAND_HOME = "oneblock.command.home"
     const val COMMAND_SPAWN = "oneblock.command.spawn"
+    const val COMMAND_VISIT = "oneblock.command.visit"
     const val COMMAND_RESET = "oneblock.command.reset"
     const val COMMAND_DELETE = "oneblock.command.delete"
     const val COMMAND_PARTY = "oneblock.command.party"

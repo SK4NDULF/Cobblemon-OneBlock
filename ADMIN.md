@@ -34,8 +34,12 @@ Run `/ob setup` and answer eight questions (or click `[keep …]` to accept a de
 | 4 | Breaks until a trigger event | 100 | 10–1000 |
 | 5 | Max biome regions per island | 10 | 1–50 |
 | 6 | Cobblemon spawn multiplier | 1.0 | 0.1–5.0 |
-| 7 | Public server? | yes | — |
+| 7 | Public server? | yes | — |*
 | 8 | Admins may build in the hub? | no | — |
+
+\* "Public server" controls `/ob visit`: when it is off, players can only teleport to an
+island they own or belong to. Island owners keep their own control either way through
+`/ob ban`, and visitors can never build, catch or battle unless the owner allows it.
 
 Every question also works from the console:
 
@@ -74,6 +78,11 @@ falling while they sit on the anchor.
 Switch `"mode": "custom"` to use the weighted `entries` list instead, or add block ids to
 `"blacklist"` to exclude single blocks in either mode (for example `"minecraft:tnt"`).
 
+**Polymer content is excluded by default** (`"exclude_polymer": true`). Blocks and items
+registered through [Polymer](https://github.com/Patbox/polymer) only exist on the server —
+a vanilla client sees a stand-in block instead — so mining them confuses players. Detection
+works without Polymer installed; on a server without it the setting simply does nothing.
+
 ### Switching to MySQL / MariaDB
 
 SQLite is fine for a single server. For a network, edit `database.json5`:
@@ -110,6 +119,7 @@ zero configuration and still gives networks full control.
 | `oneblock.command.create` | `/ob create` |
 | `oneblock.command.home` | `/ob home` |
 | `oneblock.command.spawn` | `/ob spawn` |
+| `oneblock.command.visit` | `/ob visit <player>` |
 | `oneblock.command.info` | `/ob info` |
 | `oneblock.command.reset` | `/ob reset` |
 | `oneblock.command.delete` | `/ob delete` |

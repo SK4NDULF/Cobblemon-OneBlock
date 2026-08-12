@@ -233,13 +233,21 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
 
     // --- teleports ------------------------------------------------------------------------------
 
-    /** Teleports a player to their island spawn, repairing a missing OneBlock first. */
-    fun sendHome(player: ServerPlayer, island: IslandData) {
+    /**
+     * Teleports a player onto the island without touching their respawn point.
+     * Used for visitors — dying on a foreign island must not move your bed.
+     */
+    fun sendToIsland(player: ServerPlayer, island: IslandData) {
         val level = OneBlockDimension.level(player.server) ?: return
         if (level.getBlockState(island.oneBlockPos()).isAir) {
             placeInitialBlock(level, island)
         }
         player.teleportTo(level, island.spawnX, island.spawnY, island.spawnZ, 0.0f, 0.0f)
+    }
+
+    /** Teleports a player to their own island and anchors their respawn there. */
+    fun sendHome(player: ServerPlayer, island: IslandData) {
+        sendToIsland(player, island)
         player.setRespawnPosition(
             OneBlockDimension.WORLD_KEY, island.oneBlockPos().above(), 0.0f, true, false,
         )

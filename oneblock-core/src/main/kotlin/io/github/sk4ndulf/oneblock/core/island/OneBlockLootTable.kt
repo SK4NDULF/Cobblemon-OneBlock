@@ -4,6 +4,7 @@ import blue.endless.jankson.Jankson
 import blue.endless.jankson.JsonArray
 import blue.endless.jankson.JsonObject
 import blue.endless.jankson.JsonPrimitive
+import io.github.sk4ndulf.oneblock.core.compat.PolymerCompat
 import io.github.sk4ndulf.oneblock.core.world.OneBlockDimension
 import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
@@ -45,6 +46,7 @@ class OneBlockLootTable(private val configDir: Path, private val logger: Logger)
     private var mode: String = MODE_ALL_BLOCKS
     private var blacklist: Set<String> = emptySet()
     private var customEntries: List<Pair<String, Int>> = emptyList()
+    private var excludePolymer: Boolean = true
 
     private var entries: List<Entry> = emptyList()
     private var totalWeight: Long = 0
@@ -78,6 +80,7 @@ class OneBlockLootTable(private val configDir: Path, private val logger: Logger)
             mode = (json.get("mode") as? JsonPrimitive)?.asString() ?: MODE_ALL_BLOCKS
             blacklist = (json.get("blacklist") as? JsonArray)
                 ?.mapNotNull { (it as? JsonPrimitive)?.asString() }?.toSet() ?: emptySet()
+            excludePolymer = (json.get("exclude_polymer") as? JsonPrimitive)?.asBoolean(true) ?: true
             customEntries = (json.get("entries") as? JsonArray)?.mapNotNull { element ->
                 val obj = element as? JsonObject ?: return@mapNotNull null
                 val block = (obj.get("block") as? JsonPrimitive)?.asString() ?: return@mapNotNull null
@@ -100,7 +103,11 @@ class OneBlockLootTable(private val configDir: Path, private val logger: Logger)
             else -> buildAllBlocksPool(server, excluded)
         }
         totalWeight = entries.sumOf { it.weight.toLong() }
-        logger.info("OneBlock loot table built (mode {}): {} blocks, total weight {}.", mode, entries.size, totalWeight)
+        logger.info(
+            "OneBlock loot table built (mode {}): {} blocks, total weight {}{}.",
+            mode, entries.size, totalWeight,
+            if (excludePolymer && PolymerCompat.available) " (Polymer content excluded)" else "",
+        )
     }
 
     private fun buildCustomPool(excluded: Set<String>): List<Entry> {
@@ -108,11 +115,16 @@ class OneBlockLootTable(private val configDir: Path, private val logger: Logger)
             if (blockId in excluded) return@mapNotNull null
             val id = ResourceLocation.tryParse(blockId)
             val block = id?.let { BuiltInRegistries.BLOCK.getOptional(it).orElse(null) }
-            if (block == null) {
-                logger.warn("loottable.json5: unknown block '{}' skipped.", blockId)
-                null
-            } else {
-                Entry(safeState(block.defaultBlockState()), weight)
+            when {
+                block == null -> {
+                    logger.warn("loottable.json5: unknown block '{}' skipped.", blockId)
+                    null
+                }
+                excludePolymer && PolymerCompat.isPolymerContent(block) -> {
+                    logger.warn("loottable.json5: '{}' is Polymer content and was skipped.", blockId)
+                    null
+                }
+                else -> Entry(safeState(block.defaultBlockState()), weight)
             }
         }
         if (pool.isEmpty()) {
@@ -132,6 +144,8 @@ class OneBlockLootTable(private val configDir: Path, private val logger: Logger)
             val id = BuiltInRegistries.BLOCK.getKey(block).toString()
             if (id in excluded) continue
             if (block == Blocks.AIR || block.asItem() === Items.AIR) continue // technical blocks
+            // Polymer content only exists server-side; a client sees a stand-in block.
+            if (excludePolymer && PolymerCompat.isPolymerContent(block)) continue
             if (block is LiquidBlock) continue // no fluids
             if (block.defaultDestroyTime() < 0f) continue // bedrock, barrier, command blocks, ...
             if (block is IceBlock) continue // melts into water in daylight
@@ -175,6 +189,12 @@ class OneBlockLootTable(private val configDir: Path, private val logger: Logger)
         root.put(
             "blacklist", blacklistArray,
             "Block ids excluded in BOTH modes, e.g. \"minecraft:tnt\".",
+        )
+        root.put(
+            "exclude_polymer", JsonPrimitive(true),
+            "Skip blocks and items registered through Polymer. They exist only on the server " +
+                "and vanilla clients see a stand-in block, so mining them is confusing. " +
+                "Only set this to false if you know your Polymer content behaves like a real block.",
         )
         val array = JsonArray()
         for ((blockId, weight) in CUSTOM_EXAMPLE) {

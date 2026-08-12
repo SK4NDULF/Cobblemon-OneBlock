@@ -15,6 +15,7 @@ import io.github.sk4ndulf.oneblock.core.cobblemon.CobblemonIntegration
 import io.github.sk4ndulf.oneblock.core.island.IslandData
 import io.github.sk4ndulf.oneblock.core.world.OneBlockDimension
 import io.github.sk4ndulf.oneblock.core.island.PartyService
+import io.github.sk4ndulf.oneblock.core.moderation.BanService
 import io.github.sk4ndulf.oneblock.core.lang.ServerLang
 import io.github.sk4ndulf.oneblock.core.trigger.TriggerEventService
 import io.github.sk4ndulf.oneblock.core.wizard.SetupWizard
@@ -67,6 +68,14 @@ object ObCommands {
                             .requires { ObPermissions.check(it, ObPermissions.COMMAND_DELETE, 0) }
                             .executes { requestDestructive(it, "delete", "oneblock.island.delete_confirm") }
                             .then(Commands.literal("confirm").executes { confirmDelete(it) })
+                    )
+                    .then(
+                        Commands.literal("visit")
+                            .requires { ObPermissions.check(it, ObPermissions.COMMAND_VISIT, 0) }
+                            .then(
+                                Commands.argument("player", GameProfileArgument.gameProfile())
+                                    .executes(::visit)
+                            )
                     )
                     .then(
                         Commands.literal("info")
@@ -259,6 +268,45 @@ object ObCommands {
         }
         OneBlockCore.islandManager?.sendHome(player, island)
         context.source.sendSuccess({ ServerLang.msg("oneblock.island.teleported_home") }, false)
+        return Command.SINGLE_SUCCESS
+    }
+
+    /**
+     * Teleports to another player's island. This is what makes the visitor role reachable
+     * at all — the islands are thousands of blocks apart, so without it "public server"
+     * and the visitor permissions would be theoretical.
+     */
+    private fun visit(context: CommandContext<CommandSourceStack>): Int {
+        val player = context.source.playerOrException
+        val profile = GameProfileArgument.getGameProfiles(context, "player").firstOrNull() ?: return 0
+        val manager = OneBlockCore.islandManager
+        val island = manager?.islandDataOf(profile.id)
+        if (island == null) {
+            context.source.sendFailure(ServerLang.msg("oneblock.island.none_other", profile.name))
+            return 0
+        }
+        val isAdmin = ObPermissions.checkPlayer(player, ObPermissions.ADMIN_BYPASS, 2)
+
+        // Members visit their own island freely; everyone else needs a public server.
+        if (!island.isMemberOrOwner(player.uuid) && !isAdmin &&
+            !OneBlockCore.configManager.mainConfig.serverPublic
+        ) {
+            context.source.sendFailure(ServerLang.msg("oneblock.visit.server_private"))
+            return 0
+        }
+        if (!isAdmin && BanService.isBanned(island.id, player.uuid)) {
+            context.source.sendFailure(ServerLang.msg("oneblock.visit.banned"))
+            return 0
+        }
+
+        manager.sendToIsland(player, island)
+        context.source.sendSuccess(
+            { ServerLang.msg("oneblock.visit.arrived", profile.name).withStyle(ChatFormatting.GREEN) }, false,
+        )
+        // Let the island know someone dropped by — useful on a public server.
+        context.source.server.playerList.getPlayer(island.owner())
+            ?.takeIf { it.uuid != player.uuid }
+            ?.sendSystemMessage(ServerLang.msg("oneblock.visit.owner_notice", player.gameProfile.name))
         return Command.SINGLE_SUCCESS
     }
 
