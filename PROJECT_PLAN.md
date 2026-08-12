@@ -28,6 +28,7 @@ Architekturprinzip: **Zwei-Module-Setup** — `oneblock-api` (Interfaces/Events)
 | 5 | **API-Modul in Java, Core-Modul in Kotlin** | Java-API = maximale Zugänglichkeit für Addon-Devs; Kotlin-Core = saubere Interop mit Cobblemons Kotlin-Events. |
 | 6 | **`/ob home`, `/ob spawn`, Void-Tod-Handling, Inaktivitäts-Purge, Chunk-Alignment** neu in der Work List | Überlebenswichtig in einer Void-Welt bzw. Pflicht für öffentlichen Serverbetrieb. |
 | 7 | **Default-Inselgröße 1024 (Max bleibt 10000)** | 5000×5000 als Default ist zu groß: Cobblemon-Spawns verteilen sich zu dünn, Level-Ups kaum spürbar. |
+| 8 | **Loottable-Default = ALLE Blöcke (MC + Cobblemon)** | Registry-Scan mit Sicherheitsfiltern: keine Fluids, nichts Unzerstörbares, nichts ohne Item-Form, kein schmelzendes Eis, nichts das ohne Support poppt; Leaves persistent; Gravity-Blöcke fallen am Anchor nicht (Mixin). Custom-Modus + Blacklist bleiben in der Config. |
 
 ---
 
@@ -181,15 +182,15 @@ Die Phasen bauen aufeinander auf. Jede Phase wird mit Build + Smoke-Test abgesch
 - [x] Öffentliches `IslandManager`-Interface
 
 ### Phase 4 — Permission-System
-- [ ] Owner/Member/Public-Rollen-Enum (Public-Definition aus Abschnitt 2)
-- [ ] Chunk-Ownership-Check-Hook (Break/Place/Interact)
-- [ ] Chebyshev-Distanz-Grenzschutz (quadratisch, chunk-aligned)
-- [ ] Explosion-/Fluid-Containment an der Border (inkl. Enderperlen, Pistons über die Border)
-- [ ] Fallback-Owner (VOID-Owner) für unregistrierte Chunks
-- [ ] Owner-konfigurierbare Interact-Whitelist für Besucher (Türen/Knöpfe/Druckplatten)
-- [ ] `PermissionChangeEvent` über API-Bus
-- [ ] Permission-Nodes für alle zugehörigen Commands
-- [ ] Öffentliches `PermissionManager`-Interface
+- [x] Owner/Member/Public-Rollen-Enum (Public-Definition aus Abschnitt 2)
+- [x] Chunk-Ownership-Check-Hook (Break/Place/Interact)
+- [x] Chebyshev-Distanz-Grenzschutz (quadratisch, chunk-aligned)
+- [x] Explosion-/Fluid-Containment an der Border (inkl. Enderperlen, Pistons über die Border)
+- [x] Fallback-Owner (VOID-Owner) für unregistrierte Chunks
+- [ ] Owner-konfigurierbare Interact-Whitelist für Besucher — kommt mit den Island-Settings (Phase 5+)
+- [ ] `PermissionChangeEvent` über API-Bus — feuert sinnvoll erst, wenn sich Rollen ändern können (Party, Phase 5)
+- [x] Permission-Nodes für alle zugehörigen Commands
+- [x] Öffentliches `PermissionManager`-Interface
 
 ### Phase 5 — Party/Co-op
 - [ ] Invite/Accept/Deny/Kick-Flow
