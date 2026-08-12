@@ -72,6 +72,11 @@ class MigrationRunner(private val database: Database, private val logger: Logger
                 "CREATE INDEX idx_members_uuid ON island_members(member_uuid)",
             )
         },
+        Migration(5, "islands.points column (border-level progression)") { _ ->
+            listOf(
+                "ALTER TABLE islands ADD COLUMN points DOUBLE NOT NULL DEFAULT 0",
+            )
+        },
     )
 
     fun run() {

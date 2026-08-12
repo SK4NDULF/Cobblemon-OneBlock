@@ -19,6 +19,7 @@ object ObPermissions {
     const val COMMAND_RESET = "oneblock.command.reset"
     const val COMMAND_DELETE = "oneblock.command.delete"
     const val COMMAND_PARTY = "oneblock.command.party"
+    const val COMMAND_INFO = "oneblock.command.info"
     const val ADMIN_RELOAD = "oneblock.admin.reload"
     const val ADMIN_SETUP = "oneblock.admin.setup"
 

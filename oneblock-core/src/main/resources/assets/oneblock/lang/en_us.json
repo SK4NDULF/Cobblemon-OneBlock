@@ -49,6 +49,14 @@
   "oneblock.role.owner": "Owner",
   "oneblock.role.member": "Member",
 
+  "oneblock.progress.level_up": "Border level %d reached! Your island grows to %dx%d.",
+  "oneblock.progress.level_up_bar": "Border level %d!",
+  "oneblock.info.header": "Your island — border level %d (%dx%d)",
+  "oneblock.info.breaks": "OneBlock breaks: %d",
+  "oneblock.info.points": "Points: %s / %s to the next level",
+  "oneblock.info.max_level": "Maximum border level reached!",
+  "oneblock.info.party": "Party: %d/%d players",
+
   "oneblock.reload.start": "Reloading configuration...",
   "oneblock.reload.ok": "Reload complete, database connection OK.",
   "oneblock.reload.failed": "Reload finished with errors: %s",

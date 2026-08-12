@@ -49,6 +49,28 @@ data class MainConfig(
 
     /** Cooldown in seconds between trigger events on the same island. */
     val eventCooldownSeconds: Int = 300,
+
+    /** Base points one OneBlock break is worth (before party scaling). */
+    val pointsPerBreak: Double = 100.0,
+
+    /**
+     * Diminishing returns per additional party member: factor = 1 / (1 + (n-1) * value).
+     * 0.0 disables scaling (every break worth full points regardless of party size).
+     */
+    val partyDiminishingReturns: Double = 0.25,
+
+    /**
+     * Cumulative points required for border levels 2-8 (7 ascending values).
+     * With 100 points/break these defaults mean 500 / 1250 / 2500 / 5000 / 9000 /
+     * 15000 / 25000 solo breaks.
+     */
+    val borderLevelThresholds: List<Double> = DEFAULT_THRESHOLDS,
+
+    /**
+     * Optional manual override of the border side lengths for levels 1-8 (8 values,
+     * chunk-aligned on load). Empty = exponential interpolation from 16 to max_island_size.
+     */
+    val borderLevelSizes: List<Int> = emptyList(),
 ) {
 
     companion object {
@@ -57,6 +79,10 @@ data class MainConfig(
 
         /** Fixed safety buffer between islands at full size; the grid spacing derives from it. */
         const val SPACING_BUFFER = 1024
+
+        /** Cumulative point thresholds for levels 2-8 (see borderLevelThresholds). */
+        val DEFAULT_THRESHOLDS: List<Double> =
+            listOf(50_000.0, 125_000.0, 250_000.0, 500_000.0, 900_000.0, 1_500_000.0, 2_500_000.0)
     }
 
     /** Grid spacing between island anchor points. Single source of truth for the spacing formula. */
@@ -76,5 +102,26 @@ data class MainConfig(
         inactivityPurgeDays = inactivityPurgeDays.coerceIn(0, 3650),
         inviteTimeoutSeconds = inviteTimeoutSeconds.coerceIn(10, 3600),
         eventCooldownSeconds = eventCooldownSeconds.coerceIn(0, 86400),
+        pointsPerBreak = pointsPerBreak.coerceIn(0.01, 1_000_000.0),
+        partyDiminishingReturns = partyDiminishingReturns.coerceIn(0.0, 1.0),
+        borderLevelThresholds = validatedThresholds(),
+        borderLevelSizes = validatedSizes(),
     )
+
+    /** 7 strictly ascending positive values, else the defaults (misconfig must not brick leveling). */
+    private fun validatedThresholds(): List<Double> {
+        if (borderLevelThresholds.size != 7) return DEFAULT_THRESHOLDS
+        if (borderLevelThresholds.any { it <= 0 }) return DEFAULT_THRESHOLDS
+        if (borderLevelThresholds.zipWithNext().any { (a, b) -> b <= a }) return DEFAULT_THRESHOLDS
+        return borderLevelThresholds
+    }
+
+    /** Empty (= interpolation) or exactly 8 ascending sizes, chunk-aligned and capped at max size. */
+    private fun validatedSizes(): List<Int> {
+        if (borderLevelSizes.isEmpty()) return emptyList()
+        if (borderLevelSizes.size != 8) return emptyList()
+        val aligned = borderLevelSizes.map { chunkAlign(it.coerceIn(16, chunkAlign(maxIslandSize))) }
+        if (aligned.zipWithNext().any { (a, b) -> b < a }) return emptyList()
+        return aligned
+    }
 }

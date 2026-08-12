@@ -13,7 +13,7 @@ class IslandRepository(private val database: Database) {
         val islands = ArrayList<IslandData>()
         connection.createStatement().use { statement ->
             statement.executeQuery(
-                "SELECT id, slot, owner_uuid, state, border_level, break_count, created_at, archived_at FROM islands",
+                "SELECT id, slot, owner_uuid, state, border_level, break_count, points, created_at, archived_at FROM islands",
             ).use { result ->
                 while (result.next()) {
                     islands.add(
@@ -24,6 +24,7 @@ class IslandRepository(private val database: Database) {
                             state = IslandState.valueOf(result.getString("state")),
                             borderLevel = result.getInt("border_level"),
                             breakCount = result.getLong("break_count"),
+                            points = result.getDouble("points"),
                             createdAt = result.getLong("created_at"),
                             archivedAt = result.getLong("archived_at").takeIf { !result.wasNull() },
                             config = config,
@@ -97,11 +98,15 @@ class IslandRepository(private val database: Database) {
         }
     }
 
-    fun updateBreakCountAsync(id: Long, breakCount: Long) {
+    fun updateProgressAsync(id: Long, breakCount: Long, points: Double, borderLevel: Int) {
         database.async { connection ->
-            connection.prepareStatement("UPDATE islands SET break_count = ? WHERE id = ?").use {
+            connection.prepareStatement(
+                "UPDATE islands SET break_count = ?, points = ?, border_level = ? WHERE id = ?",
+            ).use {
                 it.setLong(1, breakCount)
-                it.setLong(2, id)
+                it.setDouble(2, points)
+                it.setInt(3, borderLevel)
+                it.setLong(4, id)
                 it.executeUpdate()
             }
         }

@@ -5,6 +5,7 @@ import io.github.sk4ndulf.oneblock.api.internal.OneBlockAPIHolder;
 import io.github.sk4ndulf.oneblock.api.island.IslandManager;
 import io.github.sk4ndulf.oneblock.api.party.PartyManager;
 import io.github.sk4ndulf.oneblock.api.permission.PermissionManager;
+import io.github.sk4ndulf.oneblock.api.progression.ProgressionManager;
 
 /**
  * Static access point for the Cobblemon OneBlock API.
@@ -56,6 +57,11 @@ public interface OneBlockAPI {
      * Party/co-op queries (invites, size limits). Only call on the server thread.
      */
     PartyManager partyManager();
+
+    /**
+     * Border-level progression queries. Only call on the server thread.
+     */
+    ProgressionManager progressionManager();
 
     /**
      * Semantic version of the API implementation (e.g. {@code "0.1.0"}).

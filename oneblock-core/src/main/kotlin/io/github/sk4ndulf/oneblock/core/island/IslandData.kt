@@ -21,6 +21,7 @@ class IslandData(
     var state: IslandState,
     var borderLevel: Int,
     var breakCount: Long,
+    var points: Double,
     val createdAt: Long,
     var archivedAt: Long?,
     config: MainConfig,

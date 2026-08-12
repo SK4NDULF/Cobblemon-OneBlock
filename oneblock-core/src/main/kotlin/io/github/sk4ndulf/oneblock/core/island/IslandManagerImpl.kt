@@ -134,7 +134,7 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
         val id = repository.insert(slot, player.uuid, System.currentTimeMillis())
         val island = IslandData(
             id = id, slot = slot, owner = player.uuid, state = IslandState.ACTIVE,
-            borderLevel = 1, breakCount = 0, createdAt = System.currentTimeMillis(),
+            borderLevel = 1, breakCount = 0, points = 0.0, createdAt = System.currentTimeMillis(),
             archivedAt = null, config = config,
         )
         byId[id] = island
@@ -210,7 +210,8 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
         val next = OneBlockCore.lootTable.next(level.random)
         level.setBlockAndUpdate(pos, next)
         island.breakCount++
-        repository.updateBreakCountAsync(island.id, island.breakCount)
+        ProgressionService.onBreak(island, level.server)
+        repository.updateProgressAsync(island.id, island.breakCount, island.points, island.borderLevel)
         OneBlockCore.eventBus.post(OneBlockBreakEvent(island, player, state, next))
     }
 

@@ -49,6 +49,14 @@
   "oneblock.role.owner": "Besitzer",
   "oneblock.role.member": "Mitglied",
 
+  "oneblock.progress.level_up": "Border-Level %d erreicht! Deine Insel wächst auf %dx%d.",
+  "oneblock.progress.level_up_bar": "Border-Level %d!",
+  "oneblock.info.header": "Deine Insel — Border-Level %d (%dx%d)",
+  "oneblock.info.breaks": "OneBlock-Abbauten: %d",
+  "oneblock.info.points": "Punkte: %s / %s bis zum nächsten Level",
+  "oneblock.info.max_level": "Maximales Border-Level erreicht!",
+  "oneblock.info.party": "Party: %d/%d Spieler",
+
   "oneblock.reload.start": "Konfiguration wird neu geladen...",
   "oneblock.reload.ok": "Reload abgeschlossen, Datenbank-Verbindung OK.",
   "oneblock.reload.failed": "Reload mit Fehlern beendet: %s",

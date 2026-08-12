@@ -58,6 +58,11 @@ object ObCommands {
                             .then(Commands.literal("confirm").executes { confirmDelete(it) })
                     )
                     .then(
+                        Commands.literal("info")
+                            .requires { ObPermissions.check(it, ObPermissions.COMMAND_INFO, 0) }
+                            .executes(::info)
+                    )
+                    .then(
                         Commands.literal("party")
                             .requires { ObPermissions.check(it, ObPermissions.COMMAND_PARTY, 0) }
                             .then(
@@ -181,6 +186,33 @@ object ObCommands {
         val player = context.source.playerOrException
         HubManager.sendToHub(player)
         context.source.sendSuccess({ ServerLang.msg("oneblock.island.teleported_spawn") }, false)
+        return Command.SINGLE_SUCCESS
+    }
+
+    private fun info(context: CommandContext<CommandSourceStack>): Int {
+        val player = context.source.playerOrException
+        val island = OneBlockCore.islandManager?.islandDataOf(player.uuid)
+        if (island == null) {
+            context.source.sendFailure(ServerLang.msg("oneblock.island.none"))
+            return 0
+        }
+        val config = OneBlockCore.configManager.mainConfig
+        val size = io.github.sk4ndulf.oneblock.core.world.GridMath.borderSizeAt(island.borderLevel, config)
+        context.source.sendSystemMessage(
+            ServerLang.msg("oneblock.info.header", island.borderLevel, size, size).withStyle(ChatFormatting.GOLD),
+        )
+        context.source.sendSystemMessage(ServerLang.msg("oneblock.info.breaks", island.breakCount))
+        if (island.borderLevel < io.github.sk4ndulf.oneblock.core.island.ProgressionService.MAX_LEVEL) {
+            val next = io.github.sk4ndulf.oneblock.core.island.ProgressionService.pointsRequiredFor(island.borderLevel + 1)
+            context.source.sendSystemMessage(
+                ServerLang.msg("oneblock.info.points", "%,.0f".format(island.points), "%,.0f".format(next)),
+            )
+        } else {
+            context.source.sendSystemMessage(ServerLang.msg("oneblock.info.max_level"))
+        }
+        context.source.sendSystemMessage(
+            ServerLang.msg("oneblock.info.party", island.memberSet.size + 1, config.maxPartySize),
+        )
         return Command.SINGLE_SUCCESS
     }
 

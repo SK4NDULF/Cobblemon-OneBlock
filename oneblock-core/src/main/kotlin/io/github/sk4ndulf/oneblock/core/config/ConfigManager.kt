@@ -1,6 +1,7 @@
 package io.github.sk4ndulf.oneblock.core.config
 
 import blue.endless.jankson.Jankson
+import blue.endless.jankson.JsonArray
 import blue.endless.jankson.JsonObject
 import blue.endless.jankson.JsonPrimitive
 import blue.endless.jankson.api.SyntaxError
@@ -77,6 +78,10 @@ class ConfigManager(val configDir: Path, private val logger: Logger) {
             inactivityPurgeDays = json.int("inactivity_purge_days", defaults.inactivityPurgeDays),
             inviteTimeoutSeconds = json.int("invite_timeout_seconds", defaults.inviteTimeoutSeconds),
             eventCooldownSeconds = json.int("event_cooldown_seconds", defaults.eventCooldownSeconds),
+            pointsPerBreak = json.double("points_per_break", defaults.pointsPerBreak),
+            partyDiminishingReturns = json.double("party_diminishing_returns", defaults.partyDiminishingReturns),
+            borderLevelThresholds = json.doubleList("border_level_thresholds", defaults.borderLevelThresholds),
+            borderLevelSizes = json.intList("border_level_sizes", defaults.borderLevelSizes),
         ).validated()
     }
 
@@ -129,6 +134,16 @@ class ConfigManager(val configDir: Path, private val logger: Logger) {
             "Seconds until a pending party invite expires.")
         json.put("event_cooldown_seconds", JsonPrimitive(config.eventCooldownSeconds.toLong()),
             "Cooldown in seconds between trigger events on the same island.")
+        json.put("points_per_break", JsonPrimitive(config.pointsPerBreak),
+            "Base progression points per OneBlock break (before party scaling).")
+        json.put("party_diminishing_returns", JsonPrimitive(config.partyDiminishingReturns),
+            "Diminishing returns per additional party member: factor = 1/(1+(n-1)*value). 0 disables.")
+        json.put("border_level_thresholds", doubleArray(config.borderLevelThresholds),
+            "Cumulative points required for border levels 2-8 (7 ascending values). " +
+                "Invalid lists fall back to the defaults.")
+        json.put("border_level_sizes", intArray(config.borderLevelSizes),
+            "Optional manual border side lengths for levels 1-8 (8 values, chunk-aligned). " +
+                "Empty = exponential interpolation from 16 to max_island_size.")
         write(mainFile, json)
     }
 
@@ -167,4 +182,18 @@ class ConfigManager(val configDir: Path, private val logger: Logger) {
 
     private fun JsonObject.string(key: String, default: String): String =
         (get(key) as? JsonPrimitive)?.asString() ?: default
+
+    private fun JsonObject.doubleList(key: String, default: List<Double>): List<Double> =
+        (get(key) as? JsonArray)?.mapNotNull { (it as? JsonPrimitive)?.asDouble(Double.NaN) }
+            ?.filter { !it.isNaN() } ?: default
+
+    private fun JsonObject.intList(key: String, default: List<Int>): List<Int> =
+        (get(key) as? JsonArray)?.mapNotNull { (it as? JsonPrimitive)?.asInt(Int.MIN_VALUE) }
+            ?.filter { it != Int.MIN_VALUE } ?: default
+
+    private fun doubleArray(values: List<Double>): JsonArray =
+        JsonArray().apply { values.forEach { add(JsonPrimitive(it)) } }
+
+    private fun intArray(values: List<Int>): JsonArray =
+        JsonArray().apply { values.forEach { add(JsonPrimitive(it.toLong())) } }
 }

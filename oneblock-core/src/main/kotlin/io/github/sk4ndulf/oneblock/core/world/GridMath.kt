@@ -58,12 +58,14 @@ object GridMath {
     }
 
     /**
-     * Half side length (Chebyshev radius) of the island area at the given border level.
-     * Level 1 is a fixed 16x16 start; level 8 equals max_island_size; levels in between
-     * interpolate exponentially. All values are chunk-aligned.
+     * Border side length of the island area at the given border level. If the config
+     * provides manual `border_level_sizes`, those win; otherwise level 1 is a fixed
+     * 16x16 start, level 8 equals max_island_size, and levels in between interpolate
+     * exponentially. All values are chunk-aligned.
      */
     fun borderSizeAt(level: Int, config: MainConfig): Int {
         val clamped = level.coerceIn(1, 8)
+        config.borderLevelSizes.takeIf { it.size == 8 }?.let { return it[clamped - 1] }
         val start = 16.0
         val end = MainConfig.chunkAlign(config.maxIslandSize).toDouble()
         val factor = Math.pow(end / start, (clamped - 1) / 7.0)
