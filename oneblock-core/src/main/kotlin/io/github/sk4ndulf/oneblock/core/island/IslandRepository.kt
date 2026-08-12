@@ -13,7 +13,8 @@ class IslandRepository(private val database: Database) {
         val islands = ArrayList<IslandData>()
         connection.createStatement().use { statement ->
             statement.executeQuery(
-                "SELECT id, slot, owner_uuid, state, border_level, break_count, points, created_at, archived_at FROM islands",
+                "SELECT id, slot, owner_uuid, state, border_level, break_count, points, created_at, archived_at, " +
+                    "allow_visitor_catch, allow_visitor_battle FROM islands",
             ).use { result ->
                 while (result.next()) {
                     islands.add(
@@ -27,6 +28,8 @@ class IslandRepository(private val database: Database) {
                             points = result.getDouble("points"),
                             createdAt = result.getLong("created_at"),
                             archivedAt = result.getLong("archived_at").takeIf { !result.wasNull() },
+                            allowVisitorCatch = result.getInt("allow_visitor_catch") != 0,
+                            allowVisitorBattle = result.getInt("allow_visitor_battle") != 0,
                             config = config,
                         ),
                     )
@@ -42,6 +45,19 @@ class IslandRepository(private val database: Database) {
             }
         }
         islands
+    }
+
+    fun updateVisitorSettingsAsync(id: Long, allowCatch: Boolean, allowBattle: Boolean) {
+        database.async { connection ->
+            connection.prepareStatement(
+                "UPDATE islands SET allow_visitor_catch = ?, allow_visitor_battle = ? WHERE id = ?",
+            ).use {
+                it.setInt(1, if (allowCatch) 1 else 0)
+                it.setInt(2, if (allowBattle) 1 else 0)
+                it.setLong(3, id)
+                it.executeUpdate()
+            }
+        }
     }
 
     fun insertMemberAsync(islandId: Long, member: UUID) {

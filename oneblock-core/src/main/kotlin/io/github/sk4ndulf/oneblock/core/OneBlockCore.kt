@@ -11,6 +11,9 @@ import io.github.sk4ndulf.oneblock.core.island.IslandManagerImpl
 import io.github.sk4ndulf.oneblock.core.island.IslandRepository
 import io.github.sk4ndulf.oneblock.core.island.OneBlockLootTable
 import io.github.sk4ndulf.oneblock.core.lang.ServerLang
+import io.github.sk4ndulf.oneblock.core.cobblemon.BuffService
+import io.github.sk4ndulf.oneblock.core.cobblemon.CobblemonIntegration
+import io.github.sk4ndulf.oneblock.core.cobblemon.LegendaryEncounterEvent
 import io.github.sk4ndulf.oneblock.core.permission.ProtectionManager
 import io.github.sk4ndulf.oneblock.core.trigger.BossFightEvent
 import io.github.sk4ndulf.oneblock.core.trigger.MobWaveEvent
@@ -55,6 +58,10 @@ object OneBlockCore : ModInitializer {
     private const val MAINTENANCE_INTERVAL_TICKS = 72_000
     private var maintenanceTickCounter = 0
 
+    /** How often wandering Pokémon are pulled back inside island borders (5 s). */
+    private const val POKEMON_CONTAINMENT_INTERVAL_TICKS = 100
+    private var containmentTickCounter = 0
+
     override fun onInitialize() {
         LOGGER.info("Cobblemon OneBlock initializing...")
 
@@ -71,6 +78,9 @@ object OneBlockCore : ModInitializer {
         TriggerEventService.registerType(MobWaveEvent())
         TriggerEventService.registerType(BossFightEvent())
         TriggerEventService.registerType(ResourceBurstEvent())
+        TriggerEventService.registerType(LegendaryEncounterEvent())
+
+        CobblemonIntegration.register()
 
         PlayerBlockBreakEvents.AFTER.register { level, player, pos, state, _ ->
             if (level is ServerLevel && player is ServerPlayer) {
@@ -86,14 +96,21 @@ object OneBlockCore : ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             HubManager.onServerStarted(server)
             lootTable.buildPool(server)
+            CobblemonIntegration.checkVersion()
+            CobblemonIntegration.applySpawnMultiplier()
             islandManager?.runMaintenance(server)
         }
 
         ServerTickEvents.END_SERVER_TICK.register { server ->
             TriggerEventService.tick(server)
+            if (++containmentTickCounter >= POKEMON_CONTAINMENT_INTERVAL_TICKS) {
+                containmentTickCounter = 0
+                CobblemonIntegration.containWanderingPokemon(server)
+            }
             if (++maintenanceTickCounter >= MAINTENANCE_INTERVAL_TICKS) {
                 maintenanceTickCounter = 0
                 islandManager?.runMaintenance(server)
+                BuffService.purgeExpired()
             }
         }
 
@@ -146,6 +163,7 @@ object OneBlockCore : ModInitializer {
             return
         }
         islandManager = IslandManagerImpl(IslandRepository(db)).also { it.loadAll() }
+        BuffService.loadAll(db)
     }
 
     fun connectDatabase(): String? {

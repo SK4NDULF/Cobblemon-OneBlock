@@ -74,6 +74,9 @@ data class MainConfig(
      * chunk-aligned on load). Empty = exponential interpolation from 16 to max_island_size.
      */
     val borderLevelSizes: List<Int> = emptyList(),
+
+    /** Species pool for the legendary encounter trigger event. */
+    val legendarySpecies: List<String> = DEFAULT_LEGENDARY_SPECIES,
 ) {
 
     companion object {
@@ -86,6 +89,14 @@ data class MainConfig(
         /** Cumulative point thresholds for levels 2-8 (see borderLevelThresholds). */
         val DEFAULT_THRESHOLDS: List<Double> =
             listOf(50_000.0, 125_000.0, 250_000.0, 500_000.0, 900_000.0, 1_500_000.0, 2_500_000.0)
+
+        /** Legendary/mythical species the legendary encounter can pick from. */
+        val DEFAULT_LEGENDARY_SPECIES: List<String> = listOf(
+            "articuno", "zapdos", "moltres", "raikou", "entei", "suicune",
+            "regirock", "regice", "registeel", "latias", "latios",
+            "uxie", "mesprit", "azelf", "heatran", "cresselia",
+            "cobalion", "terrakion", "virizion", "tornadus", "thundurus", "landorus",
+        )
     }
 
     /** Grid spacing between island anchor points. Single source of truth for the spacing formula. */
@@ -110,6 +121,7 @@ data class MainConfig(
         partyDiminishingReturns = partyDiminishingReturns.coerceIn(0.0, 1.0),
         borderLevelThresholds = validatedThresholds(),
         borderLevelSizes = validatedSizes(),
+        legendarySpecies = legendarySpecies.map { it.trim().lowercase() }.filter { it.isNotEmpty() },
     )
 
     /** 7 strictly ascending positive values, else the defaults (misconfig must not brick leveling). */

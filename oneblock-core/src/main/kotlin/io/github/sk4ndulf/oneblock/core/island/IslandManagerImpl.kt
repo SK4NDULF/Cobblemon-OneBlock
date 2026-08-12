@@ -77,6 +77,11 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
     /** True when the position is exactly an active island's OneBlock. */
     fun isAnchor(pos: BlockPos): Boolean = activeByAnchor.containsKey(pos)
 
+    /** Writes the island's visitor Cobblemon settings through to the database. */
+    fun persistVisitorSettings(island: IslandData) {
+        repository.updateVisitorSettingsAsync(island.id, island.allowVisitorCatch, island.allowVisitorBattle)
+    }
+
     /**
      * The active island whose maximum footprint (max_island_size square) contains the
      * position, or null for the void buffer between islands.

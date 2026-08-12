@@ -1,9 +1,15 @@
 package io.github.sk4ndulf.oneblock.core.command
 
 import com.mojang.brigadier.Command
+import com.mojang.brigadier.arguments.BoolArgumentType
+import com.mojang.brigadier.arguments.DoubleArgumentType
+import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import io.github.sk4ndulf.oneblock.core.OneBlockCore
+import io.github.sk4ndulf.oneblock.core.cobblemon.BuffService
+import io.github.sk4ndulf.oneblock.core.cobblemon.BuffType
+import io.github.sk4ndulf.oneblock.core.cobblemon.CobblemonIntegration
 import io.github.sk4ndulf.oneblock.core.island.PartyService
 import io.github.sk4ndulf.oneblock.core.lang.ServerLang
 import io.github.sk4ndulf.oneblock.core.trigger.TriggerEventService
@@ -62,6 +68,44 @@ object ObCommands {
                         Commands.literal("info")
                             .requires { ObPermissions.check(it, ObPermissions.COMMAND_INFO, 0) }
                             .executes(::info)
+                    )
+                    .then(
+                        Commands.literal("settings")
+                            .requires { ObPermissions.check(it, ObPermissions.COMMAND_SETTINGS, 0) }
+                            .then(
+                                Commands.literal("visitor-catch").then(
+                                    Commands.argument("allowed", BoolArgumentType.bool())
+                                        .executes { setVisitorSetting(it, catch = true) }
+                                )
+                            )
+                            .then(
+                                Commands.literal("visitor-battle").then(
+                                    Commands.argument("allowed", BoolArgumentType.bool())
+                                        .executes { setVisitorSetting(it, catch = false) }
+                                )
+                            )
+                    )
+                    .then(
+                        Commands.literal("buff")
+                            .requires { ObPermissions.check(it, ObPermissions.ADMIN_BUFF, 4) }
+                            .then(
+                                Commands.argument("player", EntityArgument.player())
+                                    .then(
+                                        Commands.argument("type", StringArgumentType.word())
+                                            .suggests { _, builder ->
+                                                SharedSuggestionProvider.suggest(
+                                                    BuffType.entries.map { it.name.lowercase() }, builder,
+                                                )
+                                            }
+                                            .then(
+                                                Commands.argument("value", DoubleArgumentType.doubleArg(0.0))
+                                                    .then(
+                                                        Commands.argument("minutes", IntegerArgumentType.integer(1))
+                                                            .executes(::grantBuff)
+                                                    )
+                                            )
+                                    )
+                            )
                     )
                     .then(
                         Commands.literal("party")
@@ -220,6 +264,60 @@ object ObCommands {
         return Command.SINGLE_SUCCESS
     }
 
+    private fun setVisitorSetting(context: CommandContext<CommandSourceStack>, catch: Boolean): Int {
+        val player = context.source.playerOrException
+        val manager = OneBlockCore.islandManager
+        val island = manager?.islandDataOf(player.uuid)
+        if (island == null) {
+            context.source.sendFailure(ServerLang.msg("oneblock.island.none"))
+            return 0
+        }
+        if (island.owner() != player.uuid) {
+            context.source.sendFailure(ServerLang.msg("oneblock.island.only_owner"))
+            return 0
+        }
+        val allowed = BoolArgumentType.getBool(context, "allowed")
+        if (catch) island.allowVisitorCatch = allowed else island.allowVisitorBattle = allowed
+        manager.persistVisitorSettings(island)
+
+        val labelKey = if (catch) "oneblock.settings.visitor_catch" else "oneblock.settings.visitor_battle"
+        val stateKey = if (allowed) "oneblock.value.yes" else "oneblock.value.no"
+        context.source.sendSuccess(
+            { ServerLang.msg("oneblock.settings.saved", ServerLang.raw(labelKey), ServerLang.raw(stateKey)) }, false,
+        )
+        return Command.SINGLE_SUCCESS
+    }
+
+    private fun grantBuff(context: CommandContext<CommandSourceStack>): Int {
+        val target = EntityArgument.getPlayer(context, "player")
+        val island = OneBlockCore.islandManager?.islandDataOf(target.uuid)
+        if (island == null) {
+            context.source.sendFailure(ServerLang.msg("oneblock.island.none_other", target.gameProfile.name))
+            return 0
+        }
+        val rawType = StringArgumentType.getString(context, "type")
+        val type = BuffType.parse(rawType)
+        if (type == null) {
+            context.source.sendFailure(
+                ServerLang.msg("oneblock.buff.unknown", rawType, BuffType.entries.joinToString(", ") { it.name.lowercase() }),
+            )
+            return 0
+        }
+        val value = DoubleArgumentType.getDouble(context, "value")
+        val minutes = IntegerArgumentType.getInteger(context, "minutes")
+        BuffService.grant(island.id, type, value, minutes * 60_000L)
+
+        context.source.sendSuccess(
+            { ServerLang.msg("oneblock.buff.granted", type.name.lowercase(), value, minutes, target.gameProfile.name) },
+            true,
+        )
+        target.sendSystemMessage(
+            ServerLang.msg("oneblock.buff.received", type.name.lowercase(), value, minutes)
+                .withStyle(ChatFormatting.LIGHT_PURPLE),
+        )
+        return Command.SINGLE_SUCCESS
+    }
+
     private fun requestDestructive(
         context: CommandContext<CommandSourceStack>,
         action: String,
@@ -301,6 +399,7 @@ object ObCommands {
                     if (error == null) {
                         OneBlockCore.reloadIslands()
                         OneBlockCore.lootTable.buildPool(server)
+                        CobblemonIntegration.applySpawnMultiplier()
                         source.sendSuccess({ ServerLang.msg("oneblock.reload.ok") }, true)
                     } else {
                         source.sendFailure(ServerLang.msg("oneblock.reload.failed", error))

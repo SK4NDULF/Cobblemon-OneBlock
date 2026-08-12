@@ -68,6 +68,18 @@
   "oneblock.event.type.mob_wave": "Mob Wave",
   "oneblock.event.type.boss_fight": "Boss Fight",
   "oneblock.event.type.resource_burst": "Resource Burst",
+  "oneblock.event.type.legendary": "Legendary Encounter",
+  "oneblock.event.legendary_appeared": "A wild %s appeared!",
+
+  "oneblock.cobblemon.no_catch": "You can't catch Cobblemon on someone else's island.",
+  "oneblock.cobblemon.no_battle": "You can't battle Cobblemon on someone else's island.",
+  "oneblock.settings.visitor_catch": "Visitors may catch",
+  "oneblock.settings.visitor_battle": "Visitors may battle",
+  "oneblock.settings.saved": "%s: %s",
+  "oneblock.island.none_other": "%s has no island.",
+  "oneblock.buff.unknown": "Unknown buff '%s'. Available: %s",
+  "oneblock.buff.granted": "Buff %s (%s) granted for %d minutes to %s's island.",
+  "oneblock.buff.received": "Your island received the buff %s (%s) for %d minutes!",
 
   "oneblock.reload.start": "Reloading configuration...",
   "oneblock.reload.ok": "Reload complete, database connection OK.",

@@ -77,6 +77,21 @@ class MigrationRunner(private val database: Database, private val logger: Logger
                 "ALTER TABLE islands ADD COLUMN points DOUBLE NOT NULL DEFAULT 0",
             )
         },
+        Migration(6, "island buffs + visitor Cobblemon permissions") { _ ->
+            listOf(
+                """
+                CREATE TABLE IF NOT EXISTS island_buffs (
+                    island_id  BIGINT      NOT NULL,
+                    buff_type  VARCHAR(32) NOT NULL,
+                    value      DOUBLE      NOT NULL,
+                    expires_at BIGINT      NOT NULL,
+                    PRIMARY KEY (island_id, buff_type)
+                )
+                """.trimIndent(),
+                "ALTER TABLE islands ADD COLUMN allow_visitor_catch INT NOT NULL DEFAULT 0",
+                "ALTER TABLE islands ADD COLUMN allow_visitor_battle INT NOT NULL DEFAULT 0",
+            )
+        },
     )
 
     fun run() {

@@ -24,6 +24,10 @@ class IslandData(
     var points: Double,
     val createdAt: Long,
     var archivedAt: Long?,
+    /** Owner setting: may visitors catch Cobblemon here? Default false (see Public role). */
+    var allowVisitorCatch: Boolean = false,
+    /** Owner setting: may visitors battle Cobblemon here? Default false (see Public role). */
+    var allowVisitorBattle: Boolean = false,
     config: MainConfig,
 ) : Island {
 

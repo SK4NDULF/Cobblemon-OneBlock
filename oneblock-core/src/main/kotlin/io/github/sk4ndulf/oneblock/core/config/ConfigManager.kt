@@ -83,6 +83,7 @@ class ConfigManager(val configDir: Path, private val logger: Logger) {
             partyDiminishingReturns = json.double("party_diminishing_returns", defaults.partyDiminishingReturns),
             borderLevelThresholds = json.doubleList("border_level_thresholds", defaults.borderLevelThresholds),
             borderLevelSizes = json.intList("border_level_sizes", defaults.borderLevelSizes),
+            legendarySpecies = json.stringList("legendary_species", defaults.legendarySpecies),
         ).validated()
     }
 
@@ -147,6 +148,8 @@ class ConfigManager(val configDir: Path, private val logger: Logger) {
         json.put("border_level_sizes", intArray(config.borderLevelSizes),
             "Optional manual border side lengths for levels 1-8 (8 values, chunk-aligned). " +
                 "Empty = exponential interpolation from 16 to max_island_size.")
+        json.put("legendary_species", stringArray(config.legendarySpecies),
+            "Species the legendary encounter event can spawn. Any Cobblemon species name works.")
         write(mainFile, json)
     }
 
@@ -199,4 +202,10 @@ class ConfigManager(val configDir: Path, private val logger: Logger) {
 
     private fun intArray(values: List<Int>): JsonArray =
         JsonArray().apply { values.forEach { add(JsonPrimitive(it.toLong())) } }
+
+    private fun JsonObject.stringList(key: String, default: List<String>): List<String> =
+        (get(key) as? JsonArray)?.mapNotNull { (it as? JsonPrimitive)?.asString() } ?: default
+
+    private fun stringArray(values: List<String>): JsonArray =
+        JsonArray().apply { values.forEach { add(JsonPrimitive(it)) } }
 }
