@@ -114,6 +114,20 @@ class MigrationRunner(private val database: Database, private val logger: Logger
                 "CREATE INDEX idx_biome_regions_island ON island_biome_regions(island_id)",
             )
         },
+        Migration(8, "island_bans table (per-island visitor bans)") { _ ->
+            listOf(
+                """
+                CREATE TABLE IF NOT EXISTS island_bans (
+                    island_id   BIGINT       NOT NULL,
+                    banned_uuid CHAR(36)     NOT NULL,
+                    banned_by   CHAR(36),
+                    reason      VARCHAR(256) NOT NULL,
+                    created_at  BIGINT       NOT NULL,
+                    PRIMARY KEY (island_id, banned_uuid)
+                )
+                """.trimIndent(),
+            )
+        },
     )
 
     fun run() {

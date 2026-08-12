@@ -16,6 +16,7 @@ import io.github.sk4ndulf.oneblock.core.biome.BiomeService
 import io.github.sk4ndulf.oneblock.core.cobblemon.BuffService
 import io.github.sk4ndulf.oneblock.core.cobblemon.CobblemonIntegration
 import io.github.sk4ndulf.oneblock.core.cobblemon.LegendaryEncounterEvent
+import io.github.sk4ndulf.oneblock.core.moderation.BanService
 import io.github.sk4ndulf.oneblock.core.permission.ProtectionManager
 import io.github.sk4ndulf.oneblock.core.trigger.BossFightEvent
 import io.github.sk4ndulf.oneblock.core.trigger.MobWaveEvent
@@ -110,6 +111,7 @@ object OneBlockCore : ModInitializer {
             if (++containmentTickCounter >= POKEMON_CONTAINMENT_INTERVAL_TICKS) {
                 containmentTickCounter = 0
                 CobblemonIntegration.containWanderingPokemon(server)
+                BanService.enforce(server)
             }
             if (++maintenanceTickCounter >= MAINTENANCE_INTERVAL_TICKS) {
                 maintenanceTickCounter = 0
@@ -169,6 +171,7 @@ object OneBlockCore : ModInitializer {
         islandManager = IslandManagerImpl(IslandRepository(db)).also { it.loadAll() }
         BuffService.loadAll(db)
         BiomeService.reload(BiomeRepository(db))
+        BanService.reload(db)
     }
 
     fun connectDatabase(): String? {

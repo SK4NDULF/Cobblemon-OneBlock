@@ -84,6 +84,7 @@ class ConfigManager(val configDir: Path, private val logger: Logger) {
             borderLevelThresholds = json.doubleList("border_level_thresholds", defaults.borderLevelThresholds),
             borderLevelSizes = json.intList("border_level_sizes", defaults.borderLevelSizes),
             legendarySpecies = json.stringList("legendary_species", defaults.legendarySpecies),
+            discordWebhookUrl = json.string("discord_webhook_url", defaults.discordWebhookUrl),
         ).validated()
     }
 
@@ -150,6 +151,8 @@ class ConfigManager(val configDir: Path, private val logger: Logger) {
                 "Empty = exponential interpolation from 16 to max_island_size.")
         json.put("legendary_species", stringArray(config.legendarySpecies),
             "Species the legendary encounter event can spawn. Any Cobblemon species name works.")
+        json.put("discord_webhook_url", JsonPrimitive(config.discordWebhookUrl),
+            "Optional Discord webhook URL that mirrors the audit log. Leave empty to disable.")
         write(mainFile, json)
     }
 

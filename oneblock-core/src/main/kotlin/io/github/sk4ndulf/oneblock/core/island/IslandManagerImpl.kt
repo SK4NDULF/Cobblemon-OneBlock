@@ -12,6 +12,7 @@ import io.github.sk4ndulf.oneblock.core.OneBlockCore
 import io.github.sk4ndulf.oneblock.core.biome.BiomeService
 import io.github.sk4ndulf.oneblock.core.config.MainConfig
 import io.github.sk4ndulf.oneblock.core.lang.ServerLang
+import io.github.sk4ndulf.oneblock.core.moderation.AuditLog
 import io.github.sk4ndulf.oneblock.core.trigger.TriggerEventService
 import io.github.sk4ndulf.oneblock.core.world.GridMath
 import io.github.sk4ndulf.oneblock.core.world.HubManager
@@ -153,6 +154,7 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
             placeInitialBlock(level, island)
         }
         OneBlockCore.eventBus.post(IslandCreatedEvent(island, player))
+        AuditLog.record("island.create", player, player.uuid, "island=$id slot=$slot")
         sendHome(player, island)
         OneBlockCore.LOGGER.info("Island {} created for {} at slot {} {}.",
             id, player.gameProfile.name, slot, island.oneBlockPos().toShortString())
@@ -194,6 +196,7 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
         unindex(island)
         repository.updateStateAsync(island.id, IslandState.ARCHIVED, island.archivedAt)
         BiomeService.clearIsland(island.id)
+        AuditLog.record("island.archive", null, "SERVER", owner, "island=${island.id} members=${members.size}")
 
         for (member in members) {
             OneBlockCore.eventBus.post(PartyLeaveEvent(island, member, PartyLeaveEvent.Reason.ISLAND_ARCHIVED))

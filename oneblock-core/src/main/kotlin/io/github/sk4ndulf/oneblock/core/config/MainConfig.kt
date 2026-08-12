@@ -77,6 +77,9 @@ data class MainConfig(
 
     /** Species pool for the legendary encounter trigger event. */
     val legendarySpecies: List<String> = DEFAULT_LEGENDARY_SPECIES,
+
+    /** Optional Discord webhook that mirrors the audit log. Empty disables it. */
+    val discordWebhookUrl: String = "",
 ) {
 
     companion object {

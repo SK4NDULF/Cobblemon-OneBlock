@@ -172,6 +172,10 @@ object ObCommands {
                             .then(Commands.literal("list")
                                 .executes { PartyService.list(it.source.playerOrException); Command.SINGLE_SUCCESS })
                     )
+                    .then(ModerationCommands.banBranch())
+                    .then(ModerationCommands.unbanBranch())
+                    .then(ModerationCommands.bansBranch())
+                    .then(ModerationCommands.adminBranch())
                     .then(
                         Commands.literal("reload")
                             .requires { ObPermissions.check(it, ObPermissions.ADMIN_RELOAD, 4) }

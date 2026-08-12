@@ -116,6 +116,26 @@ Besucher (Public) auf fremden Inseln dürfen: **betreten und schauen — sonst n
 - **Keine Cobblemon fangen UND keine besiegen** (sonst farmen Besucher fremde Spawns leer).
 - Optionale, vom Owner konfigurierbare Interact-Whitelist (Türen, Knöpfe, Druckplatten).
 
+
+### Permission-Precedence (Phase 10, dokumentiert + getestet)
+
+Regeln werden **in dieser Reihenfolge** ausgewertet; die erste zutreffende gewinnt:
+
+1. **Hub-Zone** — innerhalb `hub_radius` darf niemand bauen/abbauen.
+   Einzige Ausnahme: Admins (OP >= 2), wenn `hub_allow_building` aktiv ist.
+2. **Admin-Bypass** — OP >= 2 (`oneblock.admin.bypass`) umgeht ab hier alle Insel-Regeln.
+3. **Insel-Ban** — gebannte Spieler werden von der Insel zum Hub zurückgeschickt,
+   unabhängig von allen weiteren Rechten. Owner/Members koennen nicht gebannt werden.
+4. **Insel-Zugehörigkeit** — Owner und Members duerfen innerhalb der *aktuellen*
+   Border-Level-Flaeche alles; Besucher nichts (Bauen/Container/Fangen/Kaempfen),
+   ausser der Owner hat es per `/ob settings` freigegeben.
+5. **Border-Grenze** — auch Owner/Members duerfen ausserhalb des aktuellen
+   Border-Levels nichts, obwohl die Flaeche zur Insel gehoert (erst Level-Up).
+6. **Void-Buffer / unregistrierte Chunks** — Fallback-VOID-Owner, niemand darf etwas.
+   (Deny-by-default: unbekannte Bereiche sind immer gesperrt.)
+
+Andere Dimensionen als `oneblock:world` werden vom Mod **nicht** reguliert.
+
 ---
 
 ## 3. Qualitätsstandards (Pflicht-Checkliste, gilt für jedes Modul)
@@ -245,10 +265,10 @@ Die Phasen bauen aufeinander auf. Jede Phase wird mit Build + Smoke-Test abgesch
 - [x] Auswirkung auf Cobblemon-Spawns in der Region
 
 ### Phase 10 — Moderation & Admin-Tools
-- [ ] Ban/Kick von Islands (Admin-Only)
-- [ ] Force-Reset/-Delete MIT Confirmation-Step
-- [ ] Audit-Log (strukturierte Log-Datei + optionaler Discord-Webhook-Hook über die API)
-- [ ] Permission-Precedence dokumentiert + getestet
+- [x] Ban/Kick von Islands (Admin-Only)
+- [x] Force-Reset/-Delete MIT Confirmation-Step
+- [x] Audit-Log (strukturierte Log-Datei + optionaler Discord-Webhook-Hook über die API)
+- [x] Permission-Precedence dokumentiert + getestet
 
 ### Phase 11 — Public API Finalisierung & Doku
 - [ ] Alle Manager-Interfaces vollständig + stabil im `-api`-Modul
