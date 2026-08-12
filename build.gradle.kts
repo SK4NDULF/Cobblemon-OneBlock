@@ -1,6 +1,6 @@
 plugins {
-    id("fabric-loom") version "1.10-SNAPSHOT" apply false
-    kotlin("jvm") version "2.1.20" apply false
+    id("fabric-loom") version "1.17.19" apply false
+    kotlin("jvm") version "2.2.21" apply false
 }
 
 subprojects {
