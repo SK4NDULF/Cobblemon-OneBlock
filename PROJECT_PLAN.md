@@ -226,15 +226,17 @@ Die Phasen bauen aufeinander auf. Jede Phase wird mit Build + Smoke-Test abgesch
 - [x] Öffentliches `EventManager`-Interface
 
 ### Phase 8 — Cobblemon-Integration
-- [ ] Border-begrenzte Spawns: Cobblemon-Spawns, die außerhalb der Insel-Border des
+- [x] Border-begrenzte Spawns: Cobblemon-Spawns, die außerhalb der Insel-Border des
       auslösenden Spielers landen würden, werden gecancelt (kein Cross-Island-Bleeding)
-- [ ] Catch- UND Battle-Permission pro Island (Besucher können weder fangen noch besiegen;
+- [x] Catch- UND Battle-Permission pro Island (Besucher können weder fangen noch besiegen;
       Owner-Setting)
-- [ ] Pokémon, die über die Border wandern, zurücksetzen oder despawnen
-- [ ] Trigger-Events können Legendaries/Ultra Beasts spawnen (Hook in Phase-7-Extension)
-- [ ] Temporäre Island-Buffs (Shiny-Rate, IV-Boost, Spawn-Rate) inkl. Restart-Persistence
-- [ ] Cobblemon-Spawn-Intensität aus Wizard-Config anwenden
-- [ ] Mindest-Cobblemon-Version dokumentieren + Startup-Check
+- [x] Pokémon, die über die Border wandern, zurücksetzen oder despawnen
+- [x] Trigger-Events können Legendaries/Ultra Beasts spawnen (Hook in Phase-7-Extension)
+- [x] Temporäre Island-Buffs: Shiny-Rate + IV-Floor inkl. Restart-Persistence.
+      Spawn-Rate bewusst NICHT pro Insel: Cobblemons Spawner ist spielerzentriert und
+      global getaktet — ein per-Insel-Boost wäre nur vortäuschbar. Global via Wizard-Wert.
+- [x] Cobblemon-Spawn-Intensität aus Wizard-Config anwenden
+- [x] Mindest-Cobblemon-Version dokumentieren + Startup-Check
 
 ### Phase 9 — Biome-Editor
 - [ ] 2-Punkt-Raycast-Selection, 3D (inkl. Y-Achse), snappt auf das 4er-Biome-Raster
