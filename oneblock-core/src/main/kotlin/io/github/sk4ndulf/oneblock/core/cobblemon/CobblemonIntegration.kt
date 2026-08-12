@@ -7,6 +7,7 @@ import com.cobblemon.mod.common.api.pokeball.catching.CaptureContext
 import com.cobblemon.mod.common.api.pokemon.stats.Stats
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity
 import io.github.sk4ndulf.oneblock.core.OneBlockCore
+import io.github.sk4ndulf.oneblock.core.command.ObPermissions
 import io.github.sk4ndulf.oneblock.core.island.IslandData
 import io.github.sk4ndulf.oneblock.core.lang.ServerLang
 import io.github.sk4ndulf.oneblock.core.world.HubManager
@@ -148,7 +149,8 @@ object CobblemonIntegration {
 
     /** Members and owners always may; visitors only when the owner allowed it. */
     private fun mayInteract(player: ServerPlayer, island: IslandData, visitorsAllowed: Boolean): Boolean =
-        island.isMemberOrOwner(player.uuid) || visitorsAllowed || player.hasPermissions(2)
+        island.isMemberOrOwner(player.uuid) || visitorsAllowed ||
+            ObPermissions.checkPlayer(player, ObPermissions.ADMIN_BYPASS, 2)
 
     private fun applyBuffs(island: IslandData, entity: PokemonEntity) {
         val pokemon = entity.pokemon

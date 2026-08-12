@@ -1,4 +1,4 @@
-package io.github.sk4ndulf.oneblock.core.mixin
+package io.github.sk4ndulf.oneblock.core.hooks
 
 import io.github.sk4ndulf.oneblock.core.OneBlockCore
 import io.github.sk4ndulf.oneblock.core.world.HubManager
@@ -9,9 +9,13 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.level.LevelAccessor
 
 /**
- * Kotlin side of the Java mixins. Keeps the mixin classes one-liners and all logic here.
+ * Logic behind the Java mixins.
+ *
+ * This deliberately lives OUTSIDE the mixin package: everything in the package declared
+ * by oneblock.mixins.json is treated as a mixin class by the transformer, and a plain
+ * helper class there fails to load.
  */
-object MixinHooks {
+object WorldHooks {
 
     /** FallingBlockMixin: gravity blocks never fall while sitting on a OneBlock anchor. */
     @JvmStatic

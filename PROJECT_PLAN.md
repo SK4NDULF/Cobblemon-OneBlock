@@ -279,11 +279,11 @@ Die Phasen bauen aufeinander auf. Jede Phase wird mit Build + Smoke-Test abgesch
 - [x] Versionierung/Semver-Strategie für Breaking Changes
 
 ### Phase 12 — Polish & Drag-and-Drop-Readiness
-- [ ] Vollständiger `/ob`-Command-Tree final durchtesten
-- [ ] LuckPerms-Permission-Nodes vollständig dokumentiert (inkl. OP-Fallback-Verhalten)
-- [ ] Admin-Doku: Backup-Konsistenz (DB + Welt zusammen sichern), MySQL-Umstellung
-- [ ] Edge-Case-Handling final durchgetestet
-- [ ] End-to-End-Test: frischer Server, NUR Cobblemon + diese Mod installiert → kompletter
+- [x] Vollständiger `/ob`-Command-Tree final durchtesten
+- [x] LuckPerms-Permission-Nodes vollständig dokumentiert (inkl. OP-Fallback-Verhalten)
+- [x] Admin-Doku: Backup-Konsistenz (DB + Welt zusammen sichern), MySQL-Umstellung
+- [x] Edge-Case-Handling final durchgetestet
+- [x] End-to-End-Test: frischer Server, NUR Cobblemon + diese Mod installiert → kompletter
       Loop (Wizard → Island erstellen → OneBlock spielen → Progression → Event →
       Cobblemon-Fang) funktioniert ohne manuelles Eingreifen außer der Wizard-Beantwortung
 

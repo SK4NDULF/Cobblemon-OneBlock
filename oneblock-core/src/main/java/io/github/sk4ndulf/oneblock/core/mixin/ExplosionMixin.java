@@ -1,5 +1,6 @@
 package io.github.sk4ndulf.oneblock.core.mixin;
 
+import io.github.sk4ndulf.oneblock.core.hooks.WorldHooks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
@@ -27,6 +28,6 @@ public abstract class ExplosionMixin {
 
     @Inject(method = "finalizeExplosion", at = @At("HEAD"))
     private void oneblock$containExplosion(boolean spawnParticles, CallbackInfo ci) {
-        MixinHooks.filterExplosion(this.level, this.x, this.z, this.getToBlow());
+        WorldHooks.filterExplosion(this.level, this.x, this.z, this.getToBlow());
     }
 }

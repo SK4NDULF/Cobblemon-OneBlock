@@ -1,6 +1,7 @@
 package io.github.sk4ndulf.oneblock.core.permission
 
 import io.github.sk4ndulf.oneblock.core.OneBlockCore
+import io.github.sk4ndulf.oneblock.core.command.ObPermissions
 import io.github.sk4ndulf.oneblock.core.lang.ServerLang
 import io.github.sk4ndulf.oneblock.core.world.HubManager
 import io.github.sk4ndulf.oneblock.core.world.OneBlockDimension
@@ -71,12 +72,15 @@ object ProtectionManager {
     fun denialFor(level: Level, player: Player, pos: BlockPos): Denial? {
         if (level.dimension() != OneBlockDimension.WORLD_KEY) return null
 
+        val bypass = (player as? ServerPlayer)
+            ?.let { ObPermissions.checkPlayer(it, ObPermissions.ADMIN_BYPASS, 2) }
+            ?: player.hasPermissions(2)
+
         if (HubManager.isInHub(level, pos)) {
             val config = OneBlockCore.configManager.mainConfig
-            return if (config.hubAllowBuilding && player.hasPermissions(2)) null else Denial.HUB
+            return if (config.hubAllowBuilding && bypass) null else Denial.HUB
         }
 
-        val bypass = player.hasPermissions(2)
         val manager = OneBlockCore.islandManager
             ?: return if (bypass) null else Denial.VOID_BUFFER
         val island = manager.islandAt(pos)

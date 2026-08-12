@@ -1,5 +1,6 @@
 package io.github.sk4ndulf.oneblock.core.mixin;
 
+import io.github.sk4ndulf.oneblock.core.hooks.WorldHooks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.LevelAccessor;
@@ -21,7 +22,7 @@ public abstract class FlowingFluidMixin {
     @Inject(method = "spreadTo", at = @At("HEAD"), cancellable = true)
     private void oneblock$containFluid(LevelAccessor level, BlockPos pos, BlockState blockState,
                                        Direction direction, FluidState fluidState, CallbackInfo ci) {
-        if (MixinHooks.blockFluidSpread(level, pos)) {
+        if (WorldHooks.blockFluidSpread(level, pos)) {
             ci.cancel();
         }
     }

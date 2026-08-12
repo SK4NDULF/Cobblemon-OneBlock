@@ -14,6 +14,11 @@ Trigger-Events, Biome-Editor und Setup-Wizard in einer einzigen Drag-and-Drop-Se
 | `oneblock-core` | Kotlin | Vollständige Implementierung. Harte Dependency auf Cobblemon. |
 | `example-addon` | Java | Referenz-Addon für Dritt-Entwickler. Baut nur gegen `oneblock-api`. |
 
+## Für Server-Admins
+
+Installation, Wizard, Config-Dateien, Permission-Nodes, Backups und MySQL-Umstellung:
+[`ADMIN.md`](ADMIN.md)
+
 ## Für Addon-Entwickler
 
 Vollständige Dokumentation: [`API.md`](API.md) — Events, Manager, Extension-Points

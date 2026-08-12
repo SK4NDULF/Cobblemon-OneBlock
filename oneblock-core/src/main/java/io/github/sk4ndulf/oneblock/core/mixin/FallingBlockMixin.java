@@ -1,5 +1,6 @@
 package io.github.sk4ndulf.oneblock.core.mixin;
 
+import io.github.sk4ndulf.oneblock.core.hooks.WorldHooks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -20,7 +21,7 @@ public abstract class FallingBlockMixin {
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
     private void oneblock$preventAnchorFall(BlockState state, ServerLevel level, BlockPos pos,
                                             RandomSource random, CallbackInfo ci) {
-        if (MixinHooks.isOneBlockAnchor(level, pos)) {
+        if (WorldHooks.isOneBlockAnchor(level, pos)) {
             ci.cancel();
         }
     }
