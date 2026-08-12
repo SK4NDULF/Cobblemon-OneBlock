@@ -2,23 +2,17 @@ package io.github.sk4ndulf.oneblock.core.world
 
 import io.github.sk4ndulf.oneblock.core.OneBlockCore
 import io.github.sk4ndulf.oneblock.core.db.MetaRepository
-import io.github.sk4ndulf.oneblock.core.lang.ServerLang
-import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
-import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.minecraft.core.BlockPos
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
-import net.minecraft.world.InteractionResult
-import net.minecraft.world.entity.player.Player
-import net.minecraft.world.item.BlockItem
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Blocks
 
 /**
  * The hub: a circular platform at (0,64,0) in `oneblock:world`, surrounded by a full
- * protection zone of `hub_radius` blocks where nobody breaks or places anything
- * (admins excepted when `hub_allow_building` is true).
+ * protection zone of `hub_radius` blocks. Enforcement lives in ProtectionManager;
+ * this object owns geometry, platform generation and hub teleports.
  */
 object HubManager {
 
@@ -27,42 +21,18 @@ object HubManager {
 
     val spawnPos: BlockPos = BlockPos(0, HUB_Y, 0)
 
-    fun registerProtection() {
-        PlayerBlockBreakEvents.BEFORE.register { level, player, pos, _, _ ->
-            if (isProtectedFor(level, pos, player)) {
-                (player as? ServerPlayer)?.displayClientMessage(ServerLang.msg("oneblock.hub.no_break"), true)
-                false
-            } else {
-                true
-            }
-        }
-
-        UseBlockCallback.EVENT.register { player, level, hand, hitResult ->
-            if (player is ServerPlayer && player.getItemInHand(hand).item is BlockItem) {
-                val placePos = hitResult.blockPos.relative(hitResult.direction)
-                if (isProtectedFor(level, placePos, player) || isProtectedFor(level, hitResult.blockPos, player)) {
-                    player.displayClientMessage(ServerLang.msg("oneblock.hub.no_place"), true)
-                    return@register InteractionResult.FAIL
-                }
-            }
-            InteractionResult.PASS
-        }
-    }
-
     /** True when the position is inside the hub protection circle (ignoring permissions). */
     fun isInHub(level: Level, pos: BlockPos): Boolean {
         if (level.dimension() != OneBlockDimension.WORLD_KEY) return false
+        return isInHubArea(pos)
+    }
+
+    /** XZ-only hub circle check — for callers that already know they're in the OneBlock world. */
+    fun isInHubArea(pos: BlockPos): Boolean {
         val radius = OneBlockCore.configManager.mainConfig.hubRadius.toLong()
         val x = pos.x.toLong()
         val z = pos.z.toLong()
         return x * x + z * z <= radius * radius
-    }
-
-    private fun isProtectedFor(level: Level, pos: BlockPos, player: Player): Boolean {
-        if (!isInHub(level, pos)) return false
-        val config = OneBlockCore.configManager.mainConfig
-        if (config.hubAllowBuilding && player.hasPermissions(2)) return false
-        return true
     }
 
     /**

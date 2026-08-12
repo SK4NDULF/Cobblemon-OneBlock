@@ -4,101 +4,155 @@ import blue.endless.jankson.Jankson
 import blue.endless.jankson.JsonArray
 import blue.endless.jankson.JsonObject
 import blue.endless.jankson.JsonPrimitive
+import io.github.sk4ndulf.oneblock.core.world.OneBlockDimension
+import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.server.MinecraftServer
 import net.minecraft.util.RandomSource
+import net.minecraft.world.item.Items
 import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.IceBlock
+import net.minecraft.world.level.block.LeavesBlock
+import net.minecraft.world.level.block.LiquidBlock
 import net.minecraft.world.level.block.state.BlockState
 import org.slf4j.Logger
 import java.nio.file.Files
 import java.nio.file.Path
 
 /**
- * Weighted random pool for OneBlock regeneration, loaded from
- * `config/oneblock/loottable.json5` (written with defaults on first start,
- * freely editable by admins, reloaded by `/ob reload`).
+ * The OneBlock regeneration pool.
  *
- * Custom per-phase loot tiers and addon-provided loot providers are a later
- * extension point (PROJECT_PLAN.md phase 11).
+ * Default mode `all_blocks`: every block registered by Minecraft AND every loaded mod
+ * (Cobblemon!), uniformly weighted, filtered down to blocks that are safe as a lone
+ * floating block:
+ *  - no fluids, nothing unbreakable (bedrock, barrier, command block: destroy time < 0)
+ *  - only blocks with an item form (skips technical blocks like piston heads, portals)
+ *  - nothing replaceable (light, structure void) and no melting ice (would turn to water)
+ *  - nothing that pops off without support (torches, flowers, rails, crops, ...) —
+ *    checked with a real canSurvive test at a floating void position
+ *  - leaves are placed persistent so they never decay
+ *  - gravity blocks (sand, gravel, ...) ARE included; a mixin prevents them from
+ *    falling while they sit on a OneBlock anchor
+ *
+ * Mode `custom` uses the weighted `entries` list from the config file instead.
+ * Both modes honor the `blacklist`. Reload with /ob reload.
  */
 class OneBlockLootTable(private val configDir: Path, private val logger: Logger) {
 
     private data class Entry(val state: BlockState, val weight: Int)
+
+    private var mode: String = MODE_ALL_BLOCKS
+    private var blacklist: Set<String> = emptySet()
+    private var customEntries: List<Pair<String, Int>> = emptyList()
 
     private var entries: List<Entry> = emptyList()
     private var totalWeight: Long = 0
 
     private val file: Path get() = configDir.resolve("loottable.json5")
 
-    /** Sensible starter pool: overworld basics with rarer ores. */
-    private val defaults: List<Pair<String, Int>> = listOf(
-        "minecraft:grass_block" to 220,
-        "minecraft:dirt" to 200,
-        "minecraft:stone" to 200,
-        "minecraft:cobblestone" to 160,
-        "minecraft:oak_log" to 120,
-        "minecraft:birch_log" to 60,
-        "minecraft:oak_leaves" to 80,
-        "minecraft:sand" to 70,
-        "minecraft:gravel" to 70,
-        "minecraft:clay" to 40,
-        "minecraft:coal_ore" to 50,
-        "minecraft:copper_ore" to 35,
-        "minecraft:iron_ore" to 30,
-        "minecraft:gold_ore" to 12,
-        "minecraft:redstone_ore" to 12,
-        "minecraft:lapis_ore" to 10,
-        "minecraft:diamond_ore" to 4,
-        "minecraft:emerald_ore" to 2,
-        "minecraft:mossy_cobblestone" to 25,
-        "minecraft:pumpkin" to 15,
-        "minecraft:melon" to 15,
-        "minecraft:bookshelf" to 8,
-        "minecraft:hay_block" to 20,
-        "minecraft:snow_block" to 20,
-        "minecraft:ice" to 15,
-        "minecraft:podzol" to 25,
-        "minecraft:mud" to 25,
-    )
+    companion object {
+        const val MODE_ALL_BLOCKS = "all_blocks"
+        const val MODE_CUSTOM = "custom"
 
+        /** Blocks that pass the generic filters but still misbehave as a lone block. */
+        private val BUILTIN_BLACKLIST = setOf(
+            "minecraft:scaffolding", // falls via its own tick logic, not FallingBlock
+        )
+
+        /** Example pool written into the config for admins switching to custom mode. */
+        private val CUSTOM_EXAMPLE = listOf(
+            "minecraft:grass_block" to 220, "minecraft:dirt" to 200, "minecraft:stone" to 200,
+            "minecraft:oak_log" to 120, "minecraft:coal_ore" to 50, "minecraft:iron_ore" to 30,
+            "minecraft:diamond_ore" to 4,
+        )
+    }
+
+    /** Reads mode/blacklist/entries from the config file. Does not touch registries. */
     fun load() {
         if (!Files.exists(file)) {
             writeDefaults()
         }
-        val loaded = ArrayList<Entry>()
         try {
             val json = Jankson.builder().build().load(file.toFile())
-            val array = json.get("entries") as? JsonArray
-            if (array == null) {
-                logger.error("loottable.json5 has no 'entries' array — using built-in defaults.")
-            } else {
-                for (element in array) {
-                    val obj = element as? JsonObject ?: continue
-                    val blockId = (obj.get("block") as? JsonPrimitive)?.asString() ?: continue
-                    val weight = (obj.get("weight") as? JsonPrimitive)?.asInt(0) ?: 0
-                    if (weight <= 0) continue
-                    val id = ResourceLocation.tryParse(blockId)
-                    val block = id?.let { BuiltInRegistries.BLOCK.getOptional(it).orElse(null) }
-                    if (block == null || (block == Blocks.AIR && blockId != "minecraft:air")) {
-                        logger.warn("loottable.json5: unknown block '{}' skipped.", blockId)
-                        continue
-                    }
-                    loaded.add(Entry(block.defaultBlockState(), weight))
-                }
-            }
+            mode = (json.get("mode") as? JsonPrimitive)?.asString() ?: MODE_ALL_BLOCKS
+            blacklist = (json.get("blacklist") as? JsonArray)
+                ?.mapNotNull { (it as? JsonPrimitive)?.asString() }?.toSet() ?: emptySet()
+            customEntries = (json.get("entries") as? JsonArray)?.mapNotNull { element ->
+                val obj = element as? JsonObject ?: return@mapNotNull null
+                val block = (obj.get("block") as? JsonPrimitive)?.asString() ?: return@mapNotNull null
+                val weight = (obj.get("weight") as? JsonPrimitive)?.asInt(0) ?: 0
+                if (weight > 0) block to weight else null
+            } ?: emptyList()
         } catch (e: Exception) {
-            logger.error("Could not read loottable.json5 ({}) — using built-in defaults.", e.message)
+            logger.error("Could not read loottable.json5 ({}) — keeping previous settings.", e.message)
         }
+    }
 
-        entries = loaded.ifEmpty {
-            defaults.mapNotNull { (blockId, weight) ->
-                BuiltInRegistries.BLOCK.getOptional(ResourceLocation.parse(blockId)).orElse(null)
-                    ?.let { Entry(it.defaultBlockState(), weight) }
-            }
+    /**
+     * Builds the actual block pool. Needs the running server for the canSurvive probe,
+     * so it runs at SERVER_STARTED and after /ob reload — on the server thread.
+     */
+    fun buildPool(server: MinecraftServer) {
+        val excluded = BUILTIN_BLACKLIST + blacklist
+        entries = when (mode) {
+            MODE_CUSTOM -> buildCustomPool(excluded)
+            else -> buildAllBlocksPool(server, excluded)
         }
         totalWeight = entries.sumOf { it.weight.toLong() }
-        logger.info("OneBlock loot table loaded: {} entries, total weight {}.", entries.size, totalWeight)
+        logger.info("OneBlock loot table built (mode {}): {} blocks, total weight {}.", mode, entries.size, totalWeight)
     }
+
+    private fun buildCustomPool(excluded: Set<String>): List<Entry> {
+        val pool = customEntries.mapNotNull { (blockId, weight) ->
+            if (blockId in excluded) return@mapNotNull null
+            val id = ResourceLocation.tryParse(blockId)
+            val block = id?.let { BuiltInRegistries.BLOCK.getOptional(it).orElse(null) }
+            if (block == null) {
+                logger.warn("loottable.json5: unknown block '{}' skipped.", blockId)
+                null
+            } else {
+                Entry(safeState(block.defaultBlockState()), weight)
+            }
+        }
+        if (pool.isEmpty()) {
+            logger.error("Custom loot table is empty — falling back to minecraft:grass_block.")
+            return listOf(Entry(Blocks.GRASS_BLOCK.defaultBlockState(), 1))
+        }
+        return pool
+    }
+
+    private fun buildAllBlocksPool(server: MinecraftServer, excluded: Set<String>): List<Entry> {
+        val level = OneBlockDimension.level(server)
+        // A guaranteed-air floating position for the canSurvive probe.
+        val probePos = BlockPos(8, 200, 8)
+
+        val pool = ArrayList<Entry>()
+        for (block in BuiltInRegistries.BLOCK) {
+            val id = BuiltInRegistries.BLOCK.getKey(block).toString()
+            if (id in excluded) continue
+            if (block == Blocks.AIR || block.asItem() === Items.AIR) continue // technical blocks
+            if (block is LiquidBlock) continue // no fluids
+            if (block.defaultDestroyTime() < 0f) continue // bedrock, barrier, command blocks, ...
+            if (block is IceBlock) continue // melts into water in daylight
+            val state = safeState(block.defaultBlockState())
+            if (state.canBeReplaced()) continue // light, structure void, grass-like fillers
+            if (level != null && !state.canSurvive(level, probePos)) continue // pops without support
+            pool.add(Entry(state, 1))
+        }
+        if (level == null) {
+            logger.warn("oneblock:world missing during loot pool build — support filter skipped.")
+        }
+        if (pool.isEmpty()) {
+            logger.error("All-blocks loot pool came out empty — falling back to minecraft:grass_block.")
+            return listOf(Entry(Blocks.GRASS_BLOCK.defaultBlockState(), 1))
+        }
+        return pool
+    }
+
+    /** Adjusts states that need tweaking to survive as a lone block (persistent leaves). */
+    private fun safeState(state: BlockState): BlockState =
+        if (state.hasProperty(LeavesBlock.PERSISTENT)) state.setValue(LeavesBlock.PERSISTENT, true) else state
 
     fun next(random: RandomSource): BlockState {
         if (entries.isEmpty() || totalWeight <= 0) return Blocks.GRASS_BLOCK.defaultBlockState()
@@ -112,8 +166,18 @@ class OneBlockLootTable(private val configDir: Path, private val logger: Logger)
 
     private fun writeDefaults() {
         val root = JsonObject()
+        root.put(
+            "mode", JsonPrimitive(MODE_ALL_BLOCKS),
+            "\"all_blocks\": every breakable, fluid-free, support-free block from Minecraft AND " +
+                "all mods (Cobblemon included), uniform chance. \"custom\": use the weighted 'entries' list below.",
+        )
+        val blacklistArray = JsonArray()
+        root.put(
+            "blacklist", blacklistArray,
+            "Block ids excluded in BOTH modes, e.g. \"minecraft:tnt\".",
+        )
         val array = JsonArray()
-        for ((blockId, weight) in defaults) {
+        for ((blockId, weight) in CUSTOM_EXAMPLE) {
             val obj = JsonObject()
             obj.put("block", JsonPrimitive(blockId), null)
             obj.put("weight", JsonPrimitive(weight.toLong()), null)
@@ -121,8 +185,7 @@ class OneBlockLootTable(private val configDir: Path, private val logger: Logger)
         }
         root.put(
             "entries", array,
-            "Weighted random pool for the OneBlock. 'weight' is relative — higher = more common. " +
-                "Unknown block ids are skipped with a warning. Reload with /ob reload.",
+            "Only used when mode is \"custom\". 'weight' is relative — higher = more common.",
         )
         try {
             Files.createDirectories(configDir)

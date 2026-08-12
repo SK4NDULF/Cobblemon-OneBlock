@@ -11,6 +11,7 @@ import io.github.sk4ndulf.oneblock.core.island.IslandManagerImpl
 import io.github.sk4ndulf.oneblock.core.island.IslandRepository
 import io.github.sk4ndulf.oneblock.core.island.OneBlockLootTable
 import io.github.sk4ndulf.oneblock.core.lang.ServerLang
+import io.github.sk4ndulf.oneblock.core.permission.ProtectionManager
 import io.github.sk4ndulf.oneblock.core.world.HubManager
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -59,7 +60,7 @@ object OneBlockCore : ModInitializer {
 
         OneBlockAPIHolder.set(OneBlockAPIImpl(eventBus))
         ObCommands.register()
-        HubManager.registerProtection()
+        ProtectionManager.register()
 
         PlayerBlockBreakEvents.AFTER.register { level, player, pos, state, _ ->
             if (level is ServerLevel && player is ServerPlayer) {
@@ -74,6 +75,7 @@ object OneBlockCore : ModInitializer {
 
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             HubManager.onServerStarted(server)
+            lootTable.buildPool(server)
             islandManager?.runMaintenance(server)
         }
 

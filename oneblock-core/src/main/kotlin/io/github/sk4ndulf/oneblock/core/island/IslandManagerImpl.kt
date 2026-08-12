@@ -5,6 +5,7 @@ import io.github.sk4ndulf.oneblock.api.event.OneBlockBreakEvent
 import io.github.sk4ndulf.oneblock.api.island.Island
 import io.github.sk4ndulf.oneblock.api.island.IslandManager
 import io.github.sk4ndulf.oneblock.core.OneBlockCore
+import io.github.sk4ndulf.oneblock.core.config.MainConfig
 import io.github.sk4ndulf.oneblock.core.world.GridMath
 import io.github.sk4ndulf.oneblock.core.world.OneBlockDimension
 import net.minecraft.core.BlockPos
@@ -29,12 +30,14 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
     private val activeBySlot = HashMap<Int, IslandData>()
     private val activeByPlayer = HashMap<UUID, IslandData>()
     private val activeByAnchor = HashMap<BlockPos, IslandData>()
+    private val activeByGrid = HashMap<GridMath.GridPos, IslandData>()
     private val usedSlots = HashSet<Int>()
 
     // --- loading -------------------------------------------------------------------------
 
     fun loadAll() {
-        byId.clear(); activeBySlot.clear(); activeByPlayer.clear(); activeByAnchor.clear(); usedSlots.clear()
+        byId.clear(); activeBySlot.clear(); activeByPlayer.clear(); activeByAnchor.clear()
+        activeByGrid.clear(); usedSlots.clear()
         val config = OneBlockCore.configManager.mainConfig
         for (island in repository.loadAll(config)) {
             byId[island.id] = island
@@ -51,6 +54,7 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
     private fun index(island: IslandData) {
         activeBySlot[island.slot()] = island
         activeByAnchor[island.oneBlockPos()] = island
+        activeByGrid[GridMath.slotToGrid(island.slot())] = island
         activeByPlayer[island.owner()] = island
         island.memberSet.forEach { activeByPlayer[it] = island }
     }
@@ -58,8 +62,38 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
     private fun unindex(island: IslandData) {
         activeBySlot.remove(island.slot())
         activeByAnchor.remove(island.oneBlockPos())
+        activeByGrid.remove(GridMath.slotToGrid(island.slot()))
         activeByPlayer.remove(island.owner())
         island.memberSet.forEach { activeByPlayer.remove(it) }
+    }
+
+    /** True when the position is exactly an active island's OneBlock. */
+    fun isAnchor(pos: BlockPos): Boolean = activeByAnchor.containsKey(pos)
+
+    /**
+     * The active island whose maximum footprint (max_island_size square) contains the
+     * position, or null for the void buffer between islands.
+     */
+    fun islandAt(pos: BlockPos): IslandData? {
+        val config = OneBlockCore.configManager.mainConfig
+        val spacing = config.islandSpacing
+        val gx = Math.round(pos.x.toDouble() / spacing).toInt()
+        val gz = Math.round(pos.z.toDouble() / spacing).toInt()
+        val island = activeByGrid[GridMath.GridPos(gx, gz)] ?: return null
+        val half = MainConfig.chunkAlign(config.maxIslandSize) / 2
+        val anchor = island.oneBlockPos()
+        return if (kotlin.math.abs(pos.x - anchor.x) <= half && kotlin.math.abs(pos.z - anchor.z) <= half) {
+            island
+        } else {
+            null
+        }
+    }
+
+    /** Chebyshev check: is the position inside the island's CURRENT border level area? */
+    fun isWithinCurrentBorder(island: IslandData, pos: BlockPos): Boolean {
+        val half = GridMath.borderSizeAt(island.borderLevel, OneBlockCore.configManager.mainConfig) / 2
+        val anchor = island.oneBlockPos()
+        return kotlin.math.abs(pos.x - anchor.x) <= half && kotlin.math.abs(pos.z - anchor.z) <= half
     }
 
     // --- IslandManager (public API) --------------------------------------------------------

@@ -227,6 +227,7 @@ object ObCommands {
                 server.execute {
                     if (error == null) {
                         OneBlockCore.reloadIslands()
+                        OneBlockCore.lootTable.buildPool(server)
                         source.sendSuccess({ ServerLang.msg("oneblock.reload.ok") }, true)
                     } else {
                         source.sendFailure(ServerLang.msg("oneblock.reload.failed", error))

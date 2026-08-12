@@ -3,8 +3,10 @@
 
   "oneblock.welcome.op": "OneBlock is not set up yet. Click here or run /ob setup to start the setup wizard.",
 
-  "oneblock.hub.no_break": "You can't break blocks in the hub.",
-  "oneblock.hub.no_place": "You can't place blocks in the hub.",
+  "oneblock.hub.no_modify": "The hub is protected.",
+  "oneblock.protect.no_permission": "This island belongs to someone else.",
+  "oneblock.protect.outside_border": "Outside your island border — level up to expand!",
+  "oneblock.protect.void_buffer": "You can't build between islands.",
 
   "oneblock.setup_pending": "The server is not set up yet. An admin has to finish /ob setup first.",
   "oneblock.error.not_ready": "This isn't available right now (database not connected). Ask an admin to check the console.",

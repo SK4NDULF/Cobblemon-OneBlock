@@ -3,8 +3,10 @@
 
   "oneblock.welcome.op": "OneBlock ist noch nicht eingerichtet. Klicke hier oder nutze /ob setup, um den Einrichtungs-Assistenten zu starten.",
 
-  "oneblock.hub.no_break": "Im Hub kannst du keine Blöcke abbauen.",
-  "oneblock.hub.no_place": "Im Hub kannst du keine Blöcke platzieren.",
+  "oneblock.hub.no_modify": "Der Hub ist geschützt.",
+  "oneblock.protect.no_permission": "Diese Insel gehört jemand anderem.",
+  "oneblock.protect.outside_border": "Außerhalb deiner Insel-Border — level auf, um zu erweitern!",
+  "oneblock.protect.void_buffer": "Zwischen den Inseln kannst du nicht bauen.",
 
   "oneblock.setup_pending": "Der Server ist noch nicht eingerichtet. Ein Admin muss zuerst /ob setup abschließen.",
   "oneblock.error.not_ready": "Das geht gerade nicht (keine Datenbank-Verbindung). Bitte einen Admin, in die Konsole zu schauen.",
