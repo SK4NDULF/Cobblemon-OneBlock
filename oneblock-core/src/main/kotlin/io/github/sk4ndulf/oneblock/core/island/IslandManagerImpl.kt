@@ -21,6 +21,7 @@ import net.minecraft.core.BlockPos
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.level.block.Blocks
 import java.util.Optional
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -151,6 +152,7 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
 
         val level = OneBlockDimension.level(player.server)
         if (level != null) {
+            ensureFoundation(level, island)
             placeInitialBlock(level, island)
         }
         OneBlockCore.eventBus.post(IslandCreatedEvent(island, player))
@@ -239,6 +241,7 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
      */
     fun sendToIsland(player: ServerPlayer, island: IslandData) {
         val level = OneBlockDimension.level(player.server) ?: return
+        ensureFoundation(level, island)
         if (level.getBlockState(island.oneBlockPos()).isAir) {
             placeInitialBlock(level, island)
         }
@@ -255,6 +258,44 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
 
     private fun placeInitialBlock(level: ServerLevel, island: IslandData) {
         level.setBlockAndUpdate(island.oneBlockPos(), OneBlockCore.lootTable.next(level.random))
+    }
+
+    /**
+     * Guarantees the indestructible bedrock floor one block under the OneBlock.
+     *
+     * It is the island's safety net: whatever happens to the OneBlock — a player mining
+     * it, an explosion, a rogue mod — nobody drops into the void from the anchor, and the
+     * island always has a foothold to rebuild from.
+     */
+    private fun ensureFoundation(level: ServerLevel, island: IslandData) {
+        val below = island.oneBlockPos().below()
+        if (!level.getBlockState(below).`is`(Blocks.BEDROCK)) {
+            level.setBlockAndUpdate(below, Blocks.BEDROCK.defaultBlockState())
+        }
+    }
+
+    /**
+     * Safety net for the OneBlock itself. The break hook only fires when a *player* mines
+     * it — an explosion, a command or another mod can leave the anchor empty and the
+     * island unplayable. This sweep restores anchor and foundation.
+     *
+     * Chunks are never force-loaded: an unloaded island has nobody on it, and both
+     * [sendToIsland] and the next sweep repair it as soon as it matters.
+     */
+    fun repairAnchors(server: MinecraftServer) {
+        val level = OneBlockDimension.level(server) ?: return
+        for (island in activeBySlot.values) {
+            val pos = island.oneBlockPos()
+            if (level.chunkSource.getChunkNow(pos.x shr 4, pos.z shr 4) == null) continue
+
+            ensureFoundation(level, island)
+            if (level.getBlockState(pos).isAir) {
+                placeInitialBlock(level, island)
+                OneBlockCore.LOGGER.info(
+                    "Restored the missing OneBlock of island {} at {}.", island.id, pos.toShortString(),
+                )
+            }
+        }
     }
 
     // --- maintenance (hourly + at startup) -----------------------------------------------------

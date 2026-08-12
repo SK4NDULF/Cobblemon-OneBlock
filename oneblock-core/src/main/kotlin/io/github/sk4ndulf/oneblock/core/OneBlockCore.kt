@@ -66,6 +66,10 @@ object OneBlockCore : ModInitializer {
     private const val POKEMON_CONTAINMENT_INTERVAL_TICKS = 100
     private var containmentTickCounter = 0
 
+    /** How often missing OneBlocks and their bedrock foundation are restored (60 s). */
+    private const val ANCHOR_REPAIR_INTERVAL_TICKS = 1200
+    private var anchorRepairTickCounter = 0
+
     override fun onInitialize() {
         LOGGER.info("Cobblemon OneBlock initializing...")
 
@@ -103,6 +107,7 @@ object OneBlockCore : ModInitializer {
             CobblemonIntegration.checkVersion()
             CobblemonIntegration.applySpawnMultiplier()
             OneBlockDimension.level(server)?.let { BiomeService.reapplyAll(it) }
+            islandManager?.repairAnchors(server)
             islandManager?.runMaintenance(server)
         }
 
@@ -112,6 +117,10 @@ object OneBlockCore : ModInitializer {
                 containmentTickCounter = 0
                 CobblemonIntegration.containWanderingPokemon(server)
                 BanService.enforce(server)
+            }
+            if (++anchorRepairTickCounter >= ANCHOR_REPAIR_INTERVAL_TICKS) {
+                anchorRepairTickCounter = 0
+                islandManager?.repairAnchors(server)
             }
             if (++maintenanceTickCounter >= MAINTENANCE_INTERVAL_TICKS) {
                 maintenanceTickCounter = 0

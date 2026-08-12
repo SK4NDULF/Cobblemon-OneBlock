@@ -35,7 +35,10 @@ object WorldHooks {
         val centerPos = BlockPos.containing(centerX, HubManager.HUB_Y.toDouble(), centerZ)
         val centerIsland = manager.islandAt(centerPos)
         toBlow.removeIf { pos ->
-            HubManager.isInHub(level, pos) ||
+            // The OneBlock itself is never blown up: losing it would stall the island
+            // until the repair sweep runs. The bedrock under it is explosion-proof anyway.
+            manager.isAnchor(pos) ||
+                HubManager.isInHub(level, pos) ||
                 manager.islandAt(pos) !== centerIsland ||
                 centerIsland == null ||
                 !manager.isWithinCurrentBorder(centerIsland, pos)
