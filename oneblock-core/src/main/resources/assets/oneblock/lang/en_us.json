@@ -1,0 +1,56 @@
+{
+  "oneblock.prefix": "[OneBlock] ",
+
+  "oneblock.welcome.op": "OneBlock is not set up yet. Click here or run /ob setup to start the setup wizard.",
+
+  "oneblock.hub.no_break": "You can't break blocks in the hub.",
+  "oneblock.hub.no_place": "You can't place blocks in the hub.",
+
+  "oneblock.reload.start": "Reloading configuration...",
+  "oneblock.reload.ok": "Reload complete, database connection OK.",
+  "oneblock.reload.failed": "Reload finished with errors: %s",
+
+  "oneblock.wizard.locked": "%s is already running the setup wizard.",
+  "oneblock.wizard.not_running": "No setup wizard is running. Start it with /ob setup.",
+  "oneblock.wizard.not_owner": "This wizard session belongs to %s.",
+  "oneblock.wizard.already_confirming": "All questions are answered. Confirm with /ob setup confirm or cancel with /ob setup cancel.",
+  "oneblock.wizard.question_header": "Question %d/%d",
+  "oneblock.wizard.hint.number": "Answer: /ob setup answer <value>  (range %s-%s, current %s)",
+  "oneblock.wizard.hint.bool": "Choose:",
+  "oneblock.wizard.hint.skip": "[keep %s]",
+  "oneblock.wizard.button.yes": "[Yes]",
+  "oneblock.wizard.button.no": "[No]",
+  "oneblock.wizard.button.confirm": "[Save]",
+  "oneblock.wizard.button.cancel": "[Cancel]",
+  "oneblock.wizard.invalid_number": "'%s' is not a valid number.",
+  "oneblock.wizard.out_of_range": "Value must be between %s and %s.",
+  "oneblock.wizard.invalid_bool": "Please answer yes or no.",
+  "oneblock.wizard.summary_header": "Setup summary — please review:",
+  "oneblock.wizard.summary_line": "  %s: %s",
+  "oneblock.wizard.summary_confirm": "Save these settings?",
+  "oneblock.wizard.saved": "Setup complete! Settings saved — the server is ready.",
+  "oneblock.wizard.cancelled": "Setup wizard cancelled. Nothing was saved.",
+  "oneblock.wizard.set_saved": "%s set to %s.",
+  "oneblock.wizard.set_unknown": "Unknown setting '%s'. Valid keys: %s",
+
+  "oneblock.question.hub_radius": "Hub protection radius in blocks (full spawn protection)?",
+  "oneblock.question.max_island_size": "Maximum island size at border level 8 (e.g. 1024 = 1024x1024)?",
+  "oneblock.question.max_party_size": "Maximum party size per island?",
+  "oneblock.question.trigger_event_threshold": "How many OneBlock breaks until a trigger event fires?",
+  "oneblock.question.max_biome_regions": "Maximum biome regions per island?",
+  "oneblock.question.cobblemon_spawn_multiplier": "Cobblemon spawn intensity multiplier?",
+  "oneblock.question.server_public": "Is this server public?",
+  "oneblock.question.hub_allow_building": "Allow admins to build in the hub?",
+
+  "oneblock.label.hub_radius": "Hub radius",
+  "oneblock.label.max_island_size": "Max island size",
+  "oneblock.label.max_party_size": "Max party size",
+  "oneblock.label.trigger_event_threshold": "Event threshold",
+  "oneblock.label.max_biome_regions": "Max biome regions",
+  "oneblock.label.cobblemon_spawn_multiplier": "Spawn multiplier",
+  "oneblock.label.server_public": "Public server",
+  "oneblock.label.hub_allow_building": "Hub building (admins)",
+
+  "oneblock.value.yes": "yes",
+  "oneblock.value.no": "no"
+}

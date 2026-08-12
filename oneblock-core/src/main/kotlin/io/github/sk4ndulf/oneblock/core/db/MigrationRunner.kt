@@ -27,6 +27,16 @@ class MigrationRunner(private val database: Database, private val logger: Logger
                 """.trimIndent(),
             )
         },
+        Migration(2, "meta key/value table (world-bound state like hub_platform_generated)") { _ ->
+            listOf(
+                """
+                CREATE TABLE IF NOT EXISTS meta (
+                    meta_key   VARCHAR(64) NOT NULL PRIMARY KEY,
+                    meta_value TEXT        NOT NULL
+                )
+                """.trimIndent(),
+            )
+        },
     )
 
     fun run() {

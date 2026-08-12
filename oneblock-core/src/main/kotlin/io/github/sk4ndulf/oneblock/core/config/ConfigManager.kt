@@ -63,6 +63,8 @@ class ConfigManager(val configDir: Path, private val logger: Logger) {
         val defaults = MainConfig()
         return MainConfig(
             setupCompleted = json.bool("setup_completed", defaults.setupCompleted),
+            language = json.string("language", defaults.language),
+            hubPlatformRadius = json.int("hub_platform_radius", defaults.hubPlatformRadius),
             hubRadius = json.int("hub_radius", defaults.hubRadius),
             maxIslandSize = json.int("max_island_size", defaults.maxIslandSize),
             maxPartySize = json.int("max_party_size", defaults.maxPartySize),
@@ -97,6 +99,11 @@ class ConfigManager(val configDir: Path, private val logger: Logger) {
         val json = JsonObject()
         json.put("setup_completed", JsonPrimitive(config.setupCompleted),
             "Set by the in-game wizard. Island creation stays locked while this is false.")
+        json.put("language", JsonPrimitive(config.language),
+            "Language for all player-facing messages: \"en_us\" or \"de_de\".")
+        json.put("hub_platform_radius", JsonPrimitive(config.hubPlatformRadius.toLong()),
+            "Radius of the physical hub platform (the visible circle). Range 4-64. " +
+                "Only used the first time the platform is generated.")
         json.put("hub_radius", JsonPrimitive(config.hubRadius.toLong()),
             "Hub protection radius in blocks (full spawn protection). Range 100-5000.")
         json.put("max_island_size", JsonPrimitive(config.maxIslandSize.toLong()),

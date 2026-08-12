@@ -1,12 +1,16 @@
 package io.github.sk4ndulf.oneblock.core.command
 
 import com.mojang.brigadier.Command
+import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import io.github.sk4ndulf.oneblock.core.OneBlockCore
+import io.github.sk4ndulf.oneblock.core.lang.ServerLang
+import io.github.sk4ndulf.oneblock.core.wizard.SetupWizard
+import io.github.sk4ndulf.oneblock.core.wizard.WizardQuestions
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
-import net.minecraft.network.chat.Component
+import net.minecraft.commands.SharedSuggestionProvider
 import java.util.concurrent.CompletableFuture
 
 /**
@@ -25,6 +29,47 @@ object ObCommands {
                             .requires { ObPermissions.check(it, ObPermissions.ADMIN_RELOAD, 4) }
                             .executes(::reload)
                     )
+                    .then(
+                        Commands.literal("setup")
+                            .requires { ObPermissions.check(it, ObPermissions.ADMIN_SETUP, 4) }
+                            .executes { SetupWizard.start(it.source); Command.SINGLE_SUCCESS }
+                            .then(
+                                Commands.literal("answer").then(
+                                    Commands.argument("value", StringArgumentType.greedyString())
+                                        .executes {
+                                            SetupWizard.answer(it.source, StringArgumentType.getString(it, "value"))
+                                            Command.SINGLE_SUCCESS
+                                        }
+                                )
+                            )
+                            .then(Commands.literal("skip")
+                                .executes { SetupWizard.skip(it.source); Command.SINGLE_SUCCESS })
+                            .then(Commands.literal("cancel")
+                                .executes { SetupWizard.cancel(it.source); Command.SINGLE_SUCCESS })
+                            .then(Commands.literal("confirm")
+                                .executes { SetupWizard.confirm(it.source); Command.SINGLE_SUCCESS })
+                            .then(
+                                Commands.literal("set").then(
+                                    Commands.argument("key", StringArgumentType.word())
+                                        .suggests { _, builder ->
+                                            SharedSuggestionProvider.suggest(
+                                                WizardQuestions.ALL.map { it.key }, builder,
+                                            )
+                                        }
+                                        .then(
+                                            Commands.argument("value", StringArgumentType.greedyString())
+                                                .executes {
+                                                    SetupWizard.setDirect(
+                                                        it.source,
+                                                        StringArgumentType.getString(it, "key"),
+                                                        StringArgumentType.getString(it, "value"),
+                                                    )
+                                                    Command.SINGLE_SUCCESS
+                                                }
+                                        )
+                                )
+                            )
+                    )
             )
         }
     }
@@ -33,20 +78,18 @@ object ObCommands {
         val source = context.source
         val server = source.server
 
-        source.sendSuccess({ Component.literal("[OneBlock] Reloading configuration...") }, true)
+        source.sendSuccess({ ServerLang.msg("oneblock.reload.start") }, true)
         OneBlockCore.configManager.loadAll()
+        ServerLang.load(OneBlockCore.configManager.mainConfig.language, OneBlockCore.LOGGER)
 
         // Reconnecting the pool and testing the connection blocks — keep it off the server thread.
         CompletableFuture.supplyAsync { OneBlockCore.connectDatabase() }
             .thenAccept { error ->
                 server.execute {
                     if (error == null) {
-                        source.sendSuccess(
-                            { Component.literal("[OneBlock] Reload complete, database connection OK.") },
-                            true,
-                        )
+                        source.sendSuccess({ ServerLang.msg("oneblock.reload.ok") }, true)
                     } else {
-                        source.sendFailure(Component.literal("[OneBlock] Reload finished with errors: $error"))
+                        source.sendFailure(ServerLang.msg("oneblock.reload.failed", error))
                     }
                 }
             }

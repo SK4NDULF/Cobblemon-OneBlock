@@ -7,10 +7,14 @@ import io.github.sk4ndulf.oneblock.core.command.ObCommands
 import io.github.sk4ndulf.oneblock.core.config.ConfigManager
 import io.github.sk4ndulf.oneblock.core.db.Database
 import io.github.sk4ndulf.oneblock.core.db.PlayerRepository
+import io.github.sk4ndulf.oneblock.core.lang.ServerLang
+import io.github.sk4ndulf.oneblock.core.world.HubManager
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.ClickEvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -33,12 +37,18 @@ object OneBlockCore : ModInitializer {
         LOGGER.info("Cobblemon OneBlock initializing...")
 
         configManager.loadAll()
+        ServerLang.load(configManager.mainConfig.language, LOGGER)
 
         OneBlockAPIHolder.set(OneBlockAPIImpl(eventBus))
         ObCommands.register()
+        HubManager.registerProtection()
 
         ServerLifecycleEvents.SERVER_STARTING.register { _ ->
             connectDatabase()
+        }
+
+        ServerLifecycleEvents.SERVER_STARTED.register { server ->
+            HubManager.onServerStarted(server)
         }
 
         ServerLifecycleEvents.SERVER_STOPPED.register { _ ->
@@ -46,9 +56,24 @@ object OneBlockCore : ModInitializer {
             database = null
         }
 
-        ServerPlayConnectionEvents.JOIN.register { handler, _, _ ->
+        ServerPlayConnectionEvents.JOIN.register { handler, _, server ->
             val player = handler.player
-            playerRepository?.recordSeenAsync(player.uuid, player.gameProfile.name)
+            playerRepository?.recordSeenAsync(player.uuid, player.gameProfile.name)?.thenAccept { firstJoin ->
+                if (firstJoin) {
+                    server.execute {
+                        if (!player.hasDisconnected()) {
+                            HubManager.sendToHub(player)
+                        }
+                    }
+                }
+            }
+            if (!configManager.mainConfig.setupCompleted && player.hasPermissions(4)) {
+                player.sendSystemMessage(
+                    ServerLang.msg("oneblock.welcome.op")
+                        .withStyle(ChatFormatting.GOLD)
+                        .withStyle { it.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/ob setup")) },
+                )
+            }
         }
 
         ServerPlayConnectionEvents.DISCONNECT.register { handler, _ ->

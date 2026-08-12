@@ -8,6 +8,12 @@ data class MainConfig(
     /** Whether the in-game setup wizard has been completed. Island creation is locked until then. */
     val setupCompleted: Boolean = false,
 
+    /** Language for all player-facing messages ("en_us", "de_de"). */
+    val language: String = "en_us",
+
+    /** Radius of the physical hub platform in blocks (visual platform, not the protection zone). */
+    val hubPlatformRadius: Int = 16,
+
     /** Hub protection radius in blocks (full spawn protection). Wizard question 1. Range 100..5000. */
     val hubRadius: Int = 1000,
 
@@ -59,6 +65,7 @@ data class MainConfig(
 
     /** Returns a copy with every value clamped to its valid wizard range (chunk-aligned where relevant). */
     fun validated(): MainConfig = copy(
+        hubPlatformRadius = hubPlatformRadius.coerceIn(4, 64),
         hubRadius = hubRadius.coerceIn(100, 5000),
         maxIslandSize = chunkAlign(maxIslandSize.coerceIn(64, 10000)),
         maxPartySize = maxPartySize.coerceIn(1, 20),
