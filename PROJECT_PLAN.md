@@ -201,15 +201,15 @@ Die Phasen bauen aufeinander auf. Jede Phase wird mit Build + Smoke-Test abgesch
 - [x] Öffentliches `PartyManager`-Interface
 
 ### Phase 6 — Progression (Border-Level 1-8)
-- [ ] Punkte-Formel: **nur Mining, alle Party-Members zählen für die Insel** (kein Playtime);
+- [x] Punkte-Formel: **nur Mining, alle Party-Members zählen für die Insel** (kein Playtime);
       optional abnehmender Ertrag pro zusätzlichem Member (Config)
-- [ ] Border-Level-Interpolation: Level 1 fester kleiner Startwert (Default 16×16),
+- [x] Border-Level-Interpolation: Level 1 fester kleiner Startwert (Default 16×16),
       Level 8 = Wizard-Wert, Level 2-7 exponentiell interpoliert (Default, pro Level
       in der Config manuell überschreibbar; alle Werte 16er-aligned)
-- [ ] Border-Expansion-Trigger + Announcement (Hologram/Actionbar)
-- [ ] Progression-Reset-Verhalten bei `/ob reset`
-- [ ] `BorderLevelUpEvent` über API-Bus
-- [ ] Öffentliches `ProgressionManager`-Interface
+- [x] Border-Expansion-Trigger + Announcement (Hologram/Actionbar)
+- [x] Progression-Reset-Verhalten bei `/ob reset`
+- [x] `BorderLevelUpEvent` über API-Bus
+- [x] Öffentliches `ProgressionManager`-Interface
 
 ### Phase 7 — Trigger Events (als Extension-Point)
 - [ ] Break-Counter pro Island
