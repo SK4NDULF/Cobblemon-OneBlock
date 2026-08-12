@@ -34,6 +34,7 @@ Start the server, join as an operator and run `/ob setup`. That's it.
 
 | Document | For |
 |---|---|
+| [`HANDOFF.md`](HANDOFF.md) | Current status, what is verified, what still needs in-game testing |
 | [`ADMIN.md`](ADMIN.md) | Server admins — installation, wizard, config files, permission nodes, backups, MySQL |
 | [`API.md`](API.md) | Addon developers — events, extension points, semver policy |
 | [`PROJECT_PLAN.md`](PROJECT_PLAN.md) | Design decisions and roadmap (German) |
