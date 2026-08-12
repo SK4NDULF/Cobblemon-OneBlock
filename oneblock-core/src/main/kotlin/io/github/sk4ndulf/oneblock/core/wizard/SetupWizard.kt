@@ -39,6 +39,14 @@ object SetupWizard {
         askCurrent(source, fresh)
     }
 
+    /**
+     * The island grid's spacing derives from `max_island_size`. Changing it once islands
+     * exist moves every anchor point, so existing builds would end up in the wrong place.
+     * Refuse the change instead of quietly corrupting the world.
+     */
+    private fun isLockedByExistingIslands(key: String): Boolean =
+        key == "max_island_size" && (OneBlockCore.islandManager?.activeIslands()?.isNotEmpty() == true)
+
     fun answer(source: CommandSourceStack, raw: String) {
         val active = owned(source) ?: return
         if (active.confirming) {
@@ -46,6 +54,13 @@ object SetupWizard {
             return
         }
         val question = WizardQuestions.ALL[active.index]
+        if (isLockedByExistingIslands(question.key) &&
+            raw.trim().toIntOrNull() != active.config.maxIslandSize
+        ) {
+            source.sendFailure(prefixed(ServerLang.msg("oneblock.wizard.locked_setting")))
+            advance(source, active)
+            return
+        }
         when (val result = question.apply(active.config, raw)) {
             is AnswerResult.Error -> {
                 source.sendFailure(prefixed(Component.literal(result.message)))
@@ -89,6 +104,10 @@ object SetupWizard {
         val question = WizardQuestions.byKey(key)
         if (question == null) {
             source.sendFailure(prefixed(ServerLang.msg("oneblock.wizard.set_unknown", key, WizardQuestions.validKeys)))
+            return
+        }
+        if (isLockedByExistingIslands(key)) {
+            source.sendFailure(prefixed(ServerLang.msg("oneblock.wizard.locked_setting")))
             return
         }
         when (val result = question.apply(OneBlockCore.configManager.mainConfig, raw)) {

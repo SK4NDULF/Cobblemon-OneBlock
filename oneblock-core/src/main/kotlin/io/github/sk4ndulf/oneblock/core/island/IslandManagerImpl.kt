@@ -218,10 +218,13 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
         if (level.dimension() != OneBlockDimension.WORLD_KEY) return
         val island = activeByAnchor[pos] ?: return
 
+        // Count the break BEFORE asking loot providers, so a provider sees a break count
+        // that includes the break it is deciding for (that is what API.md promises).
+        island.breakCount++
+
         // Addon loot providers get the first say; otherwise the configured pool decides.
         val next = LootRegistryImpl.query(island, level) ?: OneBlockCore.lootTable.next(level.random)
         level.setBlockAndUpdate(pos, next)
-        island.breakCount++
         ProgressionService.onBreak(island, level.server)
         TriggerEventService.onBreak(island, level)
         repository.updateProgressAsync(island.id, island.breakCount, island.points, island.borderLevel)

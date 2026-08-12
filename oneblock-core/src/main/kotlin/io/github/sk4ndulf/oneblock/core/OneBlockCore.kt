@@ -132,11 +132,12 @@ object OneBlockCore : ModInitializer {
         ServerPlayConnectionEvents.JOIN.register { handler, _, server ->
             val player = handler.player
             playerRepository?.recordSeenAsync(player.uuid, player.gameProfile.name)?.thenAccept { firstJoin ->
-                if (firstJoin) {
-                    server.execute {
-                        if (!player.hasDisconnected()) {
-                            HubManager.sendToHub(player)
-                        }
+                server.execute {
+                    if (player.hasDisconnected()) return@execute
+                    if (firstJoin) {
+                        HubManager.sendToHub(player)
+                    } else {
+                        rescueStrandedPlayer(player)
                     }
                 }
             }
@@ -161,6 +162,23 @@ object OneBlockCore : ModInitializer {
      * (Re-)connects the database from the current database config.
      * Returns null on success, otherwise a human-readable error message.
      */
+    /**
+     * Sends a player back to the hub when they log in inside the OneBlock world without
+     * owning or belonging to an island there — for example after their island was
+     * archived by the inactivity purge while they were away. Without this they would
+     * stand in dead space, unable to build, with no explanation.
+     */
+    private fun rescueStrandedPlayer(player: ServerPlayer) {
+        if (player.level().dimension() != OneBlockDimension.WORLD_KEY) return
+        if (islandManager?.islandDataOf(player.uuid) != null) return
+        if (HubManager.isInHubArea(player.blockPosition())) return
+
+        HubManager.sendToHub(player)
+        player.sendSystemMessage(
+            ServerLang.msg("oneblock.island.stranded").withStyle(ChatFormatting.GOLD),
+        )
+    }
+
     /** (Re-)creates the island registry from the database. Server thread only. */
     fun reloadIslands() {
         val db = database

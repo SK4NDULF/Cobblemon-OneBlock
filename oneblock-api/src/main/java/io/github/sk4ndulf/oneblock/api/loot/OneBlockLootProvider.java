@@ -25,6 +25,9 @@ public interface OneBlockLootProvider {
     /**
      * The block the OneBlock should become, or empty to defer.
      *
+     * <p>{@code island.breakCount()} already includes the break being decided here, so
+     * {@code breakCount() % 500 == 0} fires on exactly every 500th break.</p>
+     *
      * @param island the island whose OneBlock was broken (level, break count, party, ...)
      * @param level  the OneBlock world
      */

@@ -77,6 +77,8 @@
   "oneblock.settings.visitor_battle": "Visitors may battle",
   "oneblock.settings.saved": "%s: %s",
   "oneblock.island.none_other": "%s has no island.",
+  "oneblock.island.stranded": "Your island is gone, so you were moved to spawn. Start fresh with /ob create.",
+  "oneblock.wizard.locked_setting": "This setting is locked because islands already exist — changing it would move every island.",
   "oneblock.buff.unknown": "Unknown buff '%s'. Available: %s",
   "oneblock.buff.granted": "Buff %s (%s) granted for %d minutes to %s's island.",
   "oneblock.buff.received": "Your island received the buff %s (%s) for %d minutes!",

@@ -45,7 +45,10 @@ object BiomeEditor {
         while (x <= region.maxX) {
             var z = region.minZ
             while (z <= region.maxZ) {
-                val chunk = level.getChunk(x shr 4, z shr 4) as? LevelChunk
+                // getChunkNow never generates or loads: an unloaded chunk keeps the biome
+                // it was saved with, so skipping it is correct — and it stops a server with
+                // many biome regions from force-loading half the map on startup.
+                val chunk = level.chunkSource.getChunkNow(x shr 4, z shr 4)
                 if (chunk == null) {
                     z += BiomeRegion.BIOME_CELL
                     continue
@@ -94,7 +97,7 @@ object BiomeEditor {
     }
 
     private fun resendChunk(level: ServerLevel, chunkPos: ChunkPos) {
-        val chunk = level.getChunk(chunkPos.x, chunkPos.z) as? LevelChunk ?: return
+        val chunk = level.chunkSource.getChunkNow(chunkPos.x, chunkPos.z) ?: return
         val watchers = level.chunkSource.chunkMap.getPlayers(chunkPos, false)
         if (watchers.isEmpty()) return
         val packet = ClientboundLevelChunkWithLightPacket(chunk, level.lightEngine, null, null)

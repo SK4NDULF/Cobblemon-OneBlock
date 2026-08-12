@@ -173,11 +173,11 @@ object TriggerEventService {
                 type.start(context)
             } catch (e: Exception) {
                 OneBlockCore.LOGGER.error("Trigger event {} threw during start — dropping trigger.", type.id(), e)
-                consumePending(entry)
+                consumePending(iterator, entry)
                 continue
             }
             active[island.id] = Active(type, instance, context, serverTicks)
-            consumePending(entry)
+            consumePending(iterator, entry)
             announce(island, server, "oneblock.event.start", type.displayName(), island.borderLevel, sound = true)
             OneBlockCore.eventBus.post(TriggerEventStartEvent(island, type.id(), context.difficulty()))
             OneBlockCore.LOGGER.info("Trigger event {} started on island {} (difficulty {}).",
@@ -185,8 +185,16 @@ object TriggerEventService {
         }
     }
 
-    private fun consumePending(entry: MutableMap.MutableEntry<Long, Int>) {
-        if (entry.value <= 1) pendingCount.remove(entry.key) else entry.setValue(entry.value - 1)
+    /**
+     * Consumes one queued trigger. The removal MUST go through the iterator — calling
+     * `pendingCount.remove(...)` here throws ConcurrentModificationException as soon as a
+     * second island has a trigger queued.
+     */
+    private fun consumePending(
+        iterator: MutableIterator<MutableMap.MutableEntry<Long, Int>>,
+        entry: MutableMap.MutableEntry<Long, Int>,
+    ) {
+        if (entry.value <= 1) iterator.remove() else entry.setValue(entry.value - 1)
     }
 
     private fun pickRandomType(level: ServerLevel): TriggerEventType {

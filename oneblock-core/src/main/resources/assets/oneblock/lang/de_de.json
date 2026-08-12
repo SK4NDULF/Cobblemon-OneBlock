@@ -77,6 +77,8 @@
   "oneblock.settings.visitor_battle": "Besucher dürfen kämpfen",
   "oneblock.settings.saved": "%s: %s",
   "oneblock.island.none_other": "%s hat keine Insel.",
+  "oneblock.island.stranded": "Deine Insel existiert nicht mehr, daher wurdest du zum Spawn gebracht. Starte neu mit /ob create.",
+  "oneblock.wizard.locked_setting": "Diese Einstellung ist gesperrt, weil bereits Inseln existieren — eine Änderung würde alle Inseln verschieben.",
   "oneblock.buff.unknown": "Unbekannter Buff '%s'. Verfügbar: %s",
   "oneblock.buff.granted": "Buff %s (%s) für %d Minuten an die Insel von %s vergeben.",
   "oneblock.buff.received": "Deine Insel hat den Buff %s (%s) für %d Minuten erhalten!",

@@ -15,7 +15,11 @@ object Confirmations {
     private val pending = HashMap<UUID, Pending>()
 
     fun request(player: UUID, action: String) {
-        pending[player] = Pending(action, System.currentTimeMillis() + TIMEOUT_MILLIS)
+        val now = System.currentTimeMillis()
+        // Drop anything that timed out: a request that is never confirmed would otherwise
+        // stay in the map forever.
+        pending.values.removeIf { it.expiresAt < now }
+        pending[player] = Pending(action, now + TIMEOUT_MILLIS)
     }
 
     /** Consumes a matching, unexpired confirmation. Returns false if there is none. */
