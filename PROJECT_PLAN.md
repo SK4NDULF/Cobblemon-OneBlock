@@ -164,20 +164,21 @@ Die Phasen bauen aufeinander auf. Jede Phase wird mit Build + Smoke-Test abgesch
 - [x] `/ob setup`-Command zum erneuten Aufrufen des Wizards
 
 ### Phase 3 — Island-Grid + OneBlock-Kern
-- [ ] Spiral-Placement-Algorithmus für Anchor-Punkte
-- [ ] Slot-Reservierung/-Freigabe (freie Slots zuerst wiederverwenden)
-- [ ] Zentrale Spacing/Größen-Utility-Klasse (Formel aus Abschnitt 2, inkl. 16er-Alignment, EINE Stelle im Code)
-- [ ] OneBlock-Position-Tracking + Regeneration-Hook (BlockBreakEvent)
-- [ ] Weighted-Random-Loottable für den OneBlock-Output
-- [ ] `/ob home` (zur eigenen Insel) + `/ob spawn` (zum Hub) inkl. sicherer Teleport-Ziele
-- [ ] Void-Tod-Handling: Respawn am Insel-Spawn (bzw. Hub, wenn keine Insel)
-- [ ] `IslandCreatedEvent`, `OneBlockBreakEvent` über den API-Event-Bus
-- [ ] `/ob create`, `/ob reset`, `/ob delete`
-- [ ] Reset-Mechanik: Party bekommt neuen Slot; alter Slot bleibt 7 Tage als "archiviert" liegen
+- [x] Spiral-Placement-Algorithmus für Anchor-Punkte
+- [ ] Slot-Wiederverwendung nach Purge — WARTET auf Chunk-Clearing, sonst erben neue
+      Inseln die Bauten der alten (aktuell: immer frische Slots, Spirale ist unendlich)
+- [x] Zentrale Spacing/Größen-Utility-Klasse (Formel aus Abschnitt 2, inkl. 16er-Alignment, EINE Stelle im Code)
+- [x] OneBlock-Position-Tracking + Regeneration-Hook (BlockBreakEvent)
+- [x] Weighted-Random-Loottable für den OneBlock-Output
+- [x] `/ob home` (zur eigenen Insel) + `/ob spawn` (zum Hub) inkl. sicherer Teleport-Ziele
+- [x] Void-Tod-Handling: Respawn am Insel-Spawn (bzw. Hub, wenn keine Insel)
+- [x] `IslandCreatedEvent`, `OneBlockBreakEvent` über den API-Event-Bus
+- [x] `/ob create`, `/ob reset`, `/ob delete`
+- [x] Reset-Mechanik: Party bekommt neuen Slot; alter Slot bleibt 7 Tage als "archiviert" liegen
       (DB-Flag, kein File-Kopieren), Restore = Flag zurücksetzen, danach Purge
-- [ ] Inaktivitäts-Purge: Inseln nach konfigurierbarer Owner-Inaktivität archivieren/löschen
+- [x] Inaktivitäts-Purge: Inseln nach konfigurierbarer Owner-Inaktivität archivieren/löschen
       (`last_seen` pro Spieler ab Tag 1 im Schema)
-- [ ] Öffentliches `IslandManager`-Interface
+- [x] Öffentliches `IslandManager`-Interface
 
 ### Phase 4 — Permission-System
 - [ ] Owner/Member/Public-Rollen-Enum (Public-Definition aus Abschnitt 2)
