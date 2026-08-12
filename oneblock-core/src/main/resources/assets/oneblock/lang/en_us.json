@@ -6,6 +6,22 @@
   "oneblock.hub.no_break": "You can't break blocks in the hub.",
   "oneblock.hub.no_place": "You can't place blocks in the hub.",
 
+  "oneblock.setup_pending": "The server is not set up yet. An admin has to finish /ob setup first.",
+  "oneblock.error.not_ready": "This isn't available right now (database not connected). Ask an admin to check the console.",
+
+  "oneblock.island.created": "Your island is ready — break the block, again and again!",
+  "oneblock.island.already_have": "You already have an island. Teleport with /ob home.",
+  "oneblock.island.none": "You don't have an island yet. Create one with /ob create.",
+  "oneblock.island.only_owner": "Only the island owner can do that.",
+  "oneblock.island.teleported_home": "Welcome home!",
+  "oneblock.island.teleported_spawn": "Teleported to spawn.",
+  "oneblock.island.reset_confirm": "This archives your current island and starts a fresh one. It stays restorable for %d days.",
+  "oneblock.island.delete_confirm": "This archives your island and sends you to spawn. It stays restorable for %d days.",
+  "oneblock.island.reset_done": "Fresh island — good luck!",
+  "oneblock.island.delete_done": "Island deleted. You can start again anytime with /ob create.",
+  "oneblock.confirm.button": "[Confirm]",
+  "oneblock.confirm.expired": "Nothing to confirm (or the confirmation expired).",
+
   "oneblock.reload.start": "Reloading configuration...",
   "oneblock.reload.ok": "Reload complete, database connection OK.",
   "oneblock.reload.failed": "Reload finished with errors: %s",

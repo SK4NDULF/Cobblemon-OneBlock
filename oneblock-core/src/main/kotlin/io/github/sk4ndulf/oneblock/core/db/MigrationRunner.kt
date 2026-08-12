@@ -37,6 +37,28 @@ class MigrationRunner(private val database: Database, private val logger: Logger
                 """.trimIndent(),
             )
         },
+        Migration(3, "islands table (grid slots, state machine ACTIVE/ARCHIVED/PURGED)") { dialect ->
+            val idColumn = when (dialect) {
+                SqlDialect.SQLITE -> "id INTEGER PRIMARY KEY AUTOINCREMENT"
+                SqlDialect.MYSQL -> "id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY"
+            }
+            listOf(
+                """
+                CREATE TABLE IF NOT EXISTS islands (
+                    $idColumn,
+                    slot         INT         NOT NULL,
+                    owner_uuid   CHAR(36)    NOT NULL,
+                    state        VARCHAR(16) NOT NULL,
+                    border_level INT         NOT NULL,
+                    break_count  BIGINT      NOT NULL,
+                    created_at   BIGINT      NOT NULL,
+                    archived_at  BIGINT
+                )
+                """.trimIndent(),
+                "CREATE INDEX idx_islands_owner ON islands(owner_uuid)",
+                "CREATE INDEX idx_islands_slot ON islands(slot)",
+            )
+        },
     )
 
     fun run() {

@@ -13,6 +13,11 @@ object ObPermissions {
 
     // Node constants — one node per command, defined the moment the command exists.
     const val COMMAND_ROOT = "oneblock.command"
+    const val COMMAND_CREATE = "oneblock.command.create"
+    const val COMMAND_HOME = "oneblock.command.home"
+    const val COMMAND_SPAWN = "oneblock.command.spawn"
+    const val COMMAND_RESET = "oneblock.command.reset"
+    const val COMMAND_DELETE = "oneblock.command.delete"
     const val ADMIN_RELOAD = "oneblock.admin.reload"
     const val ADMIN_SETUP = "oneblock.admin.setup"
 

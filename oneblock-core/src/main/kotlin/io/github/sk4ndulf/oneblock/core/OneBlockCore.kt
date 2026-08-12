@@ -7,14 +7,21 @@ import io.github.sk4ndulf.oneblock.core.command.ObCommands
 import io.github.sk4ndulf.oneblock.core.config.ConfigManager
 import io.github.sk4ndulf.oneblock.core.db.Database
 import io.github.sk4ndulf.oneblock.core.db.PlayerRepository
+import io.github.sk4ndulf.oneblock.core.island.IslandManagerImpl
+import io.github.sk4ndulf.oneblock.core.island.IslandRepository
+import io.github.sk4ndulf.oneblock.core.island.OneBlockLootTable
 import io.github.sk4ndulf.oneblock.core.lang.ServerLang
 import io.github.sk4ndulf.oneblock.core.world.HubManager
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.ClickEvent
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.server.level.ServerPlayer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -30,25 +37,51 @@ object OneBlockCore : ModInitializer {
     var database: Database? = null
         private set
 
+    @Volatile
+    var islandManager: IslandManagerImpl? = null
+        private set
+
+    val lootTable = OneBlockLootTable(FabricLoader.getInstance().configDir.resolve(MOD_ID), LOGGER)
+
     val playerRepository: PlayerRepository?
         get() = database?.let { PlayerRepository(it) }
+
+    /** Hourly maintenance interval in ticks (20 t/s * 3600 s). */
+    private const val MAINTENANCE_INTERVAL_TICKS = 72_000
+    private var maintenanceTickCounter = 0
 
     override fun onInitialize() {
         LOGGER.info("Cobblemon OneBlock initializing...")
 
         configManager.loadAll()
         ServerLang.load(configManager.mainConfig.language, LOGGER)
+        lootTable.load()
 
         OneBlockAPIHolder.set(OneBlockAPIImpl(eventBus))
         ObCommands.register()
         HubManager.registerProtection()
 
+        PlayerBlockBreakEvents.AFTER.register { level, player, pos, state, _ ->
+            if (level is ServerLevel && player is ServerPlayer) {
+                islandManager?.handleBreak(level, player, pos, state)
+            }
+        }
+
         ServerLifecycleEvents.SERVER_STARTING.register { _ ->
             connectDatabase()
+            reloadIslands()
         }
 
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             HubManager.onServerStarted(server)
+            islandManager?.runMaintenance(server)
+        }
+
+        ServerTickEvents.END_SERVER_TICK.register { server ->
+            if (++maintenanceTickCounter >= MAINTENANCE_INTERVAL_TICKS) {
+                maintenanceTickCounter = 0
+                islandManager?.runMaintenance(server)
+            }
         }
 
         ServerLifecycleEvents.SERVER_STOPPED.register { _ ->
@@ -88,9 +121,20 @@ object OneBlockCore : ModInitializer {
      * (Re-)connects the database from the current database config.
      * Returns null on success, otherwise a human-readable error message.
      */
+    /** (Re-)creates the island registry from the database. Server thread only. */
+    fun reloadIslands() {
+        val db = database
+        if (db == null) {
+            islandManager = null
+            return
+        }
+        islandManager = IslandManagerImpl(IslandRepository(db)).also { it.loadAll() }
+    }
+
     fun connectDatabase(): String? {
         database?.close()
         database = null
+        islandManager = null
         return try {
             val db = Database.connect(configManager.databaseConfig, configManager.configDir, LOGGER)
             db.runMigrations()

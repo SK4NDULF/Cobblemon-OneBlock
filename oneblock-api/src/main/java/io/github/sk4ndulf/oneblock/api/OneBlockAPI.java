@@ -2,6 +2,7 @@ package io.github.sk4ndulf.oneblock.api;
 
 import io.github.sk4ndulf.oneblock.api.event.OneBlockEventBus;
 import io.github.sk4ndulf.oneblock.api.internal.OneBlockAPIHolder;
+import io.github.sk4ndulf.oneblock.api.island.IslandManager;
 
 /**
  * Static access point for the Cobblemon OneBlock API.
@@ -38,6 +39,11 @@ public interface OneBlockAPI {
      * progression, party and trigger-event activity.
      */
     OneBlockEventBus eventBus();
+
+    /**
+     * Read access to active islands. Only call on the server thread.
+     */
+    IslandManager islandManager();
 
     /**
      * Semantic version of the API implementation (e.g. {@code "0.1.0"}).

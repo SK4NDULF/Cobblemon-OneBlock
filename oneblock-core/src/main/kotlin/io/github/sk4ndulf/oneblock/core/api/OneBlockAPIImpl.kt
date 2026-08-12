@@ -2,6 +2,8 @@ package io.github.sk4ndulf.oneblock.core.api
 
 import io.github.sk4ndulf.oneblock.api.OneBlockAPI
 import io.github.sk4ndulf.oneblock.api.event.OneBlockEventBus
+import io.github.sk4ndulf.oneblock.api.island.IslandManager
+import io.github.sk4ndulf.oneblock.core.OneBlockCore
 
 class OneBlockAPIImpl(private val eventBus: OneBlockEventBus) : OneBlockAPI {
 
@@ -10,6 +12,10 @@ class OneBlockAPIImpl(private val eventBus: OneBlockEventBus) : OneBlockAPI {
     }
 
     override fun eventBus(): OneBlockEventBus = eventBus
+
+    override fun islandManager(): IslandManager =
+        OneBlockCore.islandManager
+            ?: throw IllegalStateException("IslandManager is not available before the server has started.")
 
     override fun apiVersion(): String = API_VERSION
 }

@@ -6,6 +6,22 @@
   "oneblock.hub.no_break": "Im Hub kannst du keine Blöcke abbauen.",
   "oneblock.hub.no_place": "Im Hub kannst du keine Blöcke platzieren.",
 
+  "oneblock.setup_pending": "Der Server ist noch nicht eingerichtet. Ein Admin muss zuerst /ob setup abschließen.",
+  "oneblock.error.not_ready": "Das geht gerade nicht (keine Datenbank-Verbindung). Bitte einen Admin, in die Konsole zu schauen.",
+
+  "oneblock.island.created": "Deine Insel ist bereit — bau den Block ab, immer wieder!",
+  "oneblock.island.already_have": "Du hast bereits eine Insel. Teleportiere dich mit /ob home.",
+  "oneblock.island.none": "Du hast noch keine Insel. Erstelle eine mit /ob create.",
+  "oneblock.island.only_owner": "Das kann nur der Insel-Besitzer.",
+  "oneblock.island.teleported_home": "Willkommen zuhause!",
+  "oneblock.island.teleported_spawn": "Zum Spawn teleportiert.",
+  "oneblock.island.reset_confirm": "Das archiviert deine aktuelle Insel und startet eine neue. Sie bleibt %d Tage wiederherstellbar.",
+  "oneblock.island.delete_confirm": "Das archiviert deine Insel und schickt dich zum Spawn. Sie bleibt %d Tage wiederherstellbar.",
+  "oneblock.island.reset_done": "Frische Insel — viel Erfolg!",
+  "oneblock.island.delete_done": "Insel gelöscht. Du kannst jederzeit mit /ob create neu starten.",
+  "oneblock.confirm.button": "[Bestätigen]",
+  "oneblock.confirm.expired": "Nichts zu bestätigen (oder die Bestätigung ist abgelaufen).",
+
   "oneblock.reload.start": "Konfiguration wird neu geladen...",
   "oneblock.reload.ok": "Reload abgeschlossen, Datenbank-Verbindung OK.",
   "oneblock.reload.failed": "Reload mit Fehlern beendet: %s",
