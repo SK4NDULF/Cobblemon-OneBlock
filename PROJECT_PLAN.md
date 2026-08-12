@@ -212,18 +212,18 @@ Die Phasen bauen aufeinander auf. Jede Phase wird mit Build + Smoke-Test abgesch
 - [x] Öffentliches `ProgressionManager`-Interface
 
 ### Phase 7 — Trigger Events (als Extension-Point)
-- [ ] Break-Counter pro Island
-- [ ] Event-Spawn-Trigger nach konfigurierbarer Schwelle
-- [ ] Countdown-Announcement ("Event in 10 Blocks")
-- [ ] Core-Event-Typen: Mob Waves, Bossfights, Ressourcen-Burst
-- [ ] Schwierigkeits-Skalierung mit Border-Level (NICHT Reward-Skalierung, NICHT Spielerzahl)
-- [ ] Events laufen für alle anwesenden Insel-Mitglieder (Owner muss nicht online sein)
-- [ ] Event-Cooldown zwischen Events
-- [ ] Failure-Zustand + Mob-Cleanup-Timer
-- [ ] Event-Queue für überlappende Trigger
-- [ ] `TriggerEventStartEvent`/`EndEvent`/`FailEvent` über API-Bus
-- [ ] Extension-Registry: `OneBlockAPI.registerEventType(...)` für Dritt-Mods
-- [ ] Öffentliches `EventManager`-Interface
+- [x] Break-Counter pro Island
+- [x] Event-Spawn-Trigger nach konfigurierbarer Schwelle
+- [x] Countdown-Announcement ("Event in 10 Blocks")
+- [x] Core-Event-Typen: Mob Waves, Bossfights, Ressourcen-Burst
+- [x] Schwierigkeits-Skalierung mit Border-Level (NICHT Reward-Skalierung, NICHT Spielerzahl)
+- [x] Events laufen für alle anwesenden Insel-Mitglieder (Owner muss nicht online sein)
+- [x] Event-Cooldown zwischen Events
+- [x] Failure-Zustand + Mob-Cleanup-Timer
+- [x] Event-Queue für überlappende Trigger
+- [x] `TriggerEventStartEvent`/`EndEvent`/`FailEvent` über API-Bus
+- [x] Extension-Registry: `OneBlockAPI.registerEventType(...)` für Dritt-Mods
+- [x] Öffentliches `EventManager`-Interface
 
 ### Phase 8 — Cobblemon-Integration
 - [ ] Border-begrenzte Spawns: Cobblemon-Spawns, die außerhalb der Insel-Border des
