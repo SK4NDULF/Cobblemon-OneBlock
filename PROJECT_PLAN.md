@@ -137,31 +137,31 @@ Besucher (Public) auf fremden Inseln dürfen: **betreten und schauen — sonst n
 Die Phasen bauen aufeinander auf. Jede Phase wird mit Build + Smoke-Test abgeschlossen, bevor die nächste beginnt.
 
 ### Phase 1 — Fundament & API-Grundgerüst
-- [ ] Gradle-Multi-Module-Setup: `oneblock-api` (Java) + `oneblock-core` (Kotlin)
-- [ ] `fabric.mod.json` für beide Module, Cobblemon als harte Dependency in `-core`
-- [ ] Maven-Publishing für `oneblock-api` vorbereiten (Addon-Devs entwickeln gegen das Artefakt)
-- [ ] `OneBlockAPI`-Singleton-Zugriffspunkt im `-api`-Modul
-- [ ] Event-Bus-Grundgerüst (Registrierung + Dispatch)
-- [ ] HikariCP-Connection-Pool + async Read/Write-Wrapper (SQLite-Default, MySQL via Config)
-- [ ] DB-Schema + Migration-System (versioniert ab Tag 1, beide SQL-Dialekte)
-- [ ] Config-System (JSON5) mit vollständiger Feldstruktur
-- [ ] Strukturiertes Logging-Setup
-- [ ] Command-Unterbau (`/ob`-Root, Permission-Node-Registrierung, LuckPerms-optional-Abstraktion)
+- [x] Gradle-Multi-Module-Setup: `oneblock-api` (Java) + `oneblock-core` (Kotlin)
+- [x] `fabric.mod.json` für beide Module, Cobblemon als harte Dependency in `-core`
+- [x] Maven-Publishing für `oneblock-api` vorbereiten (Addon-Devs entwickeln gegen das Artefakt)
+- [x] `OneBlockAPI`-Singleton-Zugriffspunkt im `-api`-Modul
+- [x] Event-Bus-Grundgerüst (Registrierung + Dispatch)
+- [x] HikariCP-Connection-Pool + async Read/Write-Wrapper (SQLite-Default, MySQL via Config)
+- [x] DB-Schema + Migration-System (versioniert ab Tag 1, beide SQL-Dialekte)
+- [x] Config-System (JSON5) mit vollständiger Feldstruktur
+- [x] Strukturiertes Logging-Setup
+- [x] Command-Unterbau (`/ob`-Root, Permission-Node-Registrierung, LuckPerms-optional-Abstraktion)
 
 ### Phase 2 — First-Launch Setup & Wizard
-- [ ] Void-Dimension `oneblock:world` registrieren (immer, kein Dual-Path)
-- [ ] Kreisförmige Spawn-Plattform bei (0,64,0) generieren
-- [ ] Hub-Protection: Break/Place innerhalb Hub-Radius canceln (Flag `hub_allow_building` für Admins)
-- [ ] "Setup-Pending"-Zustand (sperrt Island-Erstellung bis Wizard abgeschlossen)
-- [ ] `/ob reload`-Command inkl. automatischem DB-Verbindungstest
-- [ ] Welcome-Message beim ersten OP-Join
-- [ ] Chat-basierter In-Game-Wizard: State-Machine für die 8 Gameplay-Fragen (Abschnitt 6)
-- [ ] Wizard-Lock (nur ein OP führt den Wizard gleichzeitig)
-- [ ] Command-Alternative pro Frage: `/ob setup set <key> <value>` — auch aus der Konsole bedienbar
-- [ ] Wizard-Validierung + Skip/Default-Handling pro Frage
-- [ ] Wizard-Zusammenfassung + Bestätigung vor dem Speichern
-- [ ] Save-to-Config + automatischer Full-Reload nach Bestätigung
-- [ ] `/ob setup`-Command zum erneuten Aufrufen des Wizards
+- [x] Void-Dimension `oneblock:world` registrieren (immer, kein Dual-Path)
+- [x] Kreisförmige Spawn-Plattform bei (0,64,0) generieren
+- [x] Hub-Protection: Break/Place innerhalb Hub-Radius canceln (Flag `hub_allow_building` für Admins)
+- [x] "Setup-Pending"-Zustand (sperrt Island-Erstellung bis Wizard abgeschlossen)
+- [x] `/ob reload`-Command inkl. automatischem DB-Verbindungstest
+- [x] Welcome-Message beim ersten OP-Join
+- [x] Chat-basierter In-Game-Wizard: State-Machine für die 8 Gameplay-Fragen (Abschnitt 6)
+- [x] Wizard-Lock (nur ein OP führt den Wizard gleichzeitig)
+- [x] Command-Alternative pro Frage: `/ob setup set <key> <value>` — auch aus der Konsole bedienbar
+- [x] Wizard-Validierung + Skip/Default-Handling pro Frage
+- [x] Wizard-Zusammenfassung + Bestätigung vor dem Speichern
+- [x] Save-to-Config + automatischer Full-Reload nach Bestätigung
+- [x] `/ob setup`-Command zum erneuten Aufrufen des Wizards
 
 ### Phase 3 — Island-Grid + OneBlock-Kern
 - [ ] Spiral-Placement-Algorithmus für Anchor-Punkte
