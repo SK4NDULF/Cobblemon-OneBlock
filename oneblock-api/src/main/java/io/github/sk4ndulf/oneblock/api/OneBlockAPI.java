@@ -6,6 +6,7 @@ import io.github.sk4ndulf.oneblock.api.island.IslandManager;
 import io.github.sk4ndulf.oneblock.api.party.PartyManager;
 import io.github.sk4ndulf.oneblock.api.permission.PermissionManager;
 import io.github.sk4ndulf.oneblock.api.progression.ProgressionManager;
+import io.github.sk4ndulf.oneblock.api.trigger.EventManager;
 
 /**
  * Static access point for the Cobblemon OneBlock API.
@@ -62,6 +63,12 @@ public interface OneBlockAPI {
      * Border-level progression queries. Only call on the server thread.
      */
     ProgressionManager progressionManager();
+
+    /**
+     * Trigger event registry and state. Register custom event types here during
+     * your mod's initialization. Only call query methods on the server thread.
+     */
+    EventManager eventManager();
 
     /**
      * Semantic version of the API implementation (e.g. {@code "0.1.0"}).

@@ -56,6 +56,18 @@
   "oneblock.info.points": "Points: %s / %s to the next level",
   "oneblock.info.max_level": "Maximum border level reached!",
   "oneblock.info.party": "Party: %d/%d players",
+  "oneblock.info.event_active": "Active event: %s",
+
+  "oneblock.event.countdown": "Event in %d blocks!",
+  "oneblock.event.triggered": "The block trembles — an event is starting!",
+  "oneblock.event.start": "%s begins! (difficulty %d)",
+  "oneblock.event.success": "%s survived! Grab your rewards.",
+  "oneblock.event.fail": "%s failed.",
+  "oneblock.event.wave": "Wave %d/%d",
+  "oneblock.event.boss_name": "Island Boss (Tier %d)",
+  "oneblock.event.type.mob_wave": "Mob Wave",
+  "oneblock.event.type.boss_fight": "Boss Fight",
+  "oneblock.event.type.resource_burst": "Resource Burst",
 
   "oneblock.reload.start": "Reloading configuration...",
   "oneblock.reload.ok": "Reload complete, database connection OK.",

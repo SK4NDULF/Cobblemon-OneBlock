@@ -50,6 +50,9 @@ data class MainConfig(
     /** Cooldown in seconds between trigger events on the same island. */
     val eventCooldownSeconds: Int = 300,
 
+    /** Hard timeout in seconds after which a running trigger event fails and cleans up. */
+    val eventTimeoutSeconds: Int = 300,
+
     /** Base points one OneBlock break is worth (before party scaling). */
     val pointsPerBreak: Double = 100.0,
 
@@ -102,6 +105,7 @@ data class MainConfig(
         inactivityPurgeDays = inactivityPurgeDays.coerceIn(0, 3650),
         inviteTimeoutSeconds = inviteTimeoutSeconds.coerceIn(10, 3600),
         eventCooldownSeconds = eventCooldownSeconds.coerceIn(0, 86400),
+        eventTimeoutSeconds = eventTimeoutSeconds.coerceIn(30, 3600),
         pointsPerBreak = pointsPerBreak.coerceIn(0.01, 1_000_000.0),
         partyDiminishingReturns = partyDiminishingReturns.coerceIn(0.0, 1.0),
         borderLevelThresholds = validatedThresholds(),

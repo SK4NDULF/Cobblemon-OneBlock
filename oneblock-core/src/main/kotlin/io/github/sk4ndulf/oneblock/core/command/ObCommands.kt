@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.CommandContext
 import io.github.sk4ndulf.oneblock.core.OneBlockCore
 import io.github.sk4ndulf.oneblock.core.island.PartyService
 import io.github.sk4ndulf.oneblock.core.lang.ServerLang
+import io.github.sk4ndulf.oneblock.core.trigger.TriggerEventService
 import io.github.sk4ndulf.oneblock.core.wizard.SetupWizard
 import io.github.sk4ndulf.oneblock.core.wizard.WizardQuestions
 import io.github.sk4ndulf.oneblock.core.world.HubManager
@@ -213,6 +214,9 @@ object ObCommands {
         context.source.sendSystemMessage(
             ServerLang.msg("oneblock.info.party", island.memberSet.size + 1, config.maxPartySize),
         )
+        TriggerEventService.activeTypeOn(island.id)?.let { eventId ->
+            context.source.sendSystemMessage(ServerLang.msg("oneblock.info.event_active", eventId.toString()))
+        }
         return Command.SINGLE_SUCCESS
     }
 

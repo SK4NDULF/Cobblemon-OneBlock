@@ -12,6 +12,10 @@ import io.github.sk4ndulf.oneblock.core.island.IslandRepository
 import io.github.sk4ndulf.oneblock.core.island.OneBlockLootTable
 import io.github.sk4ndulf.oneblock.core.lang.ServerLang
 import io.github.sk4ndulf.oneblock.core.permission.ProtectionManager
+import io.github.sk4ndulf.oneblock.core.trigger.BossFightEvent
+import io.github.sk4ndulf.oneblock.core.trigger.MobWaveEvent
+import io.github.sk4ndulf.oneblock.core.trigger.ResourceBurstEvent
+import io.github.sk4ndulf.oneblock.core.trigger.TriggerEventService
 import io.github.sk4ndulf.oneblock.core.world.HubManager
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -62,6 +66,12 @@ object OneBlockCore : ModInitializer {
         ObCommands.register()
         ProtectionManager.register()
 
+        // Built-in trigger event types. Addons register their own via
+        // OneBlockAPI.get().eventManager().registerEventType(...) during their init.
+        TriggerEventService.registerType(MobWaveEvent())
+        TriggerEventService.registerType(BossFightEvent())
+        TriggerEventService.registerType(ResourceBurstEvent())
+
         PlayerBlockBreakEvents.AFTER.register { level, player, pos, state, _ ->
             if (level is ServerLevel && player is ServerPlayer) {
                 islandManager?.handleBreak(level, player, pos, state)
@@ -80,10 +90,15 @@ object OneBlockCore : ModInitializer {
         }
 
         ServerTickEvents.END_SERVER_TICK.register { server ->
+            TriggerEventService.tick(server)
             if (++maintenanceTickCounter >= MAINTENANCE_INTERVAL_TICKS) {
                 maintenanceTickCounter = 0
                 islandManager?.runMaintenance(server)
             }
+        }
+
+        ServerLifecycleEvents.SERVER_STOPPING.register { server ->
+            TriggerEventService.shutdown(server)
         }
 
         ServerLifecycleEvents.SERVER_STOPPED.register { _ ->

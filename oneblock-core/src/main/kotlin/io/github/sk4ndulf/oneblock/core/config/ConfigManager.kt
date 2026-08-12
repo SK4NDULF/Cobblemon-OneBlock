@@ -78,6 +78,7 @@ class ConfigManager(val configDir: Path, private val logger: Logger) {
             inactivityPurgeDays = json.int("inactivity_purge_days", defaults.inactivityPurgeDays),
             inviteTimeoutSeconds = json.int("invite_timeout_seconds", defaults.inviteTimeoutSeconds),
             eventCooldownSeconds = json.int("event_cooldown_seconds", defaults.eventCooldownSeconds),
+            eventTimeoutSeconds = json.int("event_timeout_seconds", defaults.eventTimeoutSeconds),
             pointsPerBreak = json.double("points_per_break", defaults.pointsPerBreak),
             partyDiminishingReturns = json.double("party_diminishing_returns", defaults.partyDiminishingReturns),
             borderLevelThresholds = json.doubleList("border_level_thresholds", defaults.borderLevelThresholds),
@@ -134,6 +135,8 @@ class ConfigManager(val configDir: Path, private val logger: Logger) {
             "Seconds until a pending party invite expires.")
         json.put("event_cooldown_seconds", JsonPrimitive(config.eventCooldownSeconds.toLong()),
             "Cooldown in seconds between trigger events on the same island.")
+        json.put("event_timeout_seconds", JsonPrimitive(config.eventTimeoutSeconds.toLong()),
+            "Hard timeout for a running trigger event. On timeout it fails and everything it spawned is cleaned up.")
         json.put("points_per_break", JsonPrimitive(config.pointsPerBreak),
             "Base progression points per OneBlock break (before party scaling).")
         json.put("party_diminishing_returns", JsonPrimitive(config.partyDiminishingReturns),

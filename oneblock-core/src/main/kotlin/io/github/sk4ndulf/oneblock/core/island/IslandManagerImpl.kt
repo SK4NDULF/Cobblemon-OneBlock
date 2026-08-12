@@ -11,6 +11,7 @@ import io.github.sk4ndulf.oneblock.api.permission.IslandRole
 import io.github.sk4ndulf.oneblock.core.OneBlockCore
 import io.github.sk4ndulf.oneblock.core.config.MainConfig
 import io.github.sk4ndulf.oneblock.core.lang.ServerLang
+import io.github.sk4ndulf.oneblock.core.trigger.TriggerEventService
 import io.github.sk4ndulf.oneblock.core.world.GridMath
 import io.github.sk4ndulf.oneblock.core.world.HubManager
 import io.github.sk4ndulf.oneblock.core.world.OneBlockDimension
@@ -211,6 +212,7 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
         level.setBlockAndUpdate(pos, next)
         island.breakCount++
         ProgressionService.onBreak(island, level.server)
+        TriggerEventService.onBreak(island, level)
         repository.updateProgressAsync(island.id, island.breakCount, island.points, island.borderLevel)
         OneBlockCore.eventBus.post(OneBlockBreakEvent(island, player, state, next))
     }
