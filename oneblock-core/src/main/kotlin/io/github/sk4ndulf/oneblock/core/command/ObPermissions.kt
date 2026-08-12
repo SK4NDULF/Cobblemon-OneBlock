@@ -1,0 +1,26 @@
+package io.github.sk4ndulf.oneblock.core.command
+
+import net.minecraft.commands.CommandSourceStack
+
+/**
+ * Permission abstraction. Every command checks a node here.
+ *
+ * Currently backed by vanilla OP levels so the mod works drag-and-drop without a
+ * permission mod. A LuckPerms integration (node-based, optional) plugs into [check]
+ * in a later phase without touching any command code.
+ */
+object ObPermissions {
+
+    // Node constants — one node per command, defined the moment the command exists.
+    const val COMMAND_ROOT = "oneblock.command"
+    const val ADMIN_RELOAD = "oneblock.admin.reload"
+    const val ADMIN_SETUP = "oneblock.admin.setup"
+
+    /**
+     * @param node    the permission node (used once LuckPerms integration lands)
+     * @param opLevel vanilla fallback: required OP level when no permission mod is present
+     */
+    fun check(source: CommandSourceStack, node: String, opLevel: Int): Boolean {
+        return source.hasPermission(opLevel)
+    }
+}

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "oneblock",
+  "version": "${version}",
+  "name": "Cobblemon OneBlock",
+  "description": "Standalone Cobblemon OneBlock core mod: islands, progression, parties, permissions, trigger events, biome editor and Cobblemon integration in a single drag-and-drop server mod.",
+  "authors": ["SK4NDULF"],
+  "contact": {
+    "sources": "https://github.com/SK4NDULF/Cobblemon-OneBlock"
+  },
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      {
+        "adapter": "kotlin",
+        "value": "io.github.sk4ndulf.oneblock.core.OneBlockCore"
+      }
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "fabric-api": "*",
+    "fabric-language-kotlin": ">=1.13.0",
+    "minecraft": "~1.21.1",
+    "cobblemon": ">=1.7.3",
+    "oneblock_api": "*"
+  }
+}

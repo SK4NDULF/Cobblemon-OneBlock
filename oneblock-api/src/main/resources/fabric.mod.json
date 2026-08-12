@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "oneblock_api",
+  "version": "${version}",
+  "name": "Cobblemon OneBlock API",
+  "description": "Public API for Cobblemon OneBlock. Addon developers build against this module only.",
+  "authors": ["SK4NDULF"],
+  "contact": {
+    "sources": "https://github.com/SK4NDULF/Cobblemon-OneBlock"
+  },
+  "license": "MIT",
+  "environment": "*",
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1"
+  }
+}
