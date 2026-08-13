@@ -64,7 +64,6 @@ changed through player commands, and you observe those changes through events.
 | `permissionManager()` | `PermissionManager` | a player's role on an island, may they modify a position |
 | `partyManager()` | `PartyManager` | pending invites, configured max party size |
 | `progressionManager()` | `ProgressionManager` | current points, points needed per level, border size per level |
-| `eventManager()` | `EventManager` | register trigger event types, query the running event |
 | `lootRegistry()` | `LootRegistry` | register custom OneBlock loot providers |
 | `eventBus()` | `OneBlockEventBus` | subscribe to everything below |
 
@@ -98,9 +97,6 @@ other listeners.
 | `PartyJoinEvent` | player accepted an invite | `island()`, `player()` |
 | `PartyLeaveEvent` | membership ended | `reason()`: `LEFT`, `KICKED`, `ISLAND_ARCHIVED` |
 | `PermissionChangeEvent` | a player's role on an island changed | `oldRole()`, `newRole()` |
-| `TriggerEventStartEvent` | a trigger event started | `eventTypeId()`, `difficulty()` |
-| `TriggerEventEndEvent` | trigger event succeeded | `eventTypeId()` |
-| `TriggerEventFailEvent` | trigger event failed, timed out, or was abandoned | `eventTypeId()` |
 | `AuditEvent` | any moderation action (create, reset, ban, admin override, ...) | `action()`, `actor()`, `target()`, `details()` |
 
 `AuditEvent` is the hook for external moderation tooling — a Discord bot, a dashboard, an
@@ -111,60 +107,7 @@ the remaining listeners so they can observe the cancellation.
 
 ---
 
-## 5. Extension point: custom trigger events
-
-The core handles queueing, cooldown, timeout, announcements and cleanup. Your type only
-describes what happens.
-
-```java
-public class MeteorShowerEvent implements TriggerEventType {
-
-    @Override public ResourceLocation id() {
-        return ResourceLocation.fromNamespaceAndPath("yourmod", "meteor_shower");
-    }
-
-    @Override public String displayName() { return "Meteor Shower"; }
-
-    @Override public ActiveTriggerEvent start(TriggerEventContext context) {
-        return new Instance();
-    }
-
-    private static final class Instance implements ActiveTriggerEvent {
-        private int ticks = 0;
-
-        @Override public TriggerEventStatus tick(TriggerEventContext context) {
-            ticks++;
-            // context.difficulty() is the island's border level (1-8) captured at start
-            return ticks >= 200 ? TriggerEventStatus.SUCCESS : TriggerEventStatus.RUNNING;
-        }
-
-        @Override public void cleanup(TriggerEventContext context) {
-            // despawn anything you created — called on success, failure, timeout,
-            // island archive and server stop
-        }
-    }
-}
-
-api.eventManager().registerEventType(new MeteorShowerEvent());
-```
-
-`TriggerEventContext` gives you `island()`, `level()`, `anchor()`, `difficulty()` and
-`participants()` (recomputed on every call — online island players in the OneBlock world).
-
-**Project rule — please keep it:** difficulty scales with the border level, **rewards do not**.
-A boss on level 8 is harder than on level 2 and drops exactly the same. Granting rewards is
-your event's own job, which is also why there is no separate "reward provider" interface.
-
-Registering an already-taken id replaces the previous type (logged), so you can deliberately
-override a built-in event. The core ships `cobblemon_oneblock:mob_wave`, `cobblemon_oneblock:boss_fight`,
-`cobblemon_oneblock:resource_burst` and `cobblemon_oneblock:legendary_encounter`.
-
-**Failure handling:** an exception in `start` drops that trigger; an exception in `tick`
-fails the event and runs `cleanup`. Your bugs cannot wedge the core.
-
----
-
-## 6. Extension point: custom loot providers
+## 5. Extension point: custom loot providers
 
 Decide what the OneBlock turns into.
 
@@ -201,7 +144,7 @@ it gets that block. If you want your phase to keep handing out chests, return
 
 ---
 
-## 7. Versioning
+## 6. Versioning
 
 `cobblemon-oneblock-api` follows semantic versioning:
 
@@ -215,4 +158,25 @@ While the API is at `0.x` it is not frozen yet — breaking changes may still la
 versions, but each one is listed in the changelog. `OneBlockAPI.apiVersion()` returns the
 implementation's version at runtime if you need to branch on it.
 
-Adding an event type or a loot provider is never a breaking change for other addons.
+Registering a loot provider is never a breaking change for other addons.
+
+---
+
+## 7. Changelog
+
+### 0.1.0 — unreleased
+
+**Removed: the trigger event extension point.** Gone from the API:
+
+- `OneBlockAPI.eventManager()`
+- the `io.github.sk4ndulf.cobblemon.oneblock.api.trigger` package — `EventManager`,
+  `TriggerEventType`, `ActiveTriggerEvent`, `TriggerEventContext`, `TriggerEventStatus`
+- the bus events `TriggerEventStartEvent`, `TriggerEventEndEvent`, `TriggerEventFailEvent`
+
+The feature it exposed — timed events firing on the OneBlock after a break threshold — was
+cut from the mod. A replacement is being designed and will get its own extension point when
+its shape is settled; do not build against the old interfaces.
+
+There is no migration note because there is nothing to migrate from: `0.1.0` was never
+published, so no addon can have compiled against these types. Everything else in the API is
+unchanged.

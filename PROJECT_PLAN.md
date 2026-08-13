@@ -12,8 +12,8 @@
 Das ist **kein** kleines Zusatz-Mod, sondern eine **Core Mod**, die den kompletten Serverbetrieb übernimmt:
 
 - **Drag-and-Drop-Ready**: Cobblemon + diese eine Mod installieren → sofort ein vollständig funktionierender Server. Keine zusätzlichen Mods für Islands, Protection, Progression, Events etc. nötig. Keine externe Datenbank nötig (SQLite eingebettet als Default).
-- **Eigene Public API**: Andere Devs/Mods können sich einhängen (Event-Bus + Extension-Points), um eigene Trigger-Event-Typen, Loot-Provider, Reward-Logik etc. hinzuzufügen, ohne den Core-Code anzufassen.
-- **Alles unter einem Dach**: Dimension-Handling, Island-System, Progression, Party, Permissions, Trigger-Events, Biome-Editor, Cobblemon-Integration, Moderation, Setup-Wizard — alles ein Mod, ein Codebase, eine Config-Struktur.
+- **Eigene Public API**: Andere Devs/Mods können sich einhängen (Event-Bus + Extension-Points), um eigene Loot-Provider etc. hinzuzufügen, ohne den Core-Code anzufassen.
+- **Alles unter einem Dach**: Dimension-Handling, Island-System, Progression, Party, Permissions, Loot & Schatzkisten, Biome-Editor, Cobblemon-Integration, Moderation, Setup-Wizard — alles ein Mod, ein Codebase, eine Config-Struktur.
 
 Architekturprinzip: **Zwei-Module-Setup** — `cobblemon-oneblock-api` (Interfaces/Events) + `cobblemon-oneblock-core` (Implementierung), damit externe Devs sauber gegen die API entwickeln können, ohne den ganzen Core-Code als Dependency zu brauchen.
 
@@ -39,7 +39,7 @@ Architekturprinzip: **Zwei-Module-Setup** — `cobblemon-oneblock-api` (Interfac
 | Island-Grid + OneBlock RNG-Kern | ✅ Kern des Mods |
 | Border-Level Progression (8 Level) | ✅ Voll |
 | Party/Co-op System | ✅ |
-| Trigger Events (Mob Waves/Bosse) | ✅, als Extension-Point für Dritt-Mods |
+| Trigger Events (Mob Waves/Bosse) | ❌ **Entfernt am 2026-08-13** — siehe Phase 7 und WORKLOG.md |
 | Permission-System | ✅ Vereinfacht (Owner → Member → Public) |
 | Biome-Editor | ✅, harter Cut (kein Blending, snappt auf 4er-Raster) |
 | Cobblemon-Integration | ✅ Fest integriert |
@@ -58,9 +58,9 @@ Architekturprinzip: **Zwei-Module-Setup** — `cobblemon-oneblock-api` (Interfac
 ```
 cobblemon-oneblock-api/            (Java, leichtgewichtig, für externe Devs, als Maven-Artefakt publiziert)
   events/                 IslandCreatedEvent, OneBlockBreakEvent, BorderLevelUpEvent,
-                           PartyJoinEvent, TriggerEventStartEvent, PermissionChangeEvent, ...
+                           PartyJoinEvent, PermissionChangeEvent, AuditEvent, ...
   managers/                IslandManager, PartyManager, ProgressionManager,
-                           EventManager, PermissionManager  (Interfaces only)
+                           PermissionManager, LootRegistry  (Interfaces only)
   OneBlockAPI.java         statischer Zugriffspunkt: OneBlockAPI.get().getIslandManager() etc.
 
 cobblemon-oneblock-core/            (Kotlin, volle Implementierung, hängt von cobblemon-oneblock-api + Cobblemon ab)
@@ -78,7 +78,7 @@ Dimension-Setup (immer gleich, kein Dual-Path):
          ├─ Border-Level (1-8, wächst mit Fortschritt)
          ├─ Permission-Layer (Owner/Member/Public)
          ├─ Biome-Region (editierbar via Selection-Tool)
-         └─ Trigger-Event-Counter (nach X Breaks → Event, Typen als Extension-Point)
+         └─ Break-Counter (Fortschritt; Trigger-Events dazu wurden entfernt, s. Phase 7)
 
 Storage: SQLite (Default) oder MySQL/MariaDB via HikariCP, async writes,
          Umstellung NUR über Config-Datei. Ein Migrations-System für beide Dialekte.
@@ -143,7 +143,7 @@ Andere Dimensionen als `cobblemon_oneblock:world` werden vom Mod **nicht** regul
 - **Y-Koordinaten immer explizit angeben** — Hub-Spawn und jede Island brauchen klare Y-Werte, kein Fall-Risiko in der Void-Welt.
 - **Void-Tod ist ein First-Class-Edge-Case** — Respawn immer am Insel-Spawn (bzw. Hub), niemals Todesschleifen.
 - **Config-Vollständigkeit von Anfang an** — DB-Felder, alle System-Limits (Party-Größe, Biome-Regionen, Event-Cooldown, max Island-Größe, Purge-Fristen) gehören von Beginn an in die Config-Struktur.
-- **Keine Widersprüche zwischen Spec-Files** — Fixregel: **Trigger-Events skalieren nur in der Schwierigkeit mit dem Border-Level, nicht in den Rewards.**
+- **Keine Widersprüche zwischen Spec-Files** — Fixregel: **Belohnungen skalieren nicht mit der Schwierigkeit.** Ursprünglich für Trigger-Events formuliert (Phase 7, entfernt); gilt weiter, aktuell für die Schatzkisten-Chance.
 - **Permission-Nodes von Anfang an mitdenken** — jeder Command bekommt sofort einen Node (`cobblemon_oneblock.command.start`, `cobblemon_oneblock.admin.setup`, ...). LuckPerms ist **optionale** Integration mit Fallback auf OP-Level — der Mod läuft auch ohne Permission-Mod.
 - **Schema-Migration & Hot-Reload von Tag 1 an** — DB-Versionierung, `/ob reload` als vollwertiger Command.
 - **Edge-Cases explizit klären**: Fallback-Owner für unregistrierte Chunks, Owner-Reset mit Members online, Invite-/Event-Timeouts, Confirmation-Step bei destruktiven Admin-Commands.
@@ -231,7 +231,16 @@ Die Phasen bauen aufeinander auf. Jede Phase wird mit Build + Smoke-Test abgesch
 - [x] `BorderLevelUpEvent` über API-Bus
 - [x] Öffentliches `ProgressionManager`-Interface
 
-### Phase 7 — Trigger Events (als Extension-Point)
+### Phase 7 — Trigger Events (als Extension-Point) — ❌ ZURÜCKGENOMMEN
+
+> **Am 2026-08-13 vollständig aus der Mod entfernt.** Der Owner hat das System verworfen:
+> es hat keinen Spaß gemacht. Code, API, Config, Sprachschlüssel und Doku sind restlos raus
+> (Details in `WORKLOG.md`). Ein Ersatz wird neu entworfen.
+>
+> Diese Phase bleibt als Aufzeichnung stehen, damit beim Neuentwurf klar ist, was schon einmal
+> gebaut und bewusst verworfen wurde. Die Häkchen bedeuten "wurde damals gebaut", nicht
+> "existiert heute".
+
 - [x] Break-Counter pro Island
 - [x] Event-Spawn-Trigger nach konfigurierbarer Schwelle
 - [x] Countdown-Announcement ("Event in 10 Blocks")
@@ -251,7 +260,7 @@ Die Phasen bauen aufeinander auf. Jede Phase wird mit Build + Smoke-Test abgesch
 - [x] Catch- UND Battle-Permission pro Island (Besucher können weder fangen noch besiegen;
       Owner-Setting)
 - [x] Pokémon, die über die Border wandern, zurücksetzen oder despawnen
-- [x] Trigger-Events können Legendaries/Ultra Beasts spawnen (Hook in Phase-7-Extension)
+- [~] Trigger-Events konnten Legendaries/Ultra Beasts spawnen — mit Phase 7 entfernt
 - [x] Temporäre Island-Buffs: Shiny-Rate + IV-Floor inkl. Restart-Persistence.
       Spawn-Rate bewusst NICHT pro Insel: Cobblemons Spawner ist spielerzentriert und
       global getaktet — ein per-Insel-Boost wäre nur vortäuschbar. Global via Wizard-Wert.
@@ -322,11 +331,12 @@ Die Phasen bauen aufeinander auf. Jede Phase wird mit Build + Smoke-Test abgesch
 | 1 | Hub-Schutzradius (Blöcke, volle Spawn-Protection) | Zahl | `1000` | 100–5000 |
 | 2 | Max. Island-Größe (Border-Level 8, z.B. 1024 = 1024×1024) | Zahl | `1024` | 64–10000 (intern 16er-aligned; Spacing automatisch +1024 Buffer) |
 | 3 | Max. Party-Größe pro Island | Zahl | `4` | 1–20 |
-| 4 | Trigger-Event-Schwelle (Breaks bis Event) | Zahl | `100` | 10–1000 |
-| 5 | Max. Biome-Regionen pro Island | Zahl | `10` | 1–50 |
-| 6 | Cobblemon-Spawn-Intensität (Multiplikator) | Zahl | `1.0` | 0.1–5.0 |
-| 7 | Server öffentlich? | Ja/Nein | `Ja` | — |
-| 8 | Hub-Building erlauben? (Admins dürfen im Hub bauen) | Ja/Nein | `Nein` | — |
+| 4 | Max. Biome-Regionen pro Island | Zahl | `10` | 1–50 |
+| 5 | Cobblemon-Spawn-Intensität (Multiplikator) | Zahl | `1.0` | 0.1–5.0 |
+| 6 | Server öffentlich? | Ja/Nein | `Ja` | — |
+| 7 | Hub-Building erlauben? (Admins dürfen im Hub bauen) | Ja/Nein | `Nein` | — |
+
+(Frage 4 war ursprünglich die Trigger-Event-Schwelle; mit Phase 7 entfernt, danach neu nummeriert.)
 
 Nach Frage 8 folgt die Zusammenfassung + Bestätigung im Chat, danach Save & Reload.
 Jede Frage ist alternativ per `/ob setup set <key> <value>` beantwortbar (auch Konsole).

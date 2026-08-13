@@ -2,9 +2,7 @@
 
 A standalone **core mod** for Fabric 1.21.1: OneBlock skyblock gameplay, fully integrated
 with [Cobblemon](https://cobblemon.com/) — islands, progression, parties, permissions,
-trigger events, a biome editor and a setup wizard in a single drag-and-drop server mod.
-
-> Working title — the final project name is still open.
+treasure chests, a biome editor and a setup wizard in a single drag-and-drop server mod.
 
 ## Installation
 

@@ -69,7 +69,6 @@ class ConfigManager(val configDir: Path, private val logger: Logger) {
             hubRadius = json.int("hub_radius", defaults.hubRadius),
             maxIslandSize = json.int("max_island_size", defaults.maxIslandSize),
             maxPartySize = json.int("max_party_size", defaults.maxPartySize),
-            triggerEventThreshold = json.int("trigger_event_threshold", defaults.triggerEventThreshold),
             maxBiomeRegions = json.int("max_biome_regions", defaults.maxBiomeRegions),
             cobblemonSpawnMultiplier = json.double("cobblemon_spawn_multiplier", defaults.cobblemonSpawnMultiplier),
             serverPublic = json.bool("server_public", defaults.serverPublic),
@@ -79,13 +78,10 @@ class ConfigManager(val configDir: Path, private val logger: Logger) {
             resetArchiveDays = json.int("reset_archive_days", defaults.resetArchiveDays),
             inactivityPurgeDays = json.int("inactivity_purge_days", defaults.inactivityPurgeDays),
             inviteTimeoutSeconds = json.int("invite_timeout_seconds", defaults.inviteTimeoutSeconds),
-            eventCooldownSeconds = json.int("event_cooldown_seconds", defaults.eventCooldownSeconds),
-            eventTimeoutSeconds = json.int("event_timeout_seconds", defaults.eventTimeoutSeconds),
             pointsPerBreak = json.double("points_per_break", defaults.pointsPerBreak),
             partyDiminishingReturns = json.double("party_diminishing_returns", defaults.partyDiminishingReturns),
             borderLevelThresholds = json.doubleList("border_level_thresholds", defaults.borderLevelThresholds),
             borderLevelSizes = json.intList("border_level_sizes", defaults.borderLevelSizes),
-            legendarySpecies = json.stringList("legendary_species", defaults.legendarySpecies),
             discordWebhookUrl = json.string("discord_webhook_url", defaults.discordWebhookUrl),
         ).validated()
     }
@@ -121,8 +117,6 @@ class ConfigManager(val configDir: Path, private val logger: Logger) {
                 "Grid spacing is derived automatically (+${MainConfig.SPACING_BUFFER} buffer).")
         json.put("max_party_size", JsonPrimitive(config.maxPartySize.toLong()),
             "Maximum party members per island. Range 1-20.")
-        json.put("trigger_event_threshold", JsonPrimitive(config.triggerEventThreshold.toLong()),
-            "OneBlock breaks until a trigger event fires. Range 10-1000.")
         json.put("max_biome_regions", JsonPrimitive(config.maxBiomeRegions.toLong()),
             "Maximum biome regions per island. Range 1-50.")
         json.put("cobblemon_spawn_multiplier", JsonPrimitive(config.cobblemonSpawnMultiplier),
@@ -149,10 +143,6 @@ class ConfigManager(val configDir: Path, private val logger: Logger) {
             "Days of owner inactivity after which an island is archived/purged. 0 disables the purge.")
         json.put("invite_timeout_seconds", JsonPrimitive(config.inviteTimeoutSeconds.toLong()),
             "Seconds until a pending party invite expires.")
-        json.put("event_cooldown_seconds", JsonPrimitive(config.eventCooldownSeconds.toLong()),
-            "Cooldown in seconds between trigger events on the same island.")
-        json.put("event_timeout_seconds", JsonPrimitive(config.eventTimeoutSeconds.toLong()),
-            "Hard timeout for a running trigger event. On timeout it fails and everything it spawned is cleaned up.")
         json.put("points_per_break", JsonPrimitive(config.pointsPerBreak),
             "Base progression points per OneBlock break (before party scaling).")
         json.put("party_diminishing_returns", JsonPrimitive(config.partyDiminishingReturns),
@@ -163,8 +153,6 @@ class ConfigManager(val configDir: Path, private val logger: Logger) {
         json.put("border_level_sizes", intArray(config.borderLevelSizes),
             "Optional manual border side lengths for levels 1-8 (8 values, chunk-aligned). " +
                 "Empty = exponential interpolation from 16 to max_island_size.")
-        json.put("legendary_species", stringArray(config.legendarySpecies),
-            "Species the legendary encounter event can spawn. Any Cobblemon species name works.")
         json.put("discord_webhook_url", JsonPrimitive(config.discordWebhookUrl),
             "Optional Discord webhook URL that mirrors the audit log. Leave empty to disable.")
         write(mainFile, json)
@@ -220,9 +208,4 @@ class ConfigManager(val configDir: Path, private val logger: Logger) {
     private fun intArray(values: List<Int>): JsonArray =
         JsonArray().apply { values.forEach { add(JsonPrimitive(it.toLong())) } }
 
-    private fun JsonObject.stringList(key: String, default: List<String>): List<String> =
-        (get(key) as? JsonArray)?.mapNotNull { (it as? JsonPrimitive)?.asString() } ?: default
-
-    private fun stringArray(values: List<String>): JsonArray =
-        JsonArray().apply { values.forEach { add(JsonPrimitive(it)) } }
 }

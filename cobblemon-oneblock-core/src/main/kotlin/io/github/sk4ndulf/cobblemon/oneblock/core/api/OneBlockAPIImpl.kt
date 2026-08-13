@@ -8,12 +8,10 @@ import io.github.sk4ndulf.cobblemon.oneblock.core.island.LootRegistryImpl
 import io.github.sk4ndulf.cobblemon.oneblock.api.party.PartyManager
 import io.github.sk4ndulf.cobblemon.oneblock.api.permission.PermissionManager
 import io.github.sk4ndulf.cobblemon.oneblock.api.progression.ProgressionManager
-import io.github.sk4ndulf.cobblemon.oneblock.api.trigger.EventManager
 import io.github.sk4ndulf.cobblemon.oneblock.core.OneBlockCore
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.PartyManagerImpl
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.ProgressionManagerImpl
 import io.github.sk4ndulf.cobblemon.oneblock.core.permission.PermissionManagerImpl
-import io.github.sk4ndulf.cobblemon.oneblock.core.trigger.EventManagerImpl
 
 class OneBlockAPIImpl(private val eventBus: OneBlockEventBus) : OneBlockAPI {
 
@@ -24,7 +22,6 @@ class OneBlockAPIImpl(private val eventBus: OneBlockEventBus) : OneBlockAPI {
     private val permissionManager = PermissionManagerImpl()
     private val partyManager = PartyManagerImpl()
     private val progressionManager = ProgressionManagerImpl()
-    private val eventManager = EventManagerImpl()
 
     override fun eventBus(): OneBlockEventBus = eventBus
 
@@ -38,7 +35,6 @@ class OneBlockAPIImpl(private val eventBus: OneBlockEventBus) : OneBlockAPI {
 
     override fun progressionManager(): ProgressionManager = progressionManager
 
-    override fun eventManager(): EventManager = eventManager
 
     override fun lootRegistry(): LootRegistry = LootRegistryImpl
 

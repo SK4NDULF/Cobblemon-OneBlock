@@ -10,10 +10,13 @@ This file is the snapshot; `WORKLOG.md` is the running history. Keep both curren
 
 ## 1. Where we are
 
-All 12 planned phases are implemented, build-verified and boot-verified on a real
+All 12 planned phases were implemented, build-verified and boot-verified on a real
 Fabric server with Cobblemon installed. Since then one review pass fixed a
 multiplayer crash and five robustness issues, three features were added on request,
-and the project was renamed to its final identifiers.
+the project was renamed to its final identifiers, treasure chests and inventory drops
+were added — and **Phase 7, the trigger event system, was removed completely** because the
+owner did not like it. A replacement is to be designed from scratch; nothing of the old one
+survives in code, config, language files or the public API.
 
 The user has since run the mod locally and reports it looks fine. Deliberate plan for
 the 🟡 list below: it will be bug-tested live with several players later. Until then the
@@ -47,8 +50,7 @@ The Java package uses dots (`cobblemon.oneblock`) rather than an underscore beca
 underscores in package names are legal but unidiomatic.
 
 Verified after the rename: `./gradlew build` green on all three modules; dev server boots;
-both mods load under the new ids; all four trigger event types register as
-`cobblemon_oneblock:*`; all 8 migrations run; hub platform generates; 848-block loot pool
+both mods load under the new ids; all 8 migrations run; hub platform generates; 848-block loot pool
 builds; `execute in cobblemon_oneblock:world run time query daytime` answers, so the
 dimension is really registered; `config/cobblemon_oneblock/` and
 `world/dimensions/cobblemon_oneblock/world/` are created on disk; `ob setup` prints
@@ -126,7 +128,8 @@ Three Gradle modules:
 
 World layout: one void dimension `cobblemon_oneblock:world` (data-driven, flat generator, zero
 layers). Hub platform at `(0, 64, 0)`. Islands sit on an Ulam spiral around it; slot 0 is
-the hub and never assigned. Anchor Y is 63, bedrock foundation at 62, players spawn at 64.
+the hub and never assigned. Anchor Y is 63, players spawn at 64. The bedrock block at 62 is
+optional and off by default (`anchor_bedrock_foundation`).
 
 `GridMath` is the single source of truth for all grid geometry. `island_spacing =
 chunkAlign(max_island_size) + 1024`, everything aligned to 16 so chunk-based permission
@@ -165,9 +168,9 @@ cannot cross a border, enter the hub, or leak into the void buffer).
 - Cobblemon integration active; **Pokémon containment tested with a real entity**
   (spawned a Pikachu in the void buffer, gone after the sweep)
 - Explosion and fluid mixins apply without error; TNT tested in both dimensions
-- The example addon registers a loot provider and a trigger event type through the
-  public API at runtime — proof the two-module split works
-- Trigger event ticker stable over ~860 ticks; repair timer stable over 2 cycles
+- The example addon registers a loot provider through the public API at runtime —
+  proof the two-module split works
+- Repair timer stable over 2 cycles
 - Treasure chest pool: 56 vanilla chest loot tables discovered from the live registry;
   `chance` clamping, `blacklist`, `extra` (including both failure modes) and `/ob reload`
   all exercised — see `WORKLOG.md`
@@ -180,29 +183,27 @@ cannot cross a border, enter the hub, or leak into the void buffer).
 3. **Catch/battle denial** — throw a ball on a foreign island; then
    `/ob settings visitor-catch true` and retry.
 4. **Biome editor** — `pos1`/`pos2`/`set`; does the colour change **without** reconnecting?
-5. **Trigger events** — lower the threshold (`/ob setup set trigger_event_threshold 10`),
-   mine, watch for countdown, boss bar, legendary encounter.
-6. **Bedrock + self-healing** — after `/ob create`, check bedrock at anchor Y−1, then
-   `/setblock <x> 63 <z> air` on the anchor; within 60 s the log should say
-   `Restored the missing OneBlock of island …`.
-7. **`/ob visit <player>`** — teleport, ban enforcement, and that dying as a visitor
+5. **Self-healing anchor** — after `/ob create`, run `/setblock <x> 63 <z> air` on the
+   anchor; within 60 s the log should say `Restored the missing OneBlock of island …`.
+   (The bedrock half of this moved to test 9 — it is off by default now.)
+6. **`/ob visit <player>`** — teleport, ban enforcement, and that dying as a visitor
    still respawns you at your **own** island.
-8. **Treasure chests** — set `chests.chance` to `1.0` in `loottable.json5`, `/ob reload`,
+7. **Treasure chests** — set `chests.chance` to `1.0` in `loottable.json5`, `/ob reload`,
    then break the OneBlock. Every break should become a chest holding structure loot, and
    breaking that chest should regenerate the anchor as normal. The break path runs on
    `PlayerBlockBreakEvents.AFTER` and cannot be reached from the server console, so no
    headless test covers it.
-9. **Drops to inventory** — break the OneBlock: items and experience should land in your
+8. **Drops to inventory** — break the OneBlock: items and experience should land in your
    inventory with the pickup sound, nothing should fall. Then fill your inventory
    completely and break again: the remainder must drop at your feet, not into the void.
    Break a treasure chest without opening it — its contents should arrive too. Check that
    Fortune and Silk Touch still behave.
-10. **Anchor foundation toggle** — with the default `anchor_bedrock_foundation: false` there
-    must be nothing under the OneBlock. Set it to `true`, `/ob reload`, walk away and back
-    (or wait 60 s for the repair sweep): bedrock appears. Set it back to `false`: it goes
-    away again. Place your own block under the anchor first and confirm it survives both.
+9. **Anchor foundation toggle** — with the default `anchor_bedrock_foundation: false` there
+   must be nothing under the OneBlock. Set it to `true`, `/ob reload`, walk away and back
+   (or wait 60 s for the repair sweep): bedrock appears. Set it back to `false`: it goes
+   away again. Place your own block under the anchor first and confirm it survives both.
 
-Tests 8–10 all need a client for the same reason: nothing that breaks a block or creates an
+Tests 7–9 all need a client for the same reason: nothing that breaks a block or creates an
 island can be driven from the server console.
 
 ---
@@ -215,10 +216,8 @@ Do not "fix" these without asking — each was a deliberate call, recorded in
 - **Spawn rate is not a per-island buff.** Cobblemon's spawner is player-centric and
   globally paced; a per-island boost could only be faked. Shiny rate and IV floor apply
   cleanly at spawn time. Global pacing comes from the wizard multiplier.
-- **No "reward provider" extension point.** Each trigger event grants its own rewards, so
-  a separate interface would be an empty abstraction.
 - **Rewards never scale with difficulty.** Border level raises difficulty only. This is a
-  project rule and is documented in `API.md` for addon authors.
+  project rule; the treasure chest chance is flat for the same reason.
 - **Grid slots are not reused after a purge.** The old builds are still standing there.
   Reuse needs chunk clearing first. The spiral is effectively endless, so nothing breaks.
 - **`max_island_size` is locked once islands exist.** Changing it moves every anchor.

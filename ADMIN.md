@@ -24,18 +24,17 @@ On the first launch the mod creates the `cobblemon_oneblock:world` void dimensio
 platform at `(0, 64, 0)` and writes its config files. Island creation stays locked until an
 operator finishes the wizard.
 
-Run `/ob setup` and answer eight questions (or click `[keep …]` to accept a default):
+Run `/ob setup` and answer seven questions (or click `[keep …]` to accept a default):
 
 | # | Setting | Default | Range |
 |---|---|---|---|
 | 1 | Hub protection radius | 1000 | 100–5000 |
 | 2 | Max island size at border level 8 | 1024 | 64–10000 |
 | 3 | Max party size (including the owner) | 4 | 1–20 |
-| 4 | Breaks until a trigger event | 100 | 10–1000 |
-| 5 | Max biome regions per island | 10 | 1–50 |
-| 6 | Cobblemon spawn multiplier | 1.0 | 0.1–5.0 |
-| 7 | Public server? | yes | — |*
-| 8 | Admins may build in the hub? | no | — |
+| 4 | Max biome regions per island | 10 | 1–50 |
+| 5 | Cobblemon spawn multiplier | 1.0 | 0.1–5.0 |
+| 6 | Public server? | yes | — |*
+| 7 | Admins may build in the hub? | no | — |
 
 \* "Public server" controls `/ob visit`: when it is off, players can only teleport to an
 island they own or belong to. Island owners keep their own control either way through

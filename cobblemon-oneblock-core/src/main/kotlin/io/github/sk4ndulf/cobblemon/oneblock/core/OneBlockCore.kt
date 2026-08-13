@@ -16,13 +16,8 @@ import io.github.sk4ndulf.cobblemon.oneblock.core.biome.BiomeRepository
 import io.github.sk4ndulf.cobblemon.oneblock.core.biome.BiomeService
 import io.github.sk4ndulf.cobblemon.oneblock.core.cobblemon.BuffService
 import io.github.sk4ndulf.cobblemon.oneblock.core.cobblemon.CobblemonIntegration
-import io.github.sk4ndulf.cobblemon.oneblock.core.cobblemon.LegendaryEncounterEvent
 import io.github.sk4ndulf.cobblemon.oneblock.core.moderation.BanService
 import io.github.sk4ndulf.cobblemon.oneblock.core.permission.ProtectionManager
-import io.github.sk4ndulf.cobblemon.oneblock.core.trigger.BossFightEvent
-import io.github.sk4ndulf.cobblemon.oneblock.core.trigger.MobWaveEvent
-import io.github.sk4ndulf.cobblemon.oneblock.core.trigger.ResourceBurstEvent
-import io.github.sk4ndulf.cobblemon.oneblock.core.trigger.TriggerEventService
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.HubManager
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.OneBlockDimension
 import net.fabricmc.api.ModInitializer
@@ -82,13 +77,6 @@ object OneBlockCore : ModInitializer {
         ObCommands.register()
         ProtectionManager.register()
 
-        // Built-in trigger event types. Addons register their own via
-        // OneBlockAPI.get().eventManager().registerEventType(...) during their init.
-        TriggerEventService.registerType(MobWaveEvent())
-        TriggerEventService.registerType(BossFightEvent())
-        TriggerEventService.registerType(ResourceBurstEvent())
-        TriggerEventService.registerType(LegendaryEncounterEvent())
-
         CobblemonIntegration.register()
 
         PlayerBlockBreakEvents.AFTER.register { level, player, pos, state, _ ->
@@ -116,7 +104,6 @@ object OneBlockCore : ModInitializer {
             // First thing in the tick's tail: by now vanilla has dropped what the OneBlock
             // produced, and the items have barely moved.
             DropCollector.tick(server)
-            TriggerEventService.tick(server)
             if (++containmentTickCounter >= POKEMON_CONTAINMENT_INTERVAL_TICKS) {
                 containmentTickCounter = 0
                 CobblemonIntegration.containWanderingPokemon(server)
@@ -131,10 +118,6 @@ object OneBlockCore : ModInitializer {
                 islandManager?.runMaintenance(server)
                 BuffService.purgeExpired()
             }
-        }
-
-        ServerLifecycleEvents.SERVER_STOPPING.register { server ->
-            TriggerEventService.shutdown(server)
         }
 
         ServerLifecycleEvents.SERVER_STOPPED.register { _ ->

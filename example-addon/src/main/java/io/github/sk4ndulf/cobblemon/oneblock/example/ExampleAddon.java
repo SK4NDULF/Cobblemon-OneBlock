@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
  * <ol>
  *   <li>listen to core events on the event bus</li>
  *   <li>register a custom loot provider (what the OneBlock turns into)</li>
- *   <li>register a custom trigger event type</li>
  * </ol>
  *
  * <p>This module depends on {@code cobblemon-oneblock-api} only — not on the core mod and not on
@@ -42,7 +41,6 @@ public class ExampleAddon implements ModInitializer {
 
             registerEventListeners(api);
             api.lootRegistry().register(new EmeraldMilestoneLootProvider());
-            api.eventManager().registerEventType(new FireworkCelebrationEvent());
         });
     }
 

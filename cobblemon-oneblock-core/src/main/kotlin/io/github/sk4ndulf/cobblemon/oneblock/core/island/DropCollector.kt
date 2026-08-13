@@ -44,7 +44,7 @@ object DropCollector {
 
     /**
      * Only entities this young are taken. Without it the sweep would also vacuum up items a
-     * player deliberately dropped next to the anchor, or trigger event rewards lying nearby.
+     * player deliberately dropped next to the anchor, or any other loose item lying nearby.
      */
     private const val MAX_AGE_TICKS = 4
 

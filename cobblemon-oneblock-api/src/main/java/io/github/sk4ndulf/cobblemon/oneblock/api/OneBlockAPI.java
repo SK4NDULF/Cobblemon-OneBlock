@@ -7,7 +7,6 @@ import io.github.sk4ndulf.cobblemon.oneblock.api.loot.LootRegistry;
 import io.github.sk4ndulf.cobblemon.oneblock.api.party.PartyManager;
 import io.github.sk4ndulf.cobblemon.oneblock.api.permission.PermissionManager;
 import io.github.sk4ndulf.cobblemon.oneblock.api.progression.ProgressionManager;
-import io.github.sk4ndulf.cobblemon.oneblock.api.trigger.EventManager;
 
 /**
  * Static access point for the Cobblemon OneBlock API.
@@ -41,7 +40,7 @@ public interface OneBlockAPI {
 
     /**
      * The OneBlock event bus. Addons subscribe here to react to island lifecycle,
-     * progression, party and trigger-event activity.
+     * progression, party and moderation activity.
      */
     OneBlockEventBus eventBus();
 
@@ -64,12 +63,6 @@ public interface OneBlockAPI {
      * Border-level progression queries. Only call on the server thread.
      */
     ProgressionManager progressionManager();
-
-    /**
-     * Trigger event registry and state. Register custom event types here during
-     * your mod's initialization. Only call query methods on the server thread.
-     */
-    EventManager eventManager();
 
     /**
      * Registry for custom OneBlock loot providers. Register during your mod's init.

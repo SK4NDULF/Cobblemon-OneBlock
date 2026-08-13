@@ -28,6 +28,73 @@ Running record of what was changed, why, and how far it was actually verified.
 
 ---
 
+## 2026-08-13 — Trigger event system removed completely
+
+**Asked:** scrap the whole trigger event system. The owner does not like it — it is not fun —
+and wants to design a replacement from scratch. Remove all of it, leave no leftovers.
+
+**Scope decision made and stated up front:** the API **event bus stays**. "Event system" is
+ambiguous in this codebase: the *trigger events* (Mob Wave, Boss Fight, Resource Burst,
+Legendary Encounter) are the gameplay feature that was cut; `OneBlockEventBus` and its
+lifecycle events (`IslandCreatedEvent`, `PartyJoinEvent`, `BorderLevelUpEvent`, `AuditEvent`,
+…) are the addon subscription interface and have nothing to do with gameplay. Removing the
+bus would end the addon system, so it was kept. Flagged to the owner rather than assumed
+silently; the asymmetry decided it — keeping it wrongly is a small follow-up, deleting it
+wrongly is not.
+
+**Deleted (16 files):**
+
+- API: the whole `api.trigger` package — `EventManager`, `TriggerEventType`,
+  `ActiveTriggerEvent`, `TriggerEventContext`, `TriggerEventStatus`
+- API: bus events `TriggerEventStartEvent`, `TriggerEventEndEvent`, `TriggerEventFailEvent`
+- Core: the whole `core.trigger` package — `TriggerEventService`, `EventManagerImpl`,
+  `EventSpawning`, `MobWaveEvent`, `BossFightEvent`, `ResourceBurstEvent`
+- Core: `core.cobblemon.LegendaryEncounterEvent`
+- Example addon: `FireworkCelebrationEvent`
+
+**Also removed, because "no leftovers" means these too:**
+
+- `OneBlockAPI.eventManager()` and its implementation
+- the break hook call, the `/ob info` "active event" line, the registration block and the
+  tick/shutdown hooks in `OneBlockCore`
+- config fields `trigger_event_threshold`, `event_cooldown_seconds`, `event_timeout_seconds`,
+  `legendary_species`, their defaults, their validation clamps and the now-unused
+  `stringList`/`stringArray` Jankson helpers
+- **wizard question 4** — the wizard is now 7 questions, and questions 5–8 were renumbered
+  to 4–7 everywhere (code, `ADMIN.md`, `PROJECT_PLAN.md`)
+- 15 language keys per language file; `en_us` and `de_de` verified to still have identical
+  key sets (137 each)
+- the feature line in `fabric.mod.json`, `README.md`, `ADMIN.md` and `API.md`
+
+**Kept deliberately, and why:** `PROJECT_PLAN.md` Phase 7 stays, marked
+**❌ ZURÜCKGENOMMEN** with a pointer here. It is the design record, not documentation of a
+current feature, and when the replacement gets designed it is worth knowing exactly what was
+built and rejected. Say the word if it should be erased too.
+
+`API.md` gained a **changelog section** recording the removal. The versioning section always
+promised breaking changes would be listed in a changelog and there was none; now there is.
+No version bump and no migration note: `0.1.0` was never published, so nothing can have
+compiled against the removed types.
+
+**Verified on a real dev server:**
+
+| Check | Result |
+|---|---|
+| `./gradlew build`, all three modules | green |
+| Trigger classes in the built jars | 0 in core, 0 in api |
+| Repo-wide grep for the removed symbols | no hits outside the deliberate history in `PROJECT_PLAN.md`, `API.md` changelog and this file |
+| Server boot | clean, no event type registrations in the log |
+| `main.json5` regenerated | none of the four removed keys present |
+| Wizard end to end from the console | "Question 1/7" … "7/7", summary lists exactly 7 values with no event threshold, `confirm` saves, `setup_completed: true` |
+| `/ob setup set trigger_event_threshold 10` | rejected: "Unknown setting", valid-key list shows the 7 remaining keys |
+| `en_us` / `de_de` key parity | identical, 137 keys each |
+
+**Not verified:** `/ob info` no longer prints the "active event" line — the command needs a
+player, so it was not exercised. It is a deletion of one `sendSystemMessage` block, and the
+rest of `/ob info` is untouched.
+
+---
+
 ## 2026-08-13 — OneBlock drops go to the inventory; anchor foundation is now optional
 
 **Asked:** items from the OneBlock fall into the void — can they go straight into the

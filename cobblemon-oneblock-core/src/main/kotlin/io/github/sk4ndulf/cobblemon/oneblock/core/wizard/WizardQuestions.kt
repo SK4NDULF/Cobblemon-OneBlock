@@ -74,14 +74,12 @@ object WizardQuestions {
         }
     })
 
-    /** The 8 wizard questions, in order — mirrors the table in PROJECT_PLAN.md section 6. */
+    /** The 7 wizard questions, in order — mirrors the table in PROJECT_PLAN.md section 6. */
     val ALL: List<WizardQuestion> = listOf(
         intQuestion("hub_radius", 100, 5000, { it.hubRadius }, { c, v -> c.copy(hubRadius = v) }),
         intQuestion("max_island_size", 64, 10000, { it.maxIslandSize },
             { c, v -> c.copy(maxIslandSize = MainConfig.chunkAlign(v)) }),
         intQuestion("max_party_size", 1, 20, { it.maxPartySize }, { c, v -> c.copy(maxPartySize = v) }),
-        intQuestion("trigger_event_threshold", 10, 1000, { it.triggerEventThreshold },
-            { c, v -> c.copy(triggerEventThreshold = v) }),
         intQuestion("max_biome_regions", 1, 50, { it.maxBiomeRegions }, { c, v -> c.copy(maxBiomeRegions = v) }),
         doubleQuestion("cobblemon_spawn_multiplier", 0.1, 5.0, { it.cobblemonSpawnMultiplier },
             { c, v -> c.copy(cobblemonSpawnMultiplier = v) }),

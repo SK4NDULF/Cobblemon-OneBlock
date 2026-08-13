@@ -3,7 +3,7 @@
   "id": "cobblemon_oneblock",
   "version": "${version}",
   "name": "Cobblemon OneBlock",
-  "description": "Standalone Cobblemon OneBlock core mod: islands, progression, parties, permissions, trigger events, biome editor and Cobblemon integration in a single drag-and-drop server mod.",
+  "description": "Standalone Cobblemon OneBlock core mod: islands, progression, parties, permissions, treasure chests, biome editor and Cobblemon integration in a single drag-and-drop server mod.",
   "authors": ["SK4NDULF"],
   "contact": {
     "sources": "https://github.com/SK4NDULF/Cobblemon-OneBlock"

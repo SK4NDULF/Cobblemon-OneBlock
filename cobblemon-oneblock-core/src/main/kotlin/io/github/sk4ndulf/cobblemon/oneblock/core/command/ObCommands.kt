@@ -17,7 +17,6 @@ import io.github.sk4ndulf.cobblemon.oneblock.core.world.OneBlockDimension
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.PartyService
 import io.github.sk4ndulf.cobblemon.oneblock.core.moderation.BanService
 import io.github.sk4ndulf.cobblemon.oneblock.core.lang.ServerLang
-import io.github.sk4ndulf.cobblemon.oneblock.core.trigger.TriggerEventService
 import io.github.sk4ndulf.cobblemon.oneblock.core.wizard.SetupWizard
 import io.github.sk4ndulf.cobblemon.oneblock.core.wizard.WizardQuestions
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.HubManager
@@ -341,9 +340,6 @@ object ObCommands {
         context.source.sendSystemMessage(
             ServerLang.msg("cobblemon_oneblock.info.party", island.memberSet.size + 1, config.maxPartySize),
         )
-        TriggerEventService.activeTypeOn(island.id)?.let { eventId ->
-            context.source.sendSystemMessage(ServerLang.msg("cobblemon_oneblock.info.event_active", eventId.toString()))
-        }
         return Command.SINGLE_SUCCESS
     }
 

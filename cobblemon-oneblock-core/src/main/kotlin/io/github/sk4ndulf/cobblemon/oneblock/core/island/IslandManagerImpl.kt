@@ -13,7 +13,6 @@ import io.github.sk4ndulf.cobblemon.oneblock.core.biome.BiomeService
 import io.github.sk4ndulf.cobblemon.oneblock.core.config.MainConfig
 import io.github.sk4ndulf.cobblemon.oneblock.core.lang.ServerLang
 import io.github.sk4ndulf.cobblemon.oneblock.core.moderation.AuditLog
-import io.github.sk4ndulf.cobblemon.oneblock.core.trigger.TriggerEventService
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.GridMath
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.HubManager
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.OneBlockDimension
@@ -239,7 +238,6 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
         // registers the anchor to be swept at the end of the tick.
         DropCollector.queue(pos, player)
         ProgressionService.onBreak(island, level.server)
-        TriggerEventService.onBreak(island, level)
         repository.updateProgressAsync(island.id, island.breakCount, island.points, island.borderLevel)
         OneBlockCore.eventBus.post(OneBlockBreakEvent(island, player, state, next))
     }
