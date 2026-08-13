@@ -43,7 +43,7 @@ class OneBlockLootTable(private val configDir: Path, private val logger: Logger)
 
     private data class Entry(val state: BlockState, val weight: Int)
 
-    private var mode: String = MODE_ALL_BLOCKS
+    private var mode: String = MODE_BIOMES
     private var blacklist: Set<String> = emptySet()
     private var customEntries: List<Pair<String, Int>> = emptyList()
     private var excludePolymer: Boolean = true
@@ -54,6 +54,17 @@ class OneBlockLootTable(private val configDir: Path, private val logger: Logger)
     private val file: Path get() = configDir.resolve("loottable.json5")
 
     companion object {
+        /**
+         * The default since the tech tree landed: the pool is the island's own, assembled from
+         * the biome tiers it has unlocked. See [BiomePools].
+         */
+        const val MODE_BIOMES = "biomes"
+
+        /**
+         * Legacy. Every registered block, uniformly weighted — which is why it was replaced:
+         * the output never changes and therefore never means anything. Kept because servers
+         * running it should not have their world change under them on an update.
+         */
         const val MODE_ALL_BLOCKS = "all_blocks"
         const val MODE_CUSTOM = "custom"
 
@@ -135,9 +146,20 @@ class OneBlockLootTable(private val configDir: Path, private val logger: Logger)
      */
     fun buildPool(server: MinecraftServer) {
         val excluded = BUILTIN_BLACKLIST + blacklist
+        // The biome sets are always built, whatever the mode: an admin who switches modes with
+        // /ob reload should not also need a restart, and building them costs a registry lookup
+        // per configured block.
+        BiomePools.build(server, logger)
         entries = when (mode) {
+            MODE_BIOMES -> emptyList() // per-island; nothing global to build
             MODE_CUSTOM -> buildCustomPool(excluded)
             else -> buildAllBlocksPool(server, excluded)
+        }
+        if (mode == MODE_BIOMES) {
+            totalWeight = 0
+            logger.info("OneBlock loot mode: biomes — each island draws from what its tech tree unlocked.")
+            ChestLoot.buildPool(server, logger)
+            return
         }
         totalWeight = entries.sumOf { it.weight.toLong() }
         logger.info(
@@ -206,6 +228,17 @@ class OneBlockLootTable(private val configDir: Path, private val logger: Logger)
     private fun safeState(state: BlockState): BlockState =
         if (state.hasProperty(LeavesBlock.PERSISTENT)) state.setValue(LeavesBlock.PERSISTENT, true) else state
 
+    /**
+     * The next block for this island's OneBlock.
+     *
+     * In `biomes` mode the island decides, which is the whole point of the tech tree; the
+     * other two modes ignore it and keep their single global pool.
+     */
+    fun next(random: RandomSource, islandId: Long): BlockState {
+        if (mode == MODE_BIOMES) return BiomePools.next(islandId, random)
+        return next(random)
+    }
+
     fun next(random: RandomSource): BlockState {
         if (entries.isEmpty() || totalWeight <= 0) return Blocks.GRASS_BLOCK.defaultBlockState()
         var roll = random.nextLong().mod(totalWeight)
@@ -219,9 +252,14 @@ class OneBlockLootTable(private val configDir: Path, private val logger: Logger)
     private fun writeDefaults() {
         val root = JsonObject()
         root.put(
-            "mode", JsonPrimitive(MODE_ALL_BLOCKS),
-            "\"all_blocks\": every breakable, fluid-free, support-free block from Minecraft AND " +
-                "all mods (Cobblemon included), uniform chance. \"custom\": use the weighted 'entries' list below.",
+            "mode", JsonPrimitive(MODE_BIOMES),
+            "\"biomes\" (default): each island draws from the biome tiers its tech tree has " +
+                "unlocked. Edit the block sets in oneblock_biomes.json5 and the ladders that " +
+                "unlock them in techtree.json5. " +
+                "\"all_blocks\": legacy — every breakable, fluid-free, support-free block from " +
+                "Minecraft and all mods, uniform chance. It never changes as an island progresses, " +
+                "which is exactly why it was replaced. " +
+                "\"custom\": one fixed weighted pool for every island, from the 'entries' list below.",
         )
         val blacklistArray = JsonArray()
         root.put(

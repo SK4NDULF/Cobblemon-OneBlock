@@ -28,6 +28,67 @@ Running record of what was changed, why, and how far it was actually verified.
 
 ---
 
+## 2026-08-13 — Slice B: the OneBlock biome ladders
+
+**Asked:** build slice B — the one the whole rework exists for.
+
+**The problem it fixes,** restated because it is the reason the mod felt flat: in
+`all_blocks` mode the anchor drew from all 848 registered blocks, uniformly. Break one and
+break fifty thousand were statistically identical, so nothing that came out of the block ever
+meant anything. Now the pool is *the island's own*, assembled from the biome tiers its tech
+tree has unlocked.
+
+**What was built:**
+
+- `BiomePools` — the block sets, per biome per tier, from a new `oneblock_biomes.json5` with a
+  bundled default. Six biomes, 26 tiers, 149 blocks. An island with nothing unlocked gets the
+  deliberately poor four-block base set; each tier adds on top and the base never disappears,
+  it just becomes a smaller share.
+- A new `biomes` loot mode, now the default. `all_blocks` stays as documented legacy so a
+  running server does not have its world change under it on an update.
+- The yield nodes: `oneblock_yield` gives a chance that a break of that biome's blocks drops
+  twice. Rolled against the block that was **just broken**, not the one being placed, which is
+  what a player means by it — and it means a treasure chest can never be doubled, because a
+  chest belongs to no biome set.
+- `chest_chance` nodes now add to the configured base chance, per island.
+- `TechEffects` as the single place that answers "what does this island have", so the rule for
+  combining a ladder's effects lives once. That rule is **highest wins, not sum**: effects are
+  cumulative up a ladder, so rank 3 also carries rank 1 and 2, and summing would pay three
+  times for one purchase.
+
+Three of the nine effect types are now marked consumed; the startup report is down from eight
+unconsumed to five.
+
+**Two design notes worth keeping:**
+
+- The per-island pool is cached against the island's *unlock signature* rather than
+  invalidated by a hook. Buying a node changes the signature, so the rebuild happens by
+  itself and there is no invalidation call to forget.
+- The doubling copies what vanilla actually dropped rather than recomputing drops, so Fortune,
+  Silk Touch and anything another mod adds are all doubled for free — the same reasoning that
+  made `DropCollector` sweep the ground in the first place.
+
+**Verified how:** build green; server boots with the new mode and reports
+`4 base blocks, 6 biomes, 26 tiers, 149 blocks`, which matches the file by hand.
+
+The two safety filters were tested by injecting bad entries: `minecraft:bedrock` (unbreakable
+— would stop the island on that block forever), `minecraft:oak_sapling` and `minecraft:torch`
+(need support — would pop off the anchor and leave a hole over the void), and a block from a
+mod that is not installed. All four were logged with the reason and skipped, and the base set
+still resolved.
+
+**The filter also caught a mistake of mine in the shipped default:** `minecraft:soul_lantern`
+in Nether tier 5 needs a block under it. It was replaced with `minecraft:quartz_block`, and
+the file now boots with zero warnings. Worth noting because it is exactly the class of error
+that would otherwise only show up as a player falling into the void.
+
+**Still unverified — and this is the slice where it hurts most:** nothing about the actual
+play has been seen. No island exists on a headless server, so the per-island pool, the tier
+progression, the double drop and the chest bonus are all compiled and reasoned about, not
+observed. `HANDOFF.md` §4 test 12 is the script, and it is the most important one on that list.
+
+---
+
 ## 2026-08-13 — Island names
 
 **Asked:** "ja wir wollen owner insel bennen dürfen" — the owner may name their island. Came

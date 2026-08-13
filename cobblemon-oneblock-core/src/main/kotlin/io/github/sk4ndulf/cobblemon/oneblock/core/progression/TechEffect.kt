@@ -78,7 +78,11 @@ sealed interface TechEffect {
          * and stored but does nothing yet. Move a constant in here in the same commit that
          * adds its consumer — this list is what keeps the startup report honest.
          */
-        val CONSUMED: Set<String> = emptySet()
+        val CONSUMED: Set<String> = setOf(
+            TYPE_ONEBLOCK_BIOME, // BiomePools.poolFor
+            TYPE_ONEBLOCK_YIELD, // BiomePools.yieldChance
+            TYPE_CHEST_CHANCE, // TechEffects.chestChanceBonus
+        )
 
         val ALL_TYPES: Set<String> = setOf(
             TYPE_ONEBLOCK_BIOME, TYPE_ONEBLOCK_YIELD, TYPE_CHEST_CHANCE, TYPE_BORDER_SIZE,

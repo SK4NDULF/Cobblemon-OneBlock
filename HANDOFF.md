@@ -11,9 +11,10 @@ six-category tech tree. It carries the owner's full design, the review of it, th
 storage model, the point economy, verified Cobblemon 1.7.3 hooks, the open decisions and an
 eight-slice build plan. **Read it before touching progression, loot or Cobblemon code.**
 
-**Slices A (tree core) and D (chest menus) are shipped.** Slice B (the OneBlock biome ladders)
-is next and is the one that actually changes the game. Nothing gets coded from a decision still
-marked ⬜; D3 and D5 block slices H and E, neither of which is next.
+**Slices A (tree core), B (OneBlock biome ladders) and D (chest menus) are shipped.** Slice C
+(real point sources: NPC victories and advancements) is next and is what the whole economy is
+waiting on. Nothing gets coded from a decision still marked ⬜; D3 and D5 block slices H and E,
+neither of which is next.
 
 ⚠️ **The chest menus have never been opened by a real client.** They compile and their
 *contents* are covered by the tier report in the startup log, but every pixel of them is
@@ -234,6 +235,19 @@ cannot cross a border, enter the hub, or leak into the void buffer).
       nothing may vanish from the menu. This is the one that matters — a leak here duplicates
       items.
     - `/ob tech chat` still prints the text version.
+
+12. **The biome ladders** — the slice that changes the game, and the one that most needs eyes.
+    - Fresh island, break the block twenty times. You should see **only** grass, dirt,
+      cobblestone and oak planks. If anything else appears, the base set is leaking.
+    - `/ob tech grant <you> 20`, buy Forest rank 1, break again: oak logs and leaves start
+      appearing, and grass/dirt/cobble/planks are still there. The base never goes away.
+    - Buy Forest up to rank 3 and confirm birch, spruce, jungle and acacia join in.
+    - Buy Cave (needs 5 spent in OneBlock) and confirm stone and ores appear.
+    - Buy Forestcutter and break forest blocks until a double drop happens — both stacks must
+      land in the inventory, and with a full inventory the bonus must drop at your feet, not
+      into the void. Break a *cave* block: it must never double from a forest node.
+    - Break a treasure chest: it must never double either.
+    - Two islands at different tiers must see different blocks at the same time.
 
 11. **Island names** — `/ob rename My Base`, then check `/ob info`, the tech menu title and
     what a visitor sees. Restart and confirm it survived. Then the adversarial half, which is

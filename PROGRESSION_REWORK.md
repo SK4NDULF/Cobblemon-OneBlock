@@ -579,8 +579,10 @@ thing built. Slices A–C are the ones that must be right.
 - **A — Tree core. ✅ shipped 2026-08-13.** Node model, `techtree.json5` with validation,
   migration 9, `TechPointService` with island-scoped claims, `/ob tech` over chat, an admin
   grant command for testing before any real source exists. No payloads yet.
-- **B — The OneBlock ladder.** Biome tiers feeding `OneBlockLootTable`, yield nodes, chest
-  chance. **This is the slice where the game actually changes** — §3.1.
+- **B — The OneBlock ladder. ✅ shipped 2026-08-13.** Biome tiers feeding a per-island pool,
+  yield nodes, chest chance. **This is the slice where the game actually changes** — §3.1.
+  `all_blocks` is now legacy; `biomes` is the default mode. Block sets live in
+  `oneblock_biomes.json5`.
 - **C — Real point sources.** NPC victories via `BATTLE_VICTORY` + trainer `config` ids,
   the advancement mixin, and the announcement. Until this lands the tree has no economy.
 - **D — Chest menu. ✅ shipped 2026-08-13** (out of order, ahead of B and C: the menu depends

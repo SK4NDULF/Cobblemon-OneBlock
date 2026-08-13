@@ -129,10 +129,20 @@ object ChestLoot {
         }
     }
 
-    /** Rolls for a chest. Returns the loot table to use, or null for a normal block. */
-    fun roll(random: RandomSource): ResourceKey<LootTable>? {
-        if (!enabled || tables.isEmpty() || chance <= 0.0) return null
-        if (random.nextDouble() >= chance) return null
+    /**
+     * Rolls for a chest. Returns the loot table to use, or null for a normal block.
+     *
+     * [bonus] is the island's own `chest_chance` unlock, added to the configured base and
+     * clamped with it. Note that the base can be 0 while the bonus is not: an admin who turns
+     * chests off with `chance: 0.0` still leaves them buyable, which is the intended reading —
+     * `enabled: false` is the switch that turns the feature off entirely.
+     */
+    @JvmOverloads
+    fun roll(random: RandomSource, bonus: Double = 0.0): ResourceKey<LootTable>? {
+        if (!enabled || tables.isEmpty()) return null
+        val effective = (chance + bonus).coerceIn(0.0, 1.0)
+        if (effective <= 0.0) return null
+        if (random.nextDouble() >= effective) return null
         return tables[random.nextInt(tables.size)]
     }
 

@@ -1,0 +1,282 @@
+/*
+ * OneBlock biome sets — what the block actually produces.
+ *
+ * Copied to config/cobblemon_oneblock/oneblock_biomes.json5 on first start and never touched
+ * again, so your edits always win. Delete it to get this default back. Reload with /ob reload.
+ *
+ * "base" is what an island with nothing unlocked gets. It is meant to feel poor.
+ * "biomes" maps a biome id to its tiers. The tier numbers line up with the "tier" values of
+ * the oneblock_biome effects in techtree.json5 — buying Forest rank 3 unlocks forest tiers
+ * 1, 2 and 3, and all of them stay in the pool.
+ *
+ * The base set is never removed. Unlocking more biomes does not replace it, it just makes it
+ * a smaller share of the pool, which is why weights matter more than block counts.
+ *
+ * An entry is either a plain block id (weight 1) or {"block": "...", "weight": N}. Higher
+ * weight = more common. Unknown blocks are logged and skipped, so listing a modded block that
+ * is not installed is safe.
+ *
+ * TWO RULES THE SERVER ENFORCES FOR YOU, both logged when they fire:
+ *  - a block that cannot stand on its own is dropped. Saplings, torches, flowers, crops, rails
+ *    and anything else needing support would pop off the instant it became the anchor.
+ *  - an unbreakable block is dropped. Bedrock as the anchor would soft-lock the island.
+ *
+ * Things worth NOT adding, learned the hard way: ice (melts into water and drains away),
+ * powder snow (players fall through it into the void) and dragon eggs (teleport when hit,
+ * usually off the island). Lanterns and torches look like solid blocks in a list and are not —
+ * the support check catches them, but the log line is the only sign, so read it after editing.
+ */
+{
+  // The starting four. Deliberately dull — this is what buying nothing looks like.
+  "base": [
+    { "block": "minecraft:grass_block", "weight": 30 },
+    { "block": "minecraft:dirt", "weight": 30 },
+    { "block": "minecraft:cobblestone", "weight": 25 },
+    { "block": "minecraft:oak_planks", "weight": 15 },
+  ],
+
+  "biomes": {
+
+    // -----------------------------------------------------------------------------------
+    // Forest — wood and everything above ground. The cheapest ladder and the usual first
+    // buy, because wood is what a new island has none of.
+    // -----------------------------------------------------------------------------------
+    "forest": {
+      "1": [
+        { "block": "minecraft:oak_log", "weight": 30 },
+        { "block": "minecraft:oak_leaves", "weight": 24 },
+        { "block": "minecraft:stripped_oak_log", "weight": 10 },
+        { "block": "minecraft:oak_wood", "weight": 8 },
+        { "block": "minecraft:coarse_dirt", "weight": 10 },
+        { "block": "minecraft:rooted_dirt", "weight": 8 },
+        { "block": "minecraft:moss_block", "weight": 6 },
+      ],
+      "2": [
+        { "block": "minecraft:birch_log", "weight": 20 },
+        { "block": "minecraft:birch_leaves", "weight": 16 },
+        { "block": "minecraft:spruce_log", "weight": 20 },
+        { "block": "minecraft:spruce_leaves", "weight": 16 },
+        { "block": "minecraft:podzol", "weight": 10 },
+        { "block": "minecraft:mossy_cobblestone", "weight": 8 },
+      ],
+      "3": [
+        { "block": "minecraft:jungle_log", "weight": 18 },
+        { "block": "minecraft:jungle_leaves", "weight": 14 },
+        { "block": "minecraft:acacia_log", "weight": 16 },
+        { "block": "minecraft:acacia_leaves", "weight": 12 },
+        { "block": "minecraft:bamboo_block", "weight": 8 },
+        { "block": "minecraft:pumpkin", "weight": 6 },
+        { "block": "minecraft:melon", "weight": 6 },
+      ],
+      "4": [
+        { "block": "minecraft:cherry_log", "weight": 14 },
+        { "block": "minecraft:cherry_leaves", "weight": 12 },
+        { "block": "minecraft:mangrove_log", "weight": 12 },
+        { "block": "minecraft:mangrove_leaves", "weight": 10 },
+        { "block": "minecraft:mangrove_roots", "weight": 8 },
+        { "block": "minecraft:muddy_mangrove_roots", "weight": 8 },
+        { "block": "minecraft:packed_mud", "weight": 8 },
+      ],
+      // The payoff tier: things you would otherwise have to craft or go find.
+      "5": [
+        { "block": "minecraft:bookshelf", "weight": 8 },
+        { "block": "minecraft:barrel", "weight": 6 },
+        { "block": "minecraft:honeycomb_block", "weight": 5 },
+        { "block": "minecraft:beehive", "weight": 3 },
+        { "block": "minecraft:chiseled_bookshelf", "weight": 4 },
+        { "block": "minecraft:cartography_table", "weight": 3 },
+        { "block": "minecraft:fletching_table", "weight": 3 },
+      ],
+    },
+
+    // -----------------------------------------------------------------------------------
+    // Cave — stone and ores. The ladder that decides how fast an island can gear up.
+    // -----------------------------------------------------------------------------------
+    "cave": {
+      "1": [
+        { "block": "minecraft:stone", "weight": 30 },
+        { "block": "minecraft:andesite", "weight": 15 },
+        { "block": "minecraft:diorite", "weight": 15 },
+        { "block": "minecraft:granite", "weight": 15 },
+        { "block": "minecraft:gravel", "weight": 12 },
+        { "block": "minecraft:tuff", "weight": 10 },
+      ],
+      "2": [
+        { "block": "minecraft:deepslate", "weight": 20 },
+        { "block": "minecraft:cobbled_deepslate", "weight": 18 },
+        { "block": "minecraft:coal_ore", "weight": 12 },
+        { "block": "minecraft:copper_ore", "weight": 10 },
+        { "block": "minecraft:iron_ore", "weight": 8 },
+        { "block": "minecraft:dripstone_block", "weight": 8 },
+        { "block": "minecraft:calcite", "weight": 6 },
+      ],
+      "3": [
+        { "block": "minecraft:deepslate_coal_ore", "weight": 10 },
+        { "block": "minecraft:deepslate_iron_ore", "weight": 8 },
+        { "block": "minecraft:redstone_ore", "weight": 8 },
+        { "block": "minecraft:gold_ore", "weight": 6 },
+        { "block": "minecraft:lapis_ore", "weight": 5 },
+        { "block": "minecraft:amethyst_block", "weight": 4 },
+        { "block": "minecraft:smooth_basalt", "weight": 8 },
+      ],
+      "4": [
+        { "block": "minecraft:deepslate_redstone_ore", "weight": 6 },
+        { "block": "minecraft:deepslate_gold_ore", "weight": 4 },
+        { "block": "minecraft:deepslate_lapis_ore", "weight": 4 },
+        { "block": "minecraft:raw_iron_block", "weight": 3 },
+        { "block": "minecraft:raw_copper_block", "weight": 3 },
+        { "block": "minecraft:diamond_ore", "weight": 3 },
+        { "block": "minecraft:emerald_ore", "weight": 2 },
+      ],
+      "5": [
+        { "block": "minecraft:sculk", "weight": 10 },
+        { "block": "minecraft:deepslate_diamond_ore", "weight": 3 },
+        { "block": "minecraft:deepslate_emerald_ore", "weight": 2 },
+        { "block": "minecraft:sculk_catalyst", "weight": 2 },
+        { "block": "minecraft:raw_gold_block", "weight": 2 },
+        { "block": "minecraft:diamond_block", "weight": 1 },
+      ],
+    },
+
+    // -----------------------------------------------------------------------------------
+    // Ocean — four tiers, because there are four honest ocean block sets and padding it to
+    // five would mean inventing one.
+    // -----------------------------------------------------------------------------------
+    "ocean": {
+      "1": [
+        { "block": "minecraft:sand", "weight": 25 },
+        { "block": "minecraft:gravel", "weight": 18 },
+        { "block": "minecraft:clay", "weight": 15 },
+        { "block": "minecraft:sandstone", "weight": 12 },
+      ],
+      "2": [
+        { "block": "minecraft:prismarine", "weight": 15 },
+        { "block": "minecraft:prismarine_bricks", "weight": 10 },
+        { "block": "minecraft:dark_prismarine", "weight": 8 },
+        { "block": "minecraft:dried_kelp_block", "weight": 8 },
+        { "block": "minecraft:tube_coral_block", "weight": 6 },
+        { "block": "minecraft:magma_block", "weight": 4 },
+      ],
+      "3": [
+        { "block": "minecraft:brain_coral_block", "weight": 6 },
+        { "block": "minecraft:bubble_coral_block", "weight": 6 },
+        { "block": "minecraft:fire_coral_block", "weight": 6 },
+        { "block": "minecraft:horn_coral_block", "weight": 6 },
+        { "block": "minecraft:sea_lantern", "weight": 5 },
+        { "block": "minecraft:sponge", "weight": 3 },
+      ],
+      "4": [
+        { "block": "minecraft:sea_lantern", "weight": 8 },
+        { "block": "minecraft:sponge", "weight": 4 },
+        { "block": "minecraft:chiseled_sandstone", "weight": 6 },
+        { "block": "minecraft:gold_block", "weight": 2 },
+        { "block": "minecraft:conduit", "weight": 1 },
+      ],
+    },
+
+    // -----------------------------------------------------------------------------------
+    // Tundra — snow, ice and spruce. Also four tiers, same reason as Ocean.
+    // Note: only packed and blue ice. Plain ice melts into water and drains into the void.
+    // -----------------------------------------------------------------------------------
+    "tundra": {
+      "1": [
+        { "block": "minecraft:snow_block", "weight": 25 },
+        { "block": "minecraft:packed_ice", "weight": 15 },
+        { "block": "minecraft:spruce_log", "weight": 15 },
+        { "block": "minecraft:spruce_leaves", "weight": 12 },
+      ],
+      "2": [
+        { "block": "minecraft:blue_ice", "weight": 10 },
+        { "block": "minecraft:stripped_spruce_log", "weight": 10 },
+        { "block": "minecraft:spruce_planks", "weight": 12 },
+        { "block": "minecraft:coarse_dirt", "weight": 10 },
+        { "block": "minecraft:andesite", "weight": 8 },
+      ],
+      "3": [
+        { "block": "minecraft:bone_block", "weight": 8 },
+        { "block": "minecraft:white_wool", "weight": 8 },
+        { "block": "minecraft:white_concrete", "weight": 6 },
+        { "block": "minecraft:calcite", "weight": 8 },
+        { "block": "minecraft:diorite", "weight": 10 },
+      ],
+      "4": [
+        { "block": "minecraft:blue_ice", "weight": 10 },
+        { "block": "minecraft:packed_ice", "weight": 10 },
+        { "block": "minecraft:lapis_block", "weight": 2 },
+        { "block": "minecraft:iron_block", "weight": 2 },
+      ],
+    },
+
+    // -----------------------------------------------------------------------------------
+    // Nether — the first ladder that needs a real investment, and the one that opens the End.
+    // -----------------------------------------------------------------------------------
+    "nether": {
+      "1": [
+        { "block": "minecraft:netherrack", "weight": 30 },
+        { "block": "minecraft:soul_sand", "weight": 12 },
+        { "block": "minecraft:soul_soil", "weight": 12 },
+        { "block": "minecraft:nether_bricks", "weight": 10 },
+        { "block": "minecraft:basalt", "weight": 12 },
+      ],
+      "2": [
+        { "block": "minecraft:blackstone", "weight": 15 },
+        { "block": "minecraft:crimson_stem", "weight": 12 },
+        { "block": "minecraft:warped_stem", "weight": 12 },
+        { "block": "minecraft:crimson_nylium", "weight": 8 },
+        { "block": "minecraft:warped_nylium", "weight": 8 },
+        { "block": "minecraft:nether_wart_block", "weight": 8 },
+        { "block": "minecraft:warped_wart_block", "weight": 8 },
+      ],
+      "3": [
+        { "block": "minecraft:nether_quartz_ore", "weight": 10 },
+        { "block": "minecraft:nether_gold_ore", "weight": 8 },
+        { "block": "minecraft:glowstone", "weight": 8 },
+        { "block": "minecraft:magma_block", "weight": 8 },
+        { "block": "minecraft:shroomlight", "weight": 5 },
+        { "block": "minecraft:crimson_planks", "weight": 8 },
+        { "block": "minecraft:warped_planks", "weight": 8 },
+      ],
+      "4": [
+        { "block": "minecraft:polished_blackstone", "weight": 8 },
+        { "block": "minecraft:polished_blackstone_bricks", "weight": 6 },
+        { "block": "minecraft:chiseled_polished_blackstone", "weight": 4 },
+        { "block": "minecraft:gilded_blackstone", "weight": 3 },
+        { "block": "minecraft:obsidian", "weight": 4 },
+        { "block": "minecraft:crying_obsidian", "weight": 2 },
+      ],
+      "5": [
+        { "block": "minecraft:chain", "weight": 5 },
+        { "block": "minecraft:quartz_block", "weight": 5 },
+        { "block": "minecraft:lodestone", "weight": 2 },
+        { "block": "minecraft:respawn_anchor", "weight": 1 },
+        { "block": "minecraft:ancient_debris", "weight": 1 },
+        { "block": "minecraft:netherite_block", "weight": 1 },
+      ],
+    },
+
+    // -----------------------------------------------------------------------------------
+    // End — three tiers, each expensive. This is the top of the OneBlock ladder, and once
+    // the Special system lands it should open behind a boss rather than behind points.
+    // -----------------------------------------------------------------------------------
+    "end": {
+      "1": [
+        { "block": "minecraft:end_stone", "weight": 30 },
+        { "block": "minecraft:end_stone_bricks", "weight": 15 },
+        { "block": "minecraft:purpur_block", "weight": 10 },
+        { "block": "minecraft:purpur_pillar", "weight": 8 },
+      ],
+      "2": [
+        { "block": "minecraft:obsidian", "weight": 10 },
+        { "block": "minecraft:purpur_slab", "weight": 8 },
+        { "block": "minecraft:end_rod", "weight": 5 },
+        { "block": "minecraft:magenta_stained_glass", "weight": 5 },
+      ],
+      "3": [
+        { "block": "minecraft:obsidian", "weight": 12 },
+        { "block": "minecraft:crying_obsidian", "weight": 4 },
+        { "block": "minecraft:shulker_box", "weight": 4 },
+        { "block": "minecraft:beacon", "weight": 1 },
+      ],
+    },
+  },
+}

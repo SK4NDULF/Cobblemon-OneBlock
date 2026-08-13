@@ -13,6 +13,7 @@ import io.github.sk4ndulf.cobblemon.oneblock.core.biome.BiomeService
 import io.github.sk4ndulf.cobblemon.oneblock.core.config.MainConfig
 import io.github.sk4ndulf.cobblemon.oneblock.core.lang.ServerLang
 import io.github.sk4ndulf.cobblemon.oneblock.core.moderation.AuditLog
+import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechEffects
 import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechService
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.GridMath
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.HubManager
@@ -237,16 +238,23 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
         // chest roll, then the configured block pool. A provider that answers therefore also
         // suppresses the chest for that break — it asked for a specific block, it gets it.
         val provided = LootRegistryImpl.query(island, level)
-        val chestTable = if (provided == null) ChestLoot.roll(level.random) else null
+        val chestTable =
+            if (provided == null) ChestLoot.roll(level.random, TechEffects.chestChanceBonus(island.id)) else null
         val next = provided
             ?: chestTable?.let { ChestLoot.chestState(level.random) }
-            ?: OneBlockCore.lootTable.next(level.random)
+            ?: OneBlockCore.lootTable.next(level.random, island.id)
         level.setBlockAndUpdate(pos, next)
         // Only after the block exists — the chest's block entity is created by the placement.
         chestTable?.let { ChestLoot.fill(level, pos, it) }
+
+        // The yield bonus is rolled against the block that was *just broken*, not the one being
+        // placed. That is what a player means by "this drops twice", and it also means a
+        // treasure chest can never be doubled: a chest belongs to no biome set.
+        val doubled = level.random.nextDouble() < BiomePools.yieldChance(island.id, state.block)
+
         // Vanilla has not dropped anything yet at this point (see DropCollector); this only
         // registers the anchor to be swept at the end of the tick.
-        DropCollector.queue(pos, player)
+        DropCollector.queue(pos, player, doubled)
         ProgressionService.onBreak(island, level.server)
         repository.updateProgressAsync(island.id, island.breakCount, island.points, island.borderLevel)
         OneBlockCore.eventBus.post(OneBlockBreakEvent(island, player, state, next))
@@ -276,7 +284,7 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
     }
 
     private fun placeInitialBlock(level: ServerLevel, island: IslandData) {
-        level.setBlockAndUpdate(island.oneBlockPos(), OneBlockCore.lootTable.next(level.random))
+        level.setBlockAndUpdate(island.oneBlockPos(), OneBlockCore.lootTable.next(level.random, island.id))
     }
 
     /**
@@ -361,6 +369,7 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
                 // (PROGRESSION_REWORK.md §4.3). A player who runs /ob reset gets a brand new
                 // island id and therefore an empty tree immediately, which is what they see.
                 TechService.clear(island.id)
+                BiomePools.forget(island.id)
                 // Slot stays reserved: the area still contains the old builds. Slot reuse
                 // arrives together with chunk clearing (see PROJECT_PLAN.md open points).
                 OneBlockCore.LOGGER.info("Purged archived island {} (slot {}).", island.id, island.slot())

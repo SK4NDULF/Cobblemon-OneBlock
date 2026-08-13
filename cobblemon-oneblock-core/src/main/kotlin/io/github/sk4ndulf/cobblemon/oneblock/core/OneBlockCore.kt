@@ -7,6 +7,7 @@ import io.github.sk4ndulf.cobblemon.oneblock.core.command.ObCommands
 import io.github.sk4ndulf.cobblemon.oneblock.core.config.ConfigManager
 import io.github.sk4ndulf.cobblemon.oneblock.core.db.Database
 import io.github.sk4ndulf.cobblemon.oneblock.core.db.PlayerRepository
+import io.github.sk4ndulf.cobblemon.oneblock.core.island.BiomePools
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.DropCollector
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.IslandManagerImpl
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.IslandRepository
@@ -76,6 +77,7 @@ object OneBlockCore : ModInitializer {
         configManager.loadAll()
         ServerLang.load(configManager.mainConfig.language, LOGGER)
         lootTable.load()
+        BiomePools.load(FabricLoader.getInstance().configDir.resolve(MOD_ID), LOGGER)
         loadTechTree()
 
         OneBlockAPIHolder.set(OneBlockAPIImpl(eventBus))

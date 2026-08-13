@@ -51,14 +51,21 @@ object DropCollector {
     /** How many ticks one break stays watched. One is enough; two is insurance against ordering. */
     private const val TICKS_WATCHED = 2
 
-    private data class Pending(val pos: BlockPos, val player: UUID, var ticksLeft: Int)
+    private data class Pending(
+        val pos: BlockPos,
+        val player: UUID,
+        /** The island's yield bonus hit for this break: everything collected is given twice. */
+        val doubled: Boolean,
+        var ticksLeft: Int,
+    )
 
     private val pending = ArrayList<Pending>()
 
     /** Records a break to collect from. No-op when the feature is switched off. */
-    fun queue(pos: BlockPos, player: ServerPlayer) {
+    @JvmOverloads
+    fun queue(pos: BlockPos, player: ServerPlayer, doubled: Boolean = false) {
         if (!OneBlockCore.configManager.mainConfig.oneBlockDropsToInventory) return
-        pending.add(Pending(pos.immutable(), player.uuid, TICKS_WATCHED))
+        pending.add(Pending(pos.immutable(), player.uuid, doubled, TICKS_WATCHED))
     }
 
     /** Called once per tick from the core. Cheap when nothing was broken: the list is empty. */
@@ -69,7 +76,7 @@ object DropCollector {
         while (iterator.hasNext()) {
             val entry = iterator.next()
             if (level != null) {
-                server.playerList.getPlayer(entry.player)?.let { sweep(level, entry.pos, it) }
+                server.playerList.getPlayer(entry.player)?.let { sweep(level, entry.pos, it, entry.doubled) }
             }
             if (--entry.ticksLeft <= 0) iterator.remove()
         }
@@ -78,7 +85,7 @@ object DropCollector {
     /** Drops everything pending, e.g. on shutdown or when the island registry is rebuilt. */
     fun clear() = pending.clear()
 
-    private fun sweep(level: ServerLevel, pos: BlockPos, player: ServerPlayer) {
+    private fun sweep(level: ServerLevel, pos: BlockPos, player: ServerPlayer, doubled: Boolean) {
         val box = AABB(pos).inflate(SWEEP_RADIUS)
 
         val items = level.getEntitiesOfClass(ItemEntity::class.java, box) {
@@ -86,6 +93,10 @@ object DropCollector {
         }
         for (item in items) {
             val stack = item.item
+            // Copied before the stack is handed to the inventory, because add() mutates it.
+            // Doubling what vanilla actually dropped — rather than recomputing the drops —
+            // means Fortune, Silk Touch and anything another mod added are all doubled too.
+            val bonus = if (doubled) stack.copy() else null
             val before = stack.count
             // add() mutates the stack in place, so what is left afterwards is the remainder.
             player.inventory.add(stack)
@@ -101,6 +112,7 @@ object DropCollector {
                 item.setPos(player.x, player.y, player.z)
                 item.deltaMovement = Vec3.ZERO
             }
+            bonus?.let { giveOrDrop(level, player, it) }
         }
 
         val orbs = level.getEntitiesOfClass(ExperienceOrb::class.java, box) {
@@ -110,6 +122,23 @@ object DropCollector {
             player.giveExperiencePoints(orb.value)
             orb.discard()
         }
+    }
+
+    /**
+     * Gives the yield bonus to the player, or drops it at their feet if the inventory is full.
+     *
+     * At their feet and not at the anchor: the anchor floats over the void, and a bonus that
+     * falls into it is worse than no bonus at all.
+     */
+    private fun giveOrDrop(level: ServerLevel, player: ServerPlayer, stack: net.minecraft.world.item.ItemStack) {
+        player.inventory.add(stack)
+        if (stack.isEmpty) {
+            playPickupSound(level, player)
+            return
+        }
+        val dropped = ItemEntity(level, player.x, player.y, player.z, stack)
+        dropped.setNoPickUpDelay()
+        level.addFreshEntity(dropped)
     }
 
     /** Vanilla's own pickup sound, same pitch spread — otherwise the drops vanish silently. */

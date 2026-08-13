@@ -12,6 +12,7 @@ import io.github.sk4ndulf.cobblemon.oneblock.core.cobblemon.BuffType
 import io.github.sk4ndulf.cobblemon.oneblock.core.biome.BiomeEditor
 import io.github.sk4ndulf.cobblemon.oneblock.core.biome.BiomeService
 import io.github.sk4ndulf.cobblemon.oneblock.core.cobblemon.CobblemonIntegration
+import io.github.sk4ndulf.cobblemon.oneblock.core.island.BiomePools
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.IslandData
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.IslandNames
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.OneBlockDimension
@@ -612,6 +613,7 @@ object ObCommands {
         OneBlockCore.configManager.loadAll()
         ServerLang.load(OneBlockCore.configManager.mainConfig.language, OneBlockCore.LOGGER)
         OneBlockCore.lootTable.load()
+        BiomePools.load(OneBlockCore.configManager.configDir, OneBlockCore.LOGGER)
         OneBlockCore.loadTechTree()
 
         // Reconnecting the pool and testing the connection blocks — keep it off the server thread.
