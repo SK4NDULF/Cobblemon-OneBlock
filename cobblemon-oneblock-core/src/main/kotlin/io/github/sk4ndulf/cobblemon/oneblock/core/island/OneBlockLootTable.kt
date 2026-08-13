@@ -87,9 +87,46 @@ class OneBlockLootTable(private val configDir: Path, private val logger: Logger)
                 val weight = (obj.get("weight") as? JsonPrimitive)?.asInt(0) ?: 0
                 if (weight > 0) block to weight else null
             } ?: emptyList()
+            loadChestSection(json)
         } catch (e: Exception) {
             logger.error("Could not read loottable.json5 ({}) — keeping previous settings.", e.message)
         }
+    }
+
+    /**
+     * Reads the `chests` section. A file written before treasure chests existed has no such
+     * section — that is not an error, the defaults apply, but say so once so the admin knows
+     * the knobs exist at all.
+     */
+    private fun loadChestSection(json: JsonObject) {
+        val chests = json.get("chests") as? JsonObject
+        if (chests == null) {
+            ChestLoot.configure(
+                ChestLoot.DEFAULT_ENABLED,
+                ChestLoot.DEFAULT_CHANCE,
+                ChestLoot.DEFAULT_INCLUDE_MODDED,
+                emptySet(),
+                emptyList(),
+            )
+            logger.info(
+                "loottable.json5 has no \"chests\" section — using defaults (enabled, {}% of breaks). " +
+                    "Delete the file to regenerate it with the documented settings.",
+                ChestLoot.DEFAULT_CHANCE * 100.0,
+            )
+            return
+        }
+        ChestLoot.configure(
+            enabled = (chests.get("enabled") as? JsonPrimitive)?.asBoolean(ChestLoot.DEFAULT_ENABLED)
+                ?: ChestLoot.DEFAULT_ENABLED,
+            chance = (chests.get("chance") as? JsonPrimitive)?.asDouble(ChestLoot.DEFAULT_CHANCE)
+                ?: ChestLoot.DEFAULT_CHANCE,
+            includeModded = (chests.get("include_modded") as? JsonPrimitive)
+                ?.asBoolean(ChestLoot.DEFAULT_INCLUDE_MODDED) ?: ChestLoot.DEFAULT_INCLUDE_MODDED,
+            blacklist = (chests.get("blacklist") as? JsonArray)
+                ?.mapNotNull { (it as? JsonPrimitive)?.asString() }?.toSet() ?: emptySet(),
+            extra = (chests.get("extra") as? JsonArray)
+                ?.mapNotNull { (it as? JsonPrimitive)?.asString() } ?: emptyList(),
+        )
     }
 
     /**
@@ -108,6 +145,7 @@ class OneBlockLootTable(private val configDir: Path, private val logger: Logger)
             mode, entries.size, totalWeight,
             if (excludePolymer && PolymerCompat.available) " (Polymer content excluded)" else "",
         )
+        ChestLoot.buildPool(server, logger)
     }
 
     private fun buildCustomPool(excluded: Set<String>): List<Entry> {
@@ -195,6 +233,44 @@ class OneBlockLootTable(private val configDir: Path, private val logger: Logger)
             "Skip blocks and items registered through Polymer. They exist only on the server " +
                 "and vanilla clients see a stand-in block, so mining them is confusing. " +
                 "Only set this to false if you know your Polymer content behaves like a real block.",
+        )
+        val chests = JsonObject()
+        chests.put(
+            "enabled", JsonPrimitive(ChestLoot.DEFAULT_ENABLED),
+            "Let the OneBlock turn into a treasure chest instead of a plain block sometimes. " +
+                "The chest is filled from a real chest loot table — mineshafts, dungeons, temples, " +
+                "villages, strongholds, shipwrecks and whatever else this server has.",
+        )
+        chests.put(
+            "chance", JsonPrimitive(ChestLoot.DEFAULT_CHANCE),
+            "Share of breaks that produce a chest. 0.02 = 2%, roughly one chest every 50 blocks. " +
+                "Clamped to 0.0-1.0. Flat by design: it never scales with border level, because " +
+                "difficulty scales on this project and rewards do not.",
+        )
+        chests.put(
+            "include_modded", JsonPrimitive(ChestLoot.DEFAULT_INCLUDE_MODDED),
+            "false = only Minecraft's own chest loot tables. true = every \"chests/...\" loot table " +
+                "any mod or data pack registered. Modded structure loot can be far outside vanilla " +
+                "balance, so this is off by default. The startup log reports how many were skipped.",
+        )
+        chests.put(
+            "blacklist", JsonArray(),
+            "Loot table ids never used, e.g. \"minecraft:chests/end_city_treasure\".",
+        )
+        chests.put(
+            "extra", JsonArray(),
+            "Loot table ids added to the pool verbatim, whatever their path. The \"chests/...\" " +
+                "convention above is Minecraft's own; a mod is free to ignore it. Cobblemon does — " +
+                "its structure chest loot lives under \"cobblemon:ruins/gilded_chests/ruins\", " +
+                "\"cobblemon:shipwreck_coves/gilded_chests/big_treasure\" and similar, so list those " +
+                "here if you want them. Ids that do not exist are reported in the log and skipped. " +
+                "Note that Cobblemon already injects its items into the vanilla chest tables, so the " +
+                "normal pool contains Cobblemon loot without any of this.",
+        )
+        root.put(
+            "chests", chests,
+            "Treasure chests from the OneBlock. Chest contents are vanilla's, not this mod's — " +
+                "edit the loot tables with a data pack if you want different loot.",
         )
         val array = JsonArray()
         for ((blockId, weight) in CUSTOM_EXAMPLE) {

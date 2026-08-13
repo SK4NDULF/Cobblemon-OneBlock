@@ -83,6 +83,46 @@ registered through [Polymer](https://github.com/Patbox/polymer) only exist on th
 a vanilla client sees a stand-in block instead — so mining them confuses players. Detection
 works without Polymer installed; on a server without it the setting simply does nothing.
 
+### Treasure chests
+
+A share of breaks turns the OneBlock into a **loot chest** instead of a plain block. The
+chest is filled from a real chest loot table — the same ones world generation uses for
+mineshafts, dungeons, temples, villages, strongholds, shipwrecks and so on. Contents are
+vanilla's, not this mod's: change them with a data pack and the OneBlock follows.
+
+Settings live in the `chests` section of `loottable.json5`:
+
+| Key | Default | Meaning |
+|---|---|---|
+| `enabled` | `true` | chests on or off |
+| `chance` | `0.02` | share of breaks producing a chest — 2%, roughly one per 50 blocks. Clamped to `0.0`–`1.0` |
+| `include_modded` | `false` | also use non-`minecraft:` loot tables that follow the `chests/...` naming convention |
+| `blacklist` | `[]` | loot table ids never used |
+| `extra` | `[]` | loot table ids added verbatim, whatever their path |
+
+The pool is discovered from the server's loot table registry at startup, so a data pack
+that adds `chests/...` tables is picked up without a code change. `/ob reload` rebuilds it.
+Vanilla 1.21.1 alone contributes 56 tables.
+
+**The chance never scales with border level.** Difficulty scales on this project, rewards
+do not — see `PROJECT_PLAN.md`.
+
+**About Cobblemon loot.** You do not need to configure anything to get it: Cobblemon
+*injects* its items into the vanilla chest loot tables, so the normal pool already hands
+out Cobblemon content. What the pool does *not* pick up is Cobblemon's own structure chest
+loot, because it ignores the `chests/...` convention — `include_modded` cannot find it
+either. List those explicitly under `extra` if you want them:
+
+```json5
+"extra": [
+  "cobblemon:ruins/gilded_chests/ruins",
+  "cobblemon:shipwreck_coves/gilded_chests/big_treasure",
+]
+```
+
+Ids that do not parse or do not exist on this server are named in the log and skipped —
+a typo costs you one entry, never the whole pool.
+
 ### Switching to MySQL / MariaDB
 
 SQLite is fine for a single server. For a network, edit `database.json5`:

@@ -194,6 +194,11 @@ Called once per break on the server thread — keep it fast and never block.
 Server owners configure the base pool in `config/cobblemon_oneblock/loottable.json5` (default: every
 breakable, fluid-free block from Minecraft, Cobblemon and every other installed mod).
 
+**Precedence.** Providers → treasure chest roll → configured block pool. A provider that
+answers therefore also suppresses the chest for that break: it asked for a specific block,
+it gets that block. If you want your phase to keep handing out chests, return
+`Optional.empty()` for the breaks you do not care about rather than pinning every one.
+
 ---
 
 ## 7. Versioning

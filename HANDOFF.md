@@ -1,7 +1,10 @@
 # Handoff — Cobblemon OneBlock
 
-Status snapshot for the next Claude Code session. **Read this first**, then
-`PROJECT_PLAN.md` for the design decisions behind everything.
+Status snapshot for the next Claude Code session. **Read this first**, then the newest entry
+in `WORKLOG.md` for how we got here, then `PROJECT_PLAN.md` for the design decisions behind
+everything.
+
+This file is the snapshot; `WORKLOG.md` is the running history. Keep both current.
 
 ---
 
@@ -165,6 +168,9 @@ cannot cross a border, enter the hub, or leak into the void buffer).
 - The example addon registers a loot provider and a trigger event type through the
   public API at runtime — proof the two-module split works
 - Trigger event ticker stable over ~860 ticks; repair timer stable over 2 cycles
+- Treasure chest pool: 56 vanilla chest loot tables discovered from the live registry;
+  `chance` clamping, `blacklist`, `extra` (including both failure modes) and `/ob reload`
+  all exercised — see `WORKLOG.md`
 
 ### 🟡 Needs a human in-game
 
@@ -181,6 +187,11 @@ cannot cross a border, enter the hub, or leak into the void buffer).
    `Restored the missing OneBlock of island …`.
 7. **`/ob visit <player>`** — teleport, ban enforcement, and that dying as a visitor
    still respawns you at your **own** island.
+8. **Treasure chests** — set `chests.chance` to `1.0` in `loottable.json5`, `/ob reload`,
+   then break the OneBlock. Every break should become a chest holding structure loot, and
+   breaking that chest should regenerate the anchor as normal. The break path runs on
+   `PlayerBlockBreakEvents.AFTER` and cannot be reached from the server console, so no
+   headless test covers it.
 
 ---
 
@@ -225,9 +236,9 @@ Do not "fix" these without asking — each was a deliberate call, recorded in
 - A per-island "private" toggle. Bans cover the practical need today, which is why it was
   skipped — it would need another DB column.
 
-**Docs to keep in sync when changing behaviour:** `ADMIN.md` (permission nodes, config,
-precedence), `API.md` (events, extension points, semver), `PROJECT_PLAN.md` (decisions),
-`README.md` (install table).
+**Docs to keep in sync when changing behaviour:** `WORKLOG.md` (one entry per change —
+always), `ADMIN.md` (permission nodes, config, precedence), `API.md` (events, extension
+points, semver), `PROJECT_PLAN.md` (decisions), `README.md` (install table).
 
 ---
 

@@ -224,9 +224,17 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
         // that includes the break it is deciding for (that is what API.md promises).
         island.breakCount++
 
-        // Addon loot providers get the first say; otherwise the configured pool decides.
-        val next = LootRegistryImpl.query(island, level) ?: OneBlockCore.lootTable.next(level.random)
+        // Addon loot providers get the first say (API.md promises that), then the treasure
+        // chest roll, then the configured block pool. A provider that answers therefore also
+        // suppresses the chest for that break — it asked for a specific block, it gets it.
+        val provided = LootRegistryImpl.query(island, level)
+        val chestTable = if (provided == null) ChestLoot.roll(level.random) else null
+        val next = provided
+            ?: chestTable?.let { ChestLoot.chestState(level.random) }
+            ?: OneBlockCore.lootTable.next(level.random)
         level.setBlockAndUpdate(pos, next)
+        // Only after the block exists — the chest's block entity is created by the placement.
+        chestTable?.let { ChestLoot.fill(level, pos, it) }
         ProgressionService.onBreak(island, level.server)
         TriggerEventService.onBreak(island, level)
         repository.updateProgressAsync(island.id, island.breakCount, island.points, island.borderLevel)
