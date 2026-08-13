@@ -33,7 +33,4 @@ data class TechNode(
     /** Effects that apply at [level], i.e. everything granted at or below it. */
     fun effectsUpTo(level: Int): List<TechEffect> =
         (1..level).flatMap { effects[it].orEmpty() }
-
-    /** True for a plain on/off node, which is shown differently from a ladder. */
-    val isSwitch: Boolean get() = maxLevel == 1
 }

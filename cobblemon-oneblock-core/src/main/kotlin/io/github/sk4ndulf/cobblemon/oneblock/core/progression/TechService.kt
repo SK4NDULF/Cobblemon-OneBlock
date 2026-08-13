@@ -77,6 +77,8 @@ object TechService {
             when (requirement) {
                 is TechRequirement.Node -> state.levelOf(requirement.nodeId) < requirement.level
                 is TechRequirement.LifetimePoints -> state.lifetimeEarned < requirement.total
+                is TechRequirement.CategorySpend ->
+                    state.spentIn(tree, requirement.category) < requirement.amount
                 // Bosses do not exist yet, so every boss gate is unmet. Deliberate: it keeps
                 // the gate honest instead of quietly opening. See default_techtree.json5.
                 is TechRequirement.Boss -> !state.hasClaimed("boss:${requirement.bossId}")

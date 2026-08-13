@@ -29,6 +29,19 @@ class IslandTechState(val islandId: Long) {
 
     fun hasClaimed(sourceId: String): Boolean = sourceId in claims
 
+    /**
+     * Points this island has sunk into one category — what a `spent:` gate reads.
+     *
+     * Recomputed from the levels rather than stored as a counter: a stored total would drift
+     * the moment an admin retunes a cost in `techtree.json5`, and this is only read when a
+     * node is inspected or bought, never in a hot path.
+     */
+    fun spentIn(tree: TechTree, category: TechCategory): Long =
+        levels.entries.sumOf { (nodeId, level) ->
+            val node = tree.node(nodeId)
+            if (node == null || node.category != category) 0L else node.costs.take(level).sum()
+        }
+
     /** Every effect currently active on this island, in node id order for stable output. */
     fun activeEffects(tree: TechTree): List<TechEffect> =
         levels.entries

@@ -196,20 +196,33 @@ are then content.
 ### 4.1 Node
 
 ```
-id            forest, forest_yield, fly, boost_shiny, type_fire_speed …
+id            forest, forestcutter, flight, shiny_boost, fire_threshold …
 category      ONEBLOCK | ISLAND | PLAYERS | POKEMON | BOOSTS | SPECIAL
-max_level     1 for a switch, 5 for the biome ladders
-cost(level)   map of currency → amount, for each level  (a map, so a second currency
-              can be added later without a migration)
+costs         price of each rank; THE LENGTH OF THIS LIST IS THE MAXIMUM RANK
 requires      list of gates, ALL must hold:
-                node:<id>>=<level>      another node at a level
+                node:<id>>=<rank>       another node at a rank
+                spent:<category>>=<n>   points sunk into that category — the tier gate
                 boss:<id>               a Special defeated by this island
-                tech_points>=<n>        a floor, for coarse tiering
-effects       list of typed payloads, applied at the level reached
-icon / lore   presentation only
+                tech_points>=<n>        lifetime earned, for coarse tiering
+effects       typed payloads per rank, cumulative
+icon / name / description   presentation only
 ```
 
-Levels are cumulative and never refundable in v1. Respec is a later question (**D6**).
+Ranks are cumulative and never refundable in v1. Respec is a later question (**D6**).
+
+**Ranks vary per node, on purpose** (owner, 2026-08-13, "wie in WoW"). A node is x/1, x/2,
+x/3, x/5, x/7 — whatever the content supports. Flight is x/1 because you either fly or you do
+not; Ocean is x/4 because there are four sensible ocean block sets; Border is x/7. There is no
+separate `max_level` field to keep in sync with the cost list, because two sources of truth for
+one number is how a rank ends up free or unreachable. Chat always renders the rank as
+`2/5`, including `1/1`, so a mixed tree stays scannable.
+
+**`spent:<category>>=n` is the tier gate, and it is what makes this a tree rather than a
+shopping list.** It does not care *which* nodes were bought, only that the island committed to
+the branch — so there are several routes to the same tier, and going deep in one branch is a
+real alternative to buying every cheap rank first. The OneBlock category tiers at 5, 15, 30 and
+50 points spent. Node prerequisites still exist alongside it for the cases where one specific
+thing must come first (End needs Nether ≥ 3, whatever else was bought).
 
 ### 4.2 Effect payloads
 
@@ -570,7 +583,17 @@ thing built. Slices A–C are the ones that must be right.
   chance. **This is the slice where the game actually changes** — §3.1.
 - **C — Real point sources.** NPC victories via `BATTLE_VICTORY` + trainer `config` ids,
   the advancement mixin, and the announcement. Until this lands the tree has no economy.
-- **D — Chest menu.** Presentation over a model that already works (pending D1).
+- **D — Chest menu.** Presentation over a model that already works.
+
+  Layout, decided with the owner 2026-08-13: a 9×6 chest menu is nine columns by six rows,
+  which is exactly the shape of a talent tree — **one row per tier.** Top row = the six
+  category tabs. Rows 2-6 = the tiers of the open category, in `spent:` order, so a player
+  reads the branch top to bottom the way they would in WoW. Each node is one item: icon from
+  the node, display name, rank as `2/5` in the name, cost and unmet requirements in the lore,
+  click to buy. Locked tiers render as grey panes with "N more points in this branch".
+
+  This is the reason the tier gates were worth building before the GUI: without them the menu
+  would be an unordered grid of nodes with no vertical meaning.
 - **E — Island and Players categories.** Mostly re-pointing existing knobs at per-island
   values; `/fly` last and gated.
 - **F — Boosts.** Shiny multiplier conversion (§3.2f), typing spawn share (§3.2e),

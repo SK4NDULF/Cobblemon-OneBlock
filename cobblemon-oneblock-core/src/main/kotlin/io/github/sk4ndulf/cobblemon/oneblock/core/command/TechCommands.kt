@@ -149,11 +149,10 @@ object TechCommands {
     private fun lineFor(island: IslandData, node: TechNode): Component {
         val state = TechService.stateOf(island.id)
         val level = state.levelOf(node.id)
-        val progress = if (node.isSwitch) {
-            if (level > 0) ServerLang.raw("cobblemon_oneblock.tech.owned") else ""
-        } else {
-            "$level/${node.maxLevel}"
-        }
+        // Always the rank, including for single-rank nodes: "1/1" reads as a talent rank the
+        // way "[owned]" does not, and a mixed tree of x/1, x/3 and x/5 is only legible when
+        // every row is written the same way.
+        val progress = "$level/${node.maxLevel}"
         val cost = node.costOfNext(level)
         val unmet = TechService.unmetRequirements(island, node)
 
@@ -340,6 +339,10 @@ object TechCommands {
                 }
                 is TechRequirement.LifetimePoints ->
                     ServerLang.raw("cobblemon_oneblock.tech.req_points", requirement.total)
+                is TechRequirement.CategorySpend ->
+                    ServerLang.raw(
+                        "cobblemon_oneblock.tech.req_spent", requirement.amount, requirement.category.key,
+                    )
                 is TechRequirement.Boss ->
                     ServerLang.raw("cobblemon_oneblock.tech.req_boss", requirement.bossId)
             }

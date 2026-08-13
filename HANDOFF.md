@@ -15,9 +15,9 @@ eight-slice build plan. **Read it before touching progression, loot or Cobblemon
 next and is the one that actually changes the game. Nothing gets coded from a decision still
 marked ⬜; D3 and D5 block slices H and E, neither of which is next.
 
-⚠️ **The tree currently costs 459 points and nothing pays them out yet.** Slice C wires up the
+⚠️ **The tree currently costs 439 points and nothing pays them out yet.** Slice C wires up the
 real sources (NPC victories, advancements); until then `/ob tech grant` is the only income.
-459 is also a balance signal in its own right — at 1-5 points per NPC that is a lot of content,
+439 is also a balance signal in its own right — at 1-5 points per NPC that is a lot of content,
 and it is the first thing to look at when tuning.
 
 ---
@@ -254,8 +254,8 @@ Do not "fix" these without asking — each was a deliberate call, recorded in
 
 **Still open:**
 
-- **The tech tree costs 459 points and nothing pays them out yet.** Slice C wires up the real
-  sources. 459 is also a balance signal: at 1-5 points per NPC that is a lot of content.
+- **The tech tree costs 439 points and nothing pays them out yet.** Slice C wires up the real
+  sources. 439 is also a balance signal: at 1-5 points per NPC that is a lot of content.
 
 **Suggested, not built:**
 

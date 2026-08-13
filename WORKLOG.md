@@ -28,6 +28,54 @@ Running record of what was changed, why, and how far it was actually verified.
 
 ---
 
+## 2026-08-13 — WoW-style ranks and tier gates
+
+**Asked:** the owner wants the game grindy, and pointed out that not every node has to be
+0/5 — it can be 1/1, 1/2, 1/3, 1/5 "wie in WoW". Then: you should have to spend a minimum
+number of points in a branch before the upper part unlocks, and the chest GUI should be laid
+out that way.
+
+**What was already true:** varied ranks needed no code. `max_level` is derived from the length
+of the cost list, so a node with one cost is x/1 and one with five is x/5. The default tree
+already mixed x/1, x/2, x/3, x/5 and x/7.
+
+**What was built:**
+
+- **`spent:<category>>=n`, a new requirement type** — the WoW tier gate. It does not care
+  which nodes were bought, only that the island has committed to the branch, so several
+  routes reach the same tier and going deep in one branch is a real alternative to buying
+  every cheap rank first. `IslandTechState.spentIn` recomputes the total from the levels
+  rather than storing a counter, because a stored total would drift the moment an admin
+  retunes a cost.
+- **The default tree now uses tiers** at 5, 15, 30 and 50 points spent in OneBlock, with node
+  prerequisites kept only where one specific thing must come first (End still needs Nether 3).
+  Ranks were re-cut so the count reflects the content: Ocean and Tundra to x/4, End to x/3 at
+  much higher per-rank cost, Treasure Hunter to x/2.
+- **Chat always shows the rank**, including `1/1`. The `[owned]` special case for single-rank
+  nodes is gone — a mixed tree only reads well if every row is written the same way.
+- The chest menu layout is now decided and written down in `PROGRESSION_REWORK.md` §10 slice
+  D: 9×6 is one row per tier, top row for category tabs.
+
+**A real bug found by the test, not by review:** an unparseable requirement used to drop only
+that requirement and keep the node. That fails open — a typo in `spent:oneblock>=30` would
+leave an endgame node freely buyable from minute one, and nothing in game would look wrong.
+Now the whole node is dropped and the log says why. A missing node is obvious; a silently
+ungated one is not.
+
+**Verified how:** `./gradlew build` green. Dev server booted, default tree loaded as 22 nodes
+over 5 categories costing 439 points with no validation warnings, so every `spent:` gate in
+the shipped default parses. Then three malformed gates were injected — unknown category,
+non-numeric threshold, missing `>=` — plus one valid uppercase form. First run: all three
+rejected but their nodes kept, which is how the fail-open bug was found. After the fix, all
+three nodes are dropped (23 nodes instead of 26) and the uppercase `spent:ONEBLOCK>=5`
+survives, confirming the parser discriminates rather than being uniformly strict or lax.
+
+**Still unverified:** the same gap as slice A — gate *evaluation* at purchase time needs an
+island, which needs a client. Parsing and validation are verified; `spentIn` and the gate check
+are compiled and reviewed, not played.
+
+---
+
 ## 2026-08-13 — Everything lands on PR #1, and its description was rewritten
 
 **Asked:** "wir arbeiten immer nur an PR 1" — this project uses a single long-lived pull

@@ -103,14 +103,26 @@ class TechTreeFile(private val configDir: Path, private val logger: Logger) {
             )
         }
 
-        val requires = (json.get("requires") as? JsonArray)
-            ?.mapNotNull { element ->
-                val raw = (element as? JsonPrimitive)?.asString() ?: return@mapNotNull null
-                TechRequirement.parse(raw).also {
-                    if (it == null) logger.warn("techtree.json5: node '{}' has an unparseable requirement '{}'.", id, raw)
-                }
-            }
+        // A requirement that cannot be parsed drops the whole NODE, not just that one gate.
+        // Dropping only the gate would fail open: a typo in "spent:oneblock>=30" would leave
+        // an endgame node freely buyable from minute one, and nothing in game would look
+        // wrong. A missing node is obvious; a silently ungated one is not.
+        val rawRequirements = (json.get("requires") as? JsonArray)
+            ?.mapNotNull { (it as? JsonPrimitive)?.asString() }
             ?: emptyList()
+        val requires = ArrayList<TechRequirement>(rawRequirements.size)
+        for (raw in rawRequirements) {
+            val requirement = TechRequirement.parse(raw)
+            if (requirement == null) {
+                logger.warn(
+                    "techtree.json5: node '{}' has an unparseable requirement '{}' — the whole node " +
+                        "was skipped, because keeping it would leave it with no gate at all.",
+                    id, raw,
+                )
+                return null
+            }
+            requires += requirement
+        }
 
         return TechNode(
             id = id,
