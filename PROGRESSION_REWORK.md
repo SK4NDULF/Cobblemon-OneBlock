@@ -96,14 +96,15 @@ rather than a straight power increase.
 
 ### 3.2 What has to change
 
-**a) "until it dies" contradicts the sleep threshold — and must not mean death.**
-The design says a working Pokémon loses HP "until it dies", and then says it stops at 75 %
-(upgradeable to 5 %) to sleep. The second rule makes the first unreachable. Resolve it in
-favour of the sleep threshold, and state plainly: **work never faints a Pokémon and never
-kills one.** Cobblemon fainting is a real, visible state that costs the player a trip to a
-healer; a labour system that inflicts it will be switched off by players within a day, and
-anything resembling permanent loss would be the single most hated feature in the mod. The
-floor is a floor.
+**a) "until it dies" contradicted the sleep threshold — resolved, and better than either
+option that was on the table.** The design first said a working Pokémon loses HP "until it
+dies", then said it stops at 75 % to sleep. Owner's resolution (2026-08-13): **at 0/5 there
+is no threshold at all** — an un-upgraded Pokémon works until it faints. The threshold is
+*created* by the first upgrade in that type's branch. See §7.4; it turns the first node of
+every branch into something the player actually needs rather than a flat bonus.
+
+"Dies" is implemented as **fainting**, the normal Cobblemon state: 0 HP, needs a healer.
+Permanent loss of the Pokémon is not implemented and would need its own explicit decision.
 
 **b) Percentage HP drain makes the HP stat worthless.**
 If a work action costs a percentage of max HP, then a Pokémon with 300 HP and one with 100 HP
@@ -119,13 +120,22 @@ later member is told it is already claimed. This makes a solo island and a full 
 progress at the same rate through the same content, which is the correct outcome — parties
 already win on wall-clock speed and on being able to fight bosses at all.
 
-**d) All three point sources are one-shot, so progression is finite and then stops.**
-Every NPC, every advancement and every boss can be claimed exactly once per island. Once the
-last one is claimed there is no path to any remaining node, ever — a player who joins late,
-or who missed an event area, is permanently stuck. Options: add a repeatable source with a
-weekly cap (island tasks, or NPC rematches worth a fraction with a cooldown), or accept it and
-call it a season with a documented total. Either is fine; silently shipping a dead end is not.
-This is decision **D4**.
+**d) Progression is finite — and that is narrower than it first looks.**
+Every NPC, advancement and boss is claimable exactly once **per island**. The first version of
+this section called that a dead end for late joiners; that was wrong, and the correction
+matters for how the content is planned. Because claims are island-scoped, an island created
+on day 300 finds *all* of the content unclaimed and can work through every bit of it. Nothing
+is globally consumed, and no NPC is ever "used up" by another island.
+
+The real ceiling is therefore only this: an island that has claimed everything has no further
+income, and the tree must be completable within the total the content provides. That is a
+season, and it is a legitimate shape — but it makes the point budget a hard design
+constraint. **The sum of all sources must exceed the sum of all node costs**, or the last
+nodes are unreachable for everyone rather than for latecomers. Track both totals in
+`techtree.json5` validation and log them at startup.
+
+Owner's decision (2026-08-13): finite, one-shot per island, no repeatable source. Resetting
+or deleting an island resets its claims and its progress along with it — see §4.3.
 
 **e) The spawn boost collides with a decision already recorded in this project.**
 `HANDOFF.md` §5 states spawn rate is deliberately not a per-island buff because Cobblemon's
@@ -238,6 +248,13 @@ has already banked this source", whoever triggered it.
 spends the **new** `tech_points` column. Existing islands keep `points` and `border_level`
 untouched, so the border nodes need to be granted for free up to the island's current level on
 migration (**D7**).
+
+**Reset and purge semantics** (owner, 2026-08-13): resetting or deleting an island wipes its
+tech data with everything else — `island_tech`, `island_claims` and `tech_points` all go. The
+island starts over, and every NPC, advancement and boss becomes claimable again for it. This
+is what makes a fresh island equivalent to a day-one island (§3.2d), so it is a rule, not
+cleanup: the deletion must live in the same place as the rest of the island teardown in
+`IslandManagerImpl`, not in a separate maintenance pass that can drift out of sync.
 
 ### 4.4 Tree definition
 
@@ -417,6 +434,34 @@ haul) and every other type is a variant of one of them.
 
 Dual-typed Pokémon do the job of their primary type unless that job is not unlocked.
 
+### 7.4 The sleep threshold, and why level 0 has none
+
+Owner's decision (2026-08-13), and it is the sharpest mechanic in the labour design: the
+threshold does not *start* at a value and get better — it **does not exist** until the first
+upgrade in that type's branch is bought.
+
+| Threshold level | Stops working at | What it feels like |
+|---|---|---|
+| 0/5 | never — works until it faints | maximum uptime, guaranteed loss; unsustainable |
+| 1/5 | 75 % HP | safe, and noticeably slower than 0/5 |
+| 2/5 | 50 % | |
+| 3/5 | 25 % | |
+| 4/5 | 10 % | |
+| 5/5 | 5 % | safe *and* fast |
+
+The curve is the point. Buying the first level is a **downgrade in raw uptime** and an upgrade
+in everything else — the player trades throughput for not having to walk to a healer. Levels
+2–5 then buy the throughput back while keeping the safety. So the branch reads: dangerous and
+unsustainable → safe but slow → safe and fast, which is a genuine progression rather than a
+number going up five times.
+
+A Pokémon at 0/5 that faints from work is **working as designed** and must not be logged as a
+bug; the `POKEMON_FAINTED` safety net in §8 applies only to Pokémon whose type branch has the
+threshold node at 1 or higher.
+
+Sleep regeneration is a separate axis and shortens the nap, so the duty cycle improves along
+two independent lines — time spent working, and time spent recovering.
+
 ---
 
 ## 8. Cobblemon API ground truth (verified against tag `1.7.3`, 2026-08-13)
@@ -463,27 +508,37 @@ Nothing gets built from a ⬜. Mark ✅ with date and reason when settled.
 - ✅ **Data-driven tree** (`techtree.json5`), default written on first start.
 - ✅ **Points come from NPCs, advancements and bosses.** Not EXP, not block breaking.
 
+**Settled 2026-08-13 (second round):**
+
+### D1 ✅ Chest menu for the tree
+
+Owner's call, matching §3.2i: one item per node with icon, name, lore and a live `2/5`,
+category tabs in the top row, click to buy. The written book stays available as a possible
+island codex later; it is not the tree.
+
+### D2 ✅ At 0/5 there is no threshold — the Pokémon works until it faints
+
+Owner's call, and a better answer than either option offered: the threshold is created by the
+first upgrade rather than starting at a value and improving. Full curve and reasoning in §7.4.
+"Dies" is implemented as fainting; permanent loss is not implemented and would be its own
+decision.
+
+### D4 ✅ Progression is finite, one-shot per island, and resets with the island
+
+Owner's call. No repeatable source. Claims are island-scoped, so new islands find all content
+unclaimed (§3.2d) — the ceiling only binds an island that has claimed everything. Resetting or
+deleting an island wipes `island_tech`, `island_claims` and `tech_points` (§4.3).
+
+**Consequence that is now a hard build constraint:** the total points obtainable must exceed
+the total cost of the tree, or the last nodes are unreachable for every island. Both sums get
+computed in `techtree.json5` validation and logged at startup.
+
 **Still open:**
-
-### D1 ⬜ Chest menu or written book for the tree?
-
-§3.2i recommends the chest menu, with the book kept as a possible codex later. The owner
-asked for a book; this is the one place where the request and the recommendation differ, so it
-is the owner's call.
-
-### D2 ⬜ Does a Pokémon's work ever faint it?
-
-§3.2a recommends **no** — the sleep threshold is a hard floor, work never faints and never
-kills. Needs an explicit yes/no because a lot of code hangs off it.
 
 ### D3 ⬜ How many types in the first labour slice?
 
-§3.2h recommends three (Fire, Grass, Psychic), data-driven so the rest is JSON.
-
-### D4 ⬜ Is progression finite, or is there a repeatable source?
-
-§3.2d. Either a capped repeatable source, or an accepted and documented ceiling. Not deciding
-this means shipping a dead end for late joiners.
+§3.2h recommends three (Fire, Grass, Psychic), data-driven so the rest is JSON. Blocks slice
+H only, which is last — safe to leave open for now.
 
 ### D5 ⬜ Do `max_party_size` and `max_biome_regions` become caps or starting values?
 
