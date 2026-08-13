@@ -13,6 +13,7 @@ import io.github.sk4ndulf.cobblemon.oneblock.core.biome.BiomeEditor
 import io.github.sk4ndulf.cobblemon.oneblock.core.biome.BiomeService
 import io.github.sk4ndulf.cobblemon.oneblock.core.cobblemon.CobblemonIntegration
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.IslandData
+import io.github.sk4ndulf.cobblemon.oneblock.core.island.IslandNames
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.OneBlockDimension
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.PartyService
 import io.github.sk4ndulf.cobblemon.oneblock.core.moderation.BanService
@@ -80,6 +81,15 @@ object ObCommands {
                         Commands.literal("info")
                             .requires { ObPermissions.check(it, ObPermissions.COMMAND_INFO, 0) }
                             .executes(::info)
+                    )
+                    .then(
+                        Commands.literal("rename")
+                            .requires { ObPermissions.check(it, ObPermissions.COMMAND_RENAME, 0) }
+                            .then(Commands.literal("clear").executes { rename(it, null) })
+                            .then(
+                                Commands.argument("name", StringArgumentType.greedyString())
+                                    .executes { rename(it, StringArgumentType.getString(it, "name")) }
+                            )
                     )
                     .then(TechCommands.build())
                     .then(
@@ -301,7 +311,13 @@ object ObCommands {
 
         manager.sendToIsland(player, island)
         context.source.sendSuccess(
-            { ServerLang.msg("cobblemon_oneblock.visit.arrived", profile.name).withStyle(ChatFormatting.GREEN) }, false,
+            {
+                ServerLang.msg(
+                    "cobblemon_oneblock.visit.arrived_named",
+                    IslandNames.displayText(island, context.source.server),
+                ).withStyle(ChatFormatting.GREEN)
+            },
+            false,
         )
         // Let the island know someone dropped by — useful on a public server.
         context.source.server.playerList.getPlayer(island.owner())
@@ -317,6 +333,57 @@ object ObCommands {
         return Command.SINGLE_SUCCESS
     }
 
+    /**
+     * `/ob rename <name>` and `/ob rename clear`. Owner only — the name is the island's
+     * public identity, and a member renaming it out from under the owner is the kind of
+     * small grief that costs a server more trust than the feature is worth.
+     */
+    private fun rename(context: CommandContext<CommandSourceStack>, raw: String?): Int {
+        val player = context.source.playerOrException
+        val manager = OneBlockCore.islandManager ?: return 0
+        val island = manager.islandDataOf(player.uuid)
+        if (island == null) {
+            context.source.sendFailure(ServerLang.msg("cobblemon_oneblock.island.none"))
+            return 0
+        }
+        if (island.owner() != player.uuid) {
+            context.source.sendFailure(ServerLang.msg("cobblemon_oneblock.island.only_owner"))
+            return 0
+        }
+
+        if (raw == null) {
+            manager.rename(island, null, player)
+            context.source.sendSuccess(
+                {
+                    ServerLang.msg(
+                        "cobblemon_oneblock.rename.cleared",
+                        IslandNames.displayText(island, player.server),
+                    ).withStyle(ChatFormatting.GREEN)
+                },
+                false,
+            )
+            return Command.SINGLE_SUCCESS
+        }
+
+        when (val result = IslandNames.validate(raw)) {
+            is IslandNames.Result.Ok -> {
+                manager.rename(island, result.name, player)
+                context.source.sendSuccess(
+                    { ServerLang.msg("cobblemon_oneblock.rename.done", result.name).withStyle(ChatFormatting.GREEN) },
+                    false,
+                )
+                return Command.SINGLE_SUCCESS
+            }
+            IslandNames.Result.TooLong ->
+                context.source.sendFailure(
+                    ServerLang.msg("cobblemon_oneblock.rename.too_long", IslandNames.MAX_LENGTH),
+                )
+            IslandNames.Result.NothingLeft ->
+                context.source.sendFailure(ServerLang.msg("cobblemon_oneblock.rename.invalid"))
+        }
+        return 0
+    }
+
     private fun info(context: CommandContext<CommandSourceStack>): Int {
         val player = context.source.playerOrException
         val island = OneBlockCore.islandManager?.islandDataOf(player.uuid)
@@ -327,7 +394,10 @@ object ObCommands {
         val config = OneBlockCore.configManager.mainConfig
         val size = io.github.sk4ndulf.cobblemon.oneblock.core.world.GridMath.borderSizeAt(island.borderLevel, config)
         context.source.sendSystemMessage(
-            ServerLang.msg("cobblemon_oneblock.info.header", island.borderLevel, size, size).withStyle(ChatFormatting.GOLD),
+            ServerLang.msg(
+                "cobblemon_oneblock.info.header_named",
+                IslandNames.displayText(island, player.server), island.borderLevel, size, size,
+            ).withStyle(ChatFormatting.GOLD),
         )
         context.source.sendSystemMessage(ServerLang.msg("cobblemon_oneblock.info.breaks", island.breakCount))
         if (island.borderLevel < io.github.sk4ndulf.cobblemon.oneblock.core.island.ProgressionService.MAX_LEVEL) {

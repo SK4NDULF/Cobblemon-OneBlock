@@ -200,5 +200,12 @@
   "cobblemon_oneblock.menu.category.players": "Players",
   "cobblemon_oneblock.menu.category.pokemon": "Pokemon",
   "cobblemon_oneblock.menu.category.boosts": "Boosts",
-  "cobblemon_oneblock.menu.category.special": "Special"
+  "cobblemon_oneblock.menu.category.special": "Special",
+
+  "cobblemon_oneblock.rename.done": "Your island is now called \"%s\".",
+  "cobblemon_oneblock.rename.cleared": "Island name cleared. It now shows as \"%s\".",
+  "cobblemon_oneblock.rename.too_long": "That name is too long (max %d characters).",
+  "cobblemon_oneblock.rename.invalid": "That name can't be used. Give it some normal characters.",
+  "cobblemon_oneblock.info.header_named": "%s — border level %d (%dx%d)",
+  "cobblemon_oneblock.visit.arrived_named": "Welcome to %s. You are a visitor here."
 }

@@ -1,11 +1,11 @@
 package io.github.sk4ndulf.cobblemon.oneblock.core.gui
 
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.IslandData
+import io.github.sk4ndulf.cobblemon.oneblock.core.island.IslandNames
 import io.github.sk4ndulf.cobblemon.oneblock.core.lang.ServerLang
 import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechCategory
 import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechService
 import net.minecraft.ChatFormatting
-import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
@@ -22,10 +22,13 @@ object TechMenu {
 
     fun openMain(player: ServerPlayer, island: IslandData) {
         val tree = TechService.tree
-        val entries = TechMenuLayout.main(island, ownerName(player.server, island), tree)
+        val islandName = IslandNames.displayName(island, player.server)
+        val entries = TechMenuLayout.main(island, islandName, tree)
         StaticMenu.open(
             player = player,
-            title = ServerLang.msg("cobblemon_oneblock.menu.main_title"),
+            // The island's own name in the title bar, which is what the owner asked for:
+            // you see whose island you are spending on before you spend.
+            title = islandName,
             rows = TechMenuLayout.MAIN_ROWS,
             contents = entries.mapValues { it.value.stack },
         ) { slot ->
@@ -98,9 +101,4 @@ object TechMenu {
         player.playNotifySound(SoundEvents.VILLAGER_NO, SoundSource.PLAYERS, 0.5f, 1.0f)
     }
 
-    /** Islands have no name of their own yet, so the owner's name stands in. */
-    private fun ownerName(server: MinecraftServer, island: IslandData): String =
-        server.playerList.getPlayer(island.owner())?.gameProfile?.name
-            ?: server.profileCache?.get(island.owner())?.orElse(null)?.name
-            ?: "#${island.id}"
 }

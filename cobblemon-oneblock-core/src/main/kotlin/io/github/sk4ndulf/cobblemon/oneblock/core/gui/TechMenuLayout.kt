@@ -55,15 +55,14 @@ object TechMenuLayout {
 
     // --- main menu ---------------------------------------------------------------------------
 
-    fun main(island: IslandData, ownerName: String, tree: TechTree): Map<Int, Entry> {
+    fun main(island: IslandData, islandName: Component, tree: TechTree): Map<Int, Entry> {
         val state = TechService.stateOf(island.id)
         val entries = HashMap<Int, Entry>()
 
         entries[MAIN_INFO_SLOT] = Entry(
             MenuItems.stack(
                 "minecraft:knowledge_book",
-                ServerLang.msg("cobblemon_oneblock.menu.island_title", ownerName)
-                    .withStyle(ChatFormatting.GOLD),
+                islandName.copy().withStyle(ChatFormatting.GOLD),
                 listOf(
                     ServerLang.msg("cobblemon_oneblock.menu.points_available", state.balance)
                         .withStyle(ChatFormatting.GREEN),

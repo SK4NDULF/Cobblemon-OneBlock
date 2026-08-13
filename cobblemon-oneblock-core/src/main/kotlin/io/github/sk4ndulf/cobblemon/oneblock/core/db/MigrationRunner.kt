@@ -158,6 +158,13 @@ class MigrationRunner(private val database: Database, private val logger: Logger
                 "ALTER TABLE island_members ADD COLUMN may_spend_tech INT NOT NULL DEFAULT 0",
             )
         },
+        Migration(10, "islands.name column (owner-chosen island name)") { _ ->
+            // Nullable: an island with no name falls back to its owner's name at display time,
+            // so there is nothing to backfill and no default that would be wrong later.
+            listOf(
+                "ALTER TABLE islands ADD COLUMN name VARCHAR(48)",
+            )
+        },
     )
 
     fun run() {

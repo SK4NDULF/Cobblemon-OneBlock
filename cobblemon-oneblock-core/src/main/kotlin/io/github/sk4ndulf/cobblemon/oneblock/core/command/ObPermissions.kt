@@ -29,6 +29,7 @@ object ObPermissions {
     const val COMMAND_BIOME = "cobblemon_oneblock.command.biome"
     const val COMMAND_BAN = "cobblemon_oneblock.command.ban"
     const val COMMAND_TECH = "cobblemon_oneblock.command.tech"
+    const val COMMAND_RENAME = "cobblemon_oneblock.command.rename"
 
     // Admin commands (OP level 4 by default).
     const val ADMIN_RELOAD = "cobblemon_oneblock.admin.reload"

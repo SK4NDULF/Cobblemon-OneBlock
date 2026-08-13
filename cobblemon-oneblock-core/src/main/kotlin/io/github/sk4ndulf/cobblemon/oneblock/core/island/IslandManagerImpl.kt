@@ -85,6 +85,15 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
         repository.updateVisitorSettingsAsync(island.id, island.allowVisitorCatch, island.allowVisitorBattle)
     }
 
+    /** Sets or clears the island's name. Pass null to fall back to the owner's name. */
+    fun rename(island: IslandData, name: String?, actor: ServerPlayer?) {
+        island.name = name
+        repository.updateNameAsync(island.id, name)
+        // Audited because it is player-authored text other players see; if a name has to be
+        // dealt with later, the log says who set it and when.
+        AuditLog.record("island.rename", actor, island.owner(), "island=${island.id} name=${name ?: "-"}")
+    }
+
     /**
      * The active island whose maximum footprint (max_island_size square) contains the
      * position, or null for the void buffer between islands.

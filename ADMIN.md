@@ -200,6 +200,7 @@ zero configuration and still gives networks full control.
 | `cobblemon_oneblock.command.biome` | `/ob biome pos1\|pos2\|set\|list\|remove` |
 | `cobblemon_oneblock.command.ban` | `/ob ban\|unban\|bans` (own island) |
 | `cobblemon_oneblock.command.tech` | `/ob tech`, `list`, `info`, `unlock`, `delegate` |
+| `cobblemon_oneblock.command.rename` | `/ob rename <name>`, `/ob rename clear` (owner only) |
 
 ### Admin commands (OP level 4 by default)
 

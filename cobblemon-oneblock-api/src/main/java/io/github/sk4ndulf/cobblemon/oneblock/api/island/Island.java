@@ -37,4 +37,18 @@ public interface Island {
 
     /** Position of the island's OneBlock (also the island anchor). */
     BlockPos oneBlockPos();
+
+    /**
+     * The owner-chosen island name, if one was set.
+     *
+     * Empty means the island has never been renamed, not that it has no name to show: the
+     * core falls back to the owner's name when displaying it. Treat the contents as untrusted
+     * player input — it is sanitised on the way in (no formatting codes, no control
+     * characters, length-capped), but it is still text a player wrote.
+     *
+     * Defaulted so existing implementations of this interface keep compiling.
+     */
+    default java.util.Optional<String> name() {
+        return java.util.Optional.empty();
+    }
 }

@@ -14,7 +14,7 @@ class IslandRepository(private val database: Database) {
         connection.createStatement().use { statement ->
             statement.executeQuery(
                 "SELECT id, slot, owner_uuid, state, border_level, break_count, points, created_at, archived_at, " +
-                    "allow_visitor_catch, allow_visitor_battle FROM islands",
+                    "allow_visitor_catch, allow_visitor_battle, name FROM islands",
             ).use { result ->
                 while (result.next()) {
                     islands.add(
@@ -30,6 +30,7 @@ class IslandRepository(private val database: Database) {
                             archivedAt = result.getLong("archived_at").takeIf { !result.wasNull() },
                             allowVisitorCatch = result.getInt("allow_visitor_catch") != 0,
                             allowVisitorBattle = result.getInt("allow_visitor_battle") != 0,
+                            name = result.getString("name"),
                             config = config,
                         ),
                     )
@@ -55,6 +56,17 @@ class IslandRepository(private val database: Database) {
                 it.setInt(1, if (allowCatch) 1 else 0)
                 it.setInt(2, if (allowBattle) 1 else 0)
                 it.setLong(3, id)
+                it.executeUpdate()
+            }
+        }
+    }
+
+    /** Writes the owner-chosen name through. A null clears it back to the owner-name fallback. */
+    fun updateNameAsync(id: Long, name: String?) {
+        database.async { connection ->
+            connection.prepareStatement("UPDATE islands SET name = ? WHERE id = ?").use {
+                if (name != null) it.setString(1, name) else it.setNull(1, java.sql.Types.VARCHAR)
+                it.setLong(2, id)
                 it.executeUpdate()
             }
         }

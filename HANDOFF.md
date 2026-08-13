@@ -235,6 +235,12 @@ cannot cross a border, enter the hub, or leak into the void buffer).
       items.
     - `/ob tech chat` still prints the text version.
 
+11. **Island names** — `/ob rename My Base`, then check `/ob info`, the tech menu title and
+    what a visitor sees. Restart and confirm it survived. Then the adversarial half, which is
+    the point of `IslandNames`: try a name containing `§c`, a 40-character name, only spaces,
+    and a right-to-left override. None may recolour or scramble anything, and none may be
+    stored as given. `/ob rename clear` must fall back to the owner's name everywhere.
+
 Tests 7–10 all need a client for the same reason: nothing that breaks a block, creates an
 island or opens a container can be driven from the server console.
 

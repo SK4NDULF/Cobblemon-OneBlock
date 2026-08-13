@@ -28,6 +28,8 @@ class IslandData(
     var allowVisitorCatch: Boolean = false,
     /** Owner setting: may visitors battle Cobblemon here? Default false (see Public role). */
     var allowVisitorBattle: Boolean = false,
+    /** Owner-chosen name, or null. Never render this directly — use [IslandNames.displayName]. */
+    var name: String? = null,
     config: MainConfig,
 ) : Island {
 
@@ -46,4 +48,5 @@ class IslandData(
     override fun borderLevel(): Int = borderLevel
     override fun breakCount(): Long = breakCount
     override fun oneBlockPos(): BlockPos = anchor
+    override fun name(): java.util.Optional<String> = java.util.Optional.ofNullable(name)
 }

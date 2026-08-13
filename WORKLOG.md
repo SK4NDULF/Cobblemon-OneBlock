@@ -28,6 +28,49 @@ Running record of what was changed, why, and how far it was actually verified.
 
 ---
 
+## 2026-08-13 — Island names
+
+**Asked:** "ja wir wollen owner insel bennen dürfen" — the owner may name their island. Came
+out of the chest menu work, where the title had to fall back to the owner's name because
+islands had none.
+
+**What was built:** migration 10 adds a nullable `islands.name`, `/ob rename <name>` and
+`/ob rename clear`, and `IslandNames` as the single place that decides what an island is
+called. Owner only: the name is the island's public identity, and a member renaming it out
+from under the owner is the kind of small grief that costs more trust than the feature is
+worth. Renames are written to the audit log with who set them.
+
+The name now shows in the tech menu title and its summary item, in `/ob info`, and when
+someone visits. `Island.name()` was added to the public API as a defaulted method returning
+`Optional`, so existing implementations keep compiling.
+
+**The actual work was sanitising, not storage.** A name is player-authored text displayed to
+*other* players, so it is cleaned rather than trusted:
+
+- **`§` is removed entirely.** It is Minecraft's legacy formatting marker; a name containing
+  it can recolour, obfuscate or hide the rest of the line it sits in. Enough code paths still
+  interpret it that the only safe answer is that the character never reaches one.
+- **Control characters** go, so a name cannot forge extra lines.
+- **Unicode bidi controls** go too — `Char.isISOControl` does not cover them, and a
+  right-to-left override reverses how the rest of the sentence renders.
+- **Length is capped at 32, measured after cleaning**, so padding with stripped characters to
+  get under the limit does not work. A chest menu title has a fixed width.
+
+Deliberately not done: uniqueness (nothing looks an island up by name, so there is nothing to
+make ambiguous) and profanity filtering (that belongs to the server's chat moderation).
+
+**Verified how:** build green. Dev server applied migration 10 and reported schema version 10;
+`/ob rename Test` reached its executor from the console. A dead branch was found while
+reviewing — `MIN_LENGTH = 1` made the `TooShort` result unreachable, since the empty case is
+already `NothingLeft` — and removed; the compiler then caught the stale reference in the
+command, which is how it was confirmed gone rather than just unused.
+
+**Still unverified:** everything that needs an island — actually renaming one, the name
+surviving a restart, and how a 32-character name looks in a chest title. Added to the
+`HANDOFF.md` §4 script.
+
+---
+
 ## 2026-08-13 — The tech chest menus
 
 **Asked:** "wichtig ist das wir mehrere kisten guis nutzen das skilltree hauptmenu und diese
