@@ -6,6 +6,10 @@ everything.
 
 This file is the snapshot; `WORKLOG.md` is the running history. Keep both current.
 
+**Active work:** `PROGRESSION_REWORK.md` — the progression system is being redesigned as a
+tech tree. It carries the analysis, seven open decisions and the build plan. Nothing there
+is decided or built yet; do not start coding from a decision still marked ⬜.
+
 ---
 
 ## 1. Where we are
