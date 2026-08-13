@@ -28,6 +28,37 @@ Running record of what was changed, why, and how far it was actually verified.
 
 ---
 
+## 2026-08-13 — Everything lands on PR #1, and its description was rewritten
+
+**Asked:** "wir arbeiten immer nur an PR 1" — this project uses a single long-lived pull
+request. No second PR, ever.
+
+**What was done:** the three progression commits were fast-forwarded from the session branch
+onto `claude/cobblemon-oneblock-mod-49flzn`, which is PR #1's head. Verified as a genuine
+fast-forward first (`git merge-base --is-ancestor`) so nothing was overwritten. PR #1 is now
+at `6f86d7c`, 33 commits.
+
+The PR description was rewritten. The original was auto-generated at the first commit and had
+drifted a long way: it advertised the trigger event system that was removed in full on
+2026-08-13, the pre-rename module and dimension ids (`oneblock-api`, `oneblock:world`), and
+the two Cobblemon claims this file has flagged as wrong since the rename — "catch rate
+modifications" (there is a catch *permission*; rates are never touched) and "spawn rate buffs"
+(they are shiny rate and IV floor). The new text describes what exists, states the two
+deliberate non-features as decisions, and carries the verification status including what is
+still untested in game.
+
+`HANDOFF.md` §1 and §6 updated: the branch/PR warning is replaced by the standing rule, and
+the "two wrong claims" open item is closed.
+
+**Verified how:** fast-forward confirmed before pushing; PR #1 re-read afterwards and its head
+sha matches the pushed commit. The description is prose — nothing to verify beyond having
+checked each claim in it against the working tree.
+
+**Still unverified:** nothing new. The gameplay gaps are unchanged and listed in the entry
+below and in `HANDOFF.md` §4.
+
+---
+
 ## 2026-08-13 — Progression rework slice A: the tech tree core
 
 **Asked:** after the design review was accepted and D1/D2/D4 were settled, build the spine of

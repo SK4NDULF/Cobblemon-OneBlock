@@ -36,11 +36,12 @@ The user has since run the mod locally and reports it looks fine. Deliberate pla
 the 🟡 list below: it will be bug-tested live with several players later. Until then the
 goal is to widen and harden the foundation until it is genuinely playable.
 
-- **Branch:** `claude/handoff-review-630c9n`
 - **PR:** [#1](https://github.com/SK4NDULF/Cobblemon-OneBlock/pull/1) → `main`, open.
-  ⚠️ Its head is the *old* branch `claude/cobblemon-oneblock-mod-49flzn`, which is now
-  behind. Either retarget PR #1 to the branch above or fast-forward the old branch —
-  do **not** open a second PR without asking.
+  **All work goes here** — the owner's standing instruction (2026-08-13) is that this project
+  only ever uses PR #1. Never open a second one.
+- **Branch:** `claude/cobblemon-oneblock-mod-49flzn` is PR #1's head, so that is the branch to
+  push to. If a session is handed a different working branch, finish on it and then
+  fast-forward it into the PR head rather than opening anything new.
 - **Working tree:** clean, everything pushed.
 
 ### The rename (done, verified)
@@ -74,16 +75,16 @@ translated English, so the lang files load from the new namespace.
 and `config/oneblock/` are no longer read. That is fine pre-release, but it is the last
 moment it is fine.
 
-### Two known inaccuracies in the PR #1 description
+### The PR #1 description (rewritten 2026-08-13, was wrong before)
 
-The PR text was auto-generated and describes two things that are not what was built.
-Correct them if you touch the PR body:
+The original PR text was auto-generated at the first commit and had drifted badly: it
+described the trigger event system that was later removed in full, the pre-rename module and
+dimension ids, and two Cobblemon features that were never built as claimed ("catch rate
+modifications" — there is a catch *permission*, not a rate change; "spawn rate buffs" — the
+buffs are shiny rate and IV floor). It has been rewritten to match what exists.
 
-- "Catch rate modifications based on island progression" — wrong. There is a catch
-  *permission* (visitors cannot catch or battle on foreign islands, owner can allow it).
-  Catch rates are never modified.
-- "Pokémon spawn rate buffs" — wrong. The buffs are **shiny rate** and **IV floor**.
-  Spawn rate is deliberately not a per-island buff (see section 5).
+Keep it current when behaviour changes. It is the one page a reviewer reads, and this project
+uses a single long-lived PR, so a stale description stays wrong for a long time.
 
 ---
 
@@ -247,11 +248,14 @@ Do not "fix" these without asking — each was a deliberate call, recorded in
 
 - **Final project name.** Decided: display name "Cobblemon OneBlock", namespace
   `cobblemon_oneblock`. Done and verified — see section 1. Treat the ids as frozen from here on.
+- **Where work lands.** Decided by the owner: this project uses **only PR #1**, never a second
+  one. Its head branch is `claude/cobblemon-oneblock-mod-49flzn`. See section 1.
+- **The PR #1 description.** Rewritten to match reality; keep it current from here on.
 
 **Still open:**
 
-- **PR #1 points at the superseded branch.** See section 1.
-- **Two wrong claims in the PR #1 description** still need correcting — see below.
+- **The tech tree costs 459 points and nothing pays them out yet.** Slice C wires up the real
+  sources. 459 is also a balance signal: at 1-5 points per NPC that is a lot of content.
 
 **Suggested, not built:**
 
