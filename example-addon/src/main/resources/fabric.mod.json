@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "oneblock_example_addon",
+  "id": "cobblemon_oneblock_example_addon",
   "version": "${version}",
   "name": "OneBlock Example Addon",
   "description": "Reference addon showing how to build against the Cobblemon OneBlock API.",
@@ -9,12 +9,12 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "io.github.sk4ndulf.oneblock.example.ExampleAddon"
+      "io.github.sk4ndulf.cobblemon.oneblock.example.ExampleAddon"
     ]
   },
   "depends": {
     "fabricloader": ">=0.16.0",
     "minecraft": "~1.21.1",
-    "oneblock_api": "*"
+    "cobblemon_oneblock_api": "*"
   }
 }

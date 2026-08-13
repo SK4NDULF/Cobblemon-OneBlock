@@ -9,18 +9,51 @@ Status snapshot for the next Claude Code session. **Read this first**, then
 
 All 12 planned phases are implemented, build-verified and boot-verified on a real
 Fabric server with Cobblemon installed. Since then one review pass fixed a
-multiplayer crash and five robustness issues, and three features were added on
-request.
+multiplayer crash and five robustness issues, three features were added on request,
+and the project was renamed to its final identifiers.
 
-**The mod has never been played by a human.** Everything below marked 🟡 compiles
-and links against verified APIs but has not been exercised in-game. That is the
-single most valuable thing the next session can help with.
+The user has since run the mod locally and reports it looks fine. Deliberate plan for
+the 🟡 list below: it will be bug-tested live with several players later. Until then the
+goal is to widen and harden the foundation until it is genuinely playable.
 
-- **Branch:** `claude/cobblemon-oneblock-mod-49flzn`
-- **PR:** [#1](https://github.com/SK4NDULF/Cobblemon-OneBlock/pull/1) → `main`, open, mergeable.
-  Pushing to the branch updates it; do **not** open a second PR.
+- **Branch:** `claude/handoff-review-630c9n`
+- **PR:** [#1](https://github.com/SK4NDULF/Cobblemon-OneBlock/pull/1) → `main`, open.
+  ⚠️ Its head is the *old* branch `claude/cobblemon-oneblock-mod-49flzn`, which is now
+  behind. Either retarget PR #1 to the branch above or fast-forward the old branch —
+  do **not** open a second PR without asking.
 - **Working tree:** clean, everything pushed.
-- **Latest commit:** `73b8079` OneBlock safety: bedrock foundation + self-healing anchor
+
+### The rename (done, verified)
+
+Every identifier moved from `oneblock` to `cobblemon_oneblock` in one cut:
+
+| | Before | After |
+|---|---|---|
+| Dimension | `oneblock:world` | `cobblemon_oneblock:world` |
+| Mod ids | `oneblock`, `oneblock_api` | `cobblemon_oneblock`, `cobblemon_oneblock_api` |
+| Permissions | `oneblock.command.create` | `cobblemon_oneblock.command.create` |
+| Config dir | `config/oneblock/` | `config/cobblemon_oneblock/` |
+| Lang / data | `assets/oneblock/`, `data/oneblock/` | `assets/cobblemon_oneblock/`, `data/cobblemon_oneblock/` |
+| Mixin config | `oneblock.mixins.json` | `cobblemon_oneblock.mixins.json` |
+| Java package | `io.github.sk4ndulf.oneblock` | `io.github.sk4ndulf.cobblemon.oneblock` |
+| Gradle modules | `oneblock-core`, `oneblock-api` | `cobblemon-oneblock-core`, `cobblemon-oneblock-api` |
+
+Minecraft resource locations are lowercase-only, so the literal `CobblemonOneBlock:world`
+the user first asked for is not a legal id — `cobblemon_oneblock` is its legal form.
+The Java package uses dots (`cobblemon.oneblock`) rather than an underscore because
+underscores in package names are legal but unidiomatic.
+
+Verified after the rename: `./gradlew build` green on all three modules; dev server boots;
+both mods load under the new ids; all four trigger event types register as
+`cobblemon_oneblock:*`; all 8 migrations run; hub platform generates; 848-block loot pool
+builds; `execute in cobblemon_oneblock:world run time query daytime` answers, so the
+dimension is really registered; `config/cobblemon_oneblock/` and
+`world/dimensions/cobblemon_oneblock/world/` are created on disk; `ob setup` prints
+translated English, so the lang files load from the new namespace.
+
+**Any world created before this commit is orphaned** — the old `oneblock:world` dimension
+and `config/oneblock/` are no longer read. That is fine pre-release, but it is the last
+moment it is fine.
 
 ### Two known inaccuracies in the PR #1 description
 
@@ -39,10 +72,10 @@ Correct them if you touch the PR body:
 
 ```bash
 ./gradlew build                      # all three modules
-./gradlew :oneblock-core:runServer   # dev server, needs oneblock-core/run/eula.txt
+./gradlew :cobblemon-oneblock-core:runServer   # dev server, needs cobblemon-oneblock-core/run/eula.txt
 ```
 
-Java 21. Server jar: `oneblock-core/build/libs/oneblock-core-0.1.0.jar` (the plain one —
+Java 21. Server jar: `cobblemon-oneblock-core/build/libs/cobblemon-oneblock-core-0.1.0.jar` (the plain one —
 API and all libraries are bundled jar-in-jar).
 
 | Dependency | Pinned version |
@@ -67,7 +100,7 @@ gameplay path were verified without a client:
 ```bash
 mkfifo /tmp/console.fifo
 sleep 600 > /tmp/console.fifo &          # keeps the FIFO open
-./gradlew :oneblock-core:runServer < /tmp/console.fifo > /tmp/server.log 2>&1 &
+./gradlew :cobblemon-oneblock-core:runServer < /tmp/console.fifo > /tmp/server.log 2>&1 &
 # wait for "Done (" in the log, then:
 echo "ob setup" > /tmp/console.fifo
 ```
@@ -84,11 +117,11 @@ Three Gradle modules:
 
 | Module | Language | Notes |
 |---|---|---|
-| `oneblock-api` | Java 21 | Public API. No Cobblemon dependency. Published to GitHub Packages / JitPack. |
-| `oneblock-core` | Kotlin | Implementation. Hard dependency on Cobblemon. |
-| `example-addon` | Java | Reference addon, depends on `oneblock-api` **only**. Built by the root build so API breakage fails CI. |
+| `cobblemon-oneblock-api` | Java 21 | Public API. No Cobblemon dependency. Published to GitHub Packages / JitPack. |
+| `cobblemon-oneblock-core` | Kotlin | Implementation. Hard dependency on Cobblemon. |
+| `example-addon` | Java | Reference addon, depends on `cobblemon-oneblock-api` **only**. Built by the root build so API breakage fails CI. |
 
-World layout: one void dimension `oneblock:world` (data-driven, flat generator, zero
+World layout: one void dimension `cobblemon_oneblock:world` (data-driven, flat generator, zero
 layers). Hub platform at `(0, 64, 0)`. Islands sit on an Ulam spiral around it; slot 0 is
 the hub and never assigned. Anchor Y is 63, bedrock foundation at 62, players spawn at 64.
 
@@ -106,7 +139,7 @@ dialects, 8 versioned migrations applied at startup:
 
 ### Mixins — read before touching
 
-`oneblock.mixins.json` declares package `io.github.sk4ndulf.oneblock.core.mixin`.
+`cobblemon_oneblock.mixins.json` declares package `io.github.sk4ndulf.cobblemon.oneblock.core.mixin`.
 **Only mixin classes may live there.** A Kotlin helper in that package gets treated as a
 mixin by the transformer and fails to load — that crashed the server on every flowing
 fluid and was only caught by the end-to-end test. The helper logic lives in
@@ -174,12 +207,15 @@ Do not "fix" these without asking — each was a deliberate call, recorded in
 
 ## 6. Open items
 
-**Still undecided by the user:**
+**Settled:**
 
-- **Final project name.** Mod id is `oneblock` / `oneblock_api`, dimension is
-  `oneblock:world`. Renaming is cheap now and expensive later — the dimension id is
-  written into every saved world. The user rejected `cobblemon:one_block` (that namespace
-  belongs to Cobblemon); `CobbleBlock` was suggested and not answered.
+- **Final project name.** Decided: display name "Cobblemon OneBlock", namespace
+  `cobblemon_oneblock`. Done and verified — see section 1. Treat the ids as frozen from here on.
+
+**Still open:**
+
+- **PR #1 points at the superseded branch.** See section 1.
+- **Two wrong claims in the PR #1 description** still need correcting — see below.
 
 **Suggested, not built:**
 

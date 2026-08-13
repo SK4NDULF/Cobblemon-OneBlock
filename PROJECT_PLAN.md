@@ -15,7 +15,7 @@ Das ist **kein** kleines Zusatz-Mod, sondern eine **Core Mod**, die den komplett
 - **Eigene Public API**: Andere Devs/Mods können sich einhängen (Event-Bus + Extension-Points), um eigene Trigger-Event-Typen, Loot-Provider, Reward-Logik etc. hinzuzufügen, ohne den Core-Code anzufassen.
 - **Alles unter einem Dach**: Dimension-Handling, Island-System, Progression, Party, Permissions, Trigger-Events, Biome-Editor, Cobblemon-Integration, Moderation, Setup-Wizard — alles ein Mod, ein Codebase, eine Config-Struktur.
 
-Architekturprinzip: **Zwei-Module-Setup** — `oneblock-api` (Interfaces/Events) + `oneblock-core` (Implementierung), damit externe Devs sauber gegen die API entwickeln können, ohne den ganzen Core-Code als Dependency zu brauchen.
+Architekturprinzip: **Zwei-Module-Setup** — `cobblemon-oneblock-api` (Interfaces/Events) + `cobblemon-oneblock-core` (Implementierung), damit externe Devs sauber gegen die API entwickeln können, ohne den ganzen Core-Code als Dependency zu brauchen.
 
 ### Beschlossene Grundsatzentscheidungen (2026-08-12)
 
@@ -56,17 +56,17 @@ Architekturprinzip: **Zwei-Module-Setup** — `oneblock-api` (Interfaces/Events)
 ## 2. Architektur-Überblick
 
 ```
-oneblock-api/            (Java, leichtgewichtig, für externe Devs, als Maven-Artefakt publiziert)
+cobblemon-oneblock-api/            (Java, leichtgewichtig, für externe Devs, als Maven-Artefakt publiziert)
   events/                 IslandCreatedEvent, OneBlockBreakEvent, BorderLevelUpEvent,
                            PartyJoinEvent, TriggerEventStartEvent, PermissionChangeEvent, ...
   managers/                IslandManager, PartyManager, ProgressionManager,
                            EventManager, PermissionManager  (Interfaces only)
   OneBlockAPI.java         statischer Zugriffspunkt: OneBlockAPI.get().getIslandManager() etc.
 
-oneblock-core/            (Kotlin, volle Implementierung, hängt von oneblock-api + Cobblemon ab)
+cobblemon-oneblock-core/            (Kotlin, volle Implementierung, hängt von cobblemon-oneblock-api + Cobblemon ab)
 
 Dimension-Setup (immer gleich, kein Dual-Path):
- └─ Eigene Void-Dimension `oneblock:world` wird beim ersten Start registriert.
+ └─ Eigene Void-Dimension `cobblemon_oneblock:world` wird beim ersten Start registriert.
     Overworld bleibt unangetastet (nutzbar als Admin-Bereich o.ä.).
 
  └─ Hub (0,64,0 fix, Spawn-Kreis = volle Spawn-Protection, niemand kann dort etwas
@@ -123,7 +123,7 @@ Regeln werden **in dieser Reihenfolge** ausgewertet; die erste zutreffende gewin
 
 1. **Hub-Zone** — innerhalb `hub_radius` darf niemand bauen/abbauen.
    Einzige Ausnahme: Admins (OP >= 2), wenn `hub_allow_building` aktiv ist.
-2. **Admin-Bypass** — OP >= 2 (`oneblock.admin.bypass`) umgeht ab hier alle Insel-Regeln.
+2. **Admin-Bypass** — OP >= 2 (`cobblemon_oneblock.admin.bypass`) umgeht ab hier alle Insel-Regeln.
 3. **Insel-Ban** — gebannte Spieler werden von der Insel zum Hub zurückgeschickt,
    unabhängig von allen weiteren Rechten. Owner/Members koennen nicht gebannt werden.
 4. **Insel-Zugehörigkeit** — Owner und Members duerfen innerhalb der *aktuellen*
@@ -134,7 +134,7 @@ Regeln werden **in dieser Reihenfolge** ausgewertet; die erste zutreffende gewin
 6. **Void-Buffer / unregistrierte Chunks** — Fallback-VOID-Owner, niemand darf etwas.
    (Deny-by-default: unbekannte Bereiche sind immer gesperrt.)
 
-Andere Dimensionen als `oneblock:world` werden vom Mod **nicht** reguliert.
+Andere Dimensionen als `cobblemon_oneblock:world` werden vom Mod **nicht** reguliert.
 
 ---
 
@@ -144,7 +144,7 @@ Andere Dimensionen als `oneblock:world` werden vom Mod **nicht** reguliert.
 - **Void-Tod ist ein First-Class-Edge-Case** — Respawn immer am Insel-Spawn (bzw. Hub), niemals Todesschleifen.
 - **Config-Vollständigkeit von Anfang an** — DB-Felder, alle System-Limits (Party-Größe, Biome-Regionen, Event-Cooldown, max Island-Größe, Purge-Fristen) gehören von Beginn an in die Config-Struktur.
 - **Keine Widersprüche zwischen Spec-Files** — Fixregel: **Trigger-Events skalieren nur in der Schwierigkeit mit dem Border-Level, nicht in den Rewards.**
-- **Permission-Nodes von Anfang an mitdenken** — jeder Command bekommt sofort einen Node (`oneblock.command.start`, `oneblock.admin.setup`, ...). LuckPerms ist **optionale** Integration mit Fallback auf OP-Level — der Mod läuft auch ohne Permission-Mod.
+- **Permission-Nodes von Anfang an mitdenken** — jeder Command bekommt sofort einen Node (`cobblemon_oneblock.command.start`, `cobblemon_oneblock.admin.setup`, ...). LuckPerms ist **optionale** Integration mit Fallback auf OP-Level — der Mod läuft auch ohne Permission-Mod.
 - **Schema-Migration & Hot-Reload von Tag 1 an** — DB-Versionierung, `/ob reload` als vollwertiger Command.
 - **Edge-Cases explizit klären**: Fallback-Owner für unregistrierte Chunks, Owner-Reset mit Members online, Invite-/Event-Timeouts, Confirmation-Step bei destruktiven Admin-Commands.
 - **Einheitliche Namensgebung** — ein Command/Begriff heißt überall gleich.
@@ -158,9 +158,9 @@ Andere Dimensionen als `oneblock:world` werden vom Mod **nicht** reguliert.
 Die Phasen bauen aufeinander auf. Jede Phase wird mit Build + Smoke-Test abgeschlossen, bevor die nächste beginnt.
 
 ### Phase 1 — Fundament & API-Grundgerüst
-- [x] Gradle-Multi-Module-Setup: `oneblock-api` (Java) + `oneblock-core` (Kotlin)
+- [x] Gradle-Multi-Module-Setup: `cobblemon-oneblock-api` (Java) + `cobblemon-oneblock-core` (Kotlin)
 - [x] `fabric.mod.json` für beide Module, Cobblemon als harte Dependency in `-core`
-- [x] Maven-Publishing für `oneblock-api` vorbereiten (Addon-Devs entwickeln gegen das Artefakt)
+- [x] Maven-Publishing für `cobblemon-oneblock-api` vorbereiten (Addon-Devs entwickeln gegen das Artefakt)
 - [x] `OneBlockAPI`-Singleton-Zugriffspunkt im `-api`-Modul
 - [x] Event-Bus-Grundgerüst (Registrierung + Dispatch)
 - [x] HikariCP-Connection-Pool + async Read/Write-Wrapper (SQLite-Default, MySQL via Config)
@@ -170,7 +170,7 @@ Die Phasen bauen aufeinander auf. Jede Phase wird mit Build + Smoke-Test abgesch
 - [x] Command-Unterbau (`/ob`-Root, Permission-Node-Registrierung, LuckPerms-optional-Abstraktion)
 
 ### Phase 2 — First-Launch Setup & Wizard
-- [x] Void-Dimension `oneblock:world` registrieren (immer, kein Dual-Path)
+- [x] Void-Dimension `cobblemon_oneblock:world` registrieren (immer, kein Dual-Path)
 - [x] Kreisförmige Spawn-Plattform bei (0,64,0) generieren
 - [x] Hub-Protection: Break/Place innerhalb Hub-Radius canceln (Flag `hub_allow_building` für Admins)
 - [x] "Setup-Pending"-Zustand (sperrt Island-Erstellung bis Wizard abgeschlossen)
@@ -274,7 +274,7 @@ Die Phasen bauen aufeinander auf. Jede Phase wird mit Build + Smoke-Test abgesch
 - [x] Alle Manager-Interfaces vollständig + stabil im `-api`-Modul
 - [x] Vollständige Event-Liste dokumentiert (JavaDoc + separates `API.md`)
 - [x] Extension-Points dokumentiert (Custom Loot Tables, Custom Event-Typen, Custom Reward-Provider)
-- [x] `oneblock-api` als Maven-Artefakt publizieren (GitHub Packages oder JitPack)
+- [x] `cobblemon-oneblock-api` als Maven-Artefakt publizieren (GitHub Packages oder JitPack)
 - [x] Minimaler Beispiel-Addon-Mod als Referenz für zukünftige Devs
 - [x] Versionierung/Semver-Strategie für Breaking Changes
 
@@ -302,7 +302,7 @@ Die Phasen bauen aufeinander auf. Jede Phase wird mit Build + Smoke-Test abgesch
     ClaimStorage.java
     ProtectionEventHandler.java
     ClaimGui.java
-  oneblock/                      (2Lynk/OneBlock — NUR als simples Pattern-Beispiel)
+  cobblemon_oneblock/                      (2Lynk/OneBlock — NUR als simples Pattern-Beispiel)
     OneBlockMod.java
     LootPool.java
   worldedit/                     (EngineHub/WorldEdit — Biome-Editing-Referenz)
@@ -331,8 +331,8 @@ Die Phasen bauen aufeinander auf. Jede Phase wird mit Build + Smoke-Test abgesch
 Nach Frage 8 folgt die Zusammenfassung + Bestätigung im Chat, danach Save & Reload.
 Jede Frage ist alternativ per `/ob setup set <key> <value>` beantwortbar (auch Konsole).
 
-**Storage-Konfiguration** läuft separat über `config/oneblock/database.json5`:
-- Default: SQLite (`storage: "sqlite"`), Datei liegt unter `config/oneblock/data.db` — **keine Einrichtung nötig, Wizard startet sofort.**
+**Storage-Konfiguration** läuft separat über `config/cobblemon_oneblock/database.json5`:
+- Default: SQLite (`storage: "sqlite"`), Datei liegt unter `config/cobblemon_oneblock/data.db` — **keine Einrichtung nötig, Wizard startet sofort.**
 - Optional: `storage: "mysql"` + Host/Port/Datenbank/User/Passwort. Bei ungültiger MySQL-Verbindung bleibt der Mod im "Setup-Pending"-Zustand und loggt den Fehler klar verständlich.
 
 ---

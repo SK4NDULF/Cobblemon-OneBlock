@@ -13,14 +13,14 @@ A fresh server needs exactly four jars in `mods/`:
 | Fabric API | required by both mods |
 | Fabric Language Kotlin | Cobblemon and this mod are written in Kotlin |
 | Cobblemon 1.7.3+ (for MC 1.21.1) | hard dependency |
-| `oneblock-core-<version>.jar` | this mod — the API and all libraries are bundled inside |
+| `cobblemon-oneblock-core-<version>.jar` | this mod — the API and all libraries are bundled inside |
 
 Start the server, join as an operator, and follow the setup wizard. Nothing else is
 required: storage defaults to an embedded SQLite file, so there is no database to set up.
 
 ## 2. First start
 
-On the first launch the mod creates the `oneblock:world` void dimension, generates the hub
+On the first launch the mod creates the `cobblemon_oneblock:world` void dimension, generates the hub
 platform at `(0, 64, 0)` and writes its config files. Island creation stays locked until an
 operator finishes the wizard.
 
@@ -53,7 +53,7 @@ Every question also works from the console:
 
 ## 3. Configuration files
 
-`config/oneblock/`
+`config/cobblemon_oneblock/`
 
 | File | Contents |
 |---|---|
@@ -90,7 +90,7 @@ SQLite is fine for a single server. For a network, edit `database.json5`:
 ```json5
 {
   "storage": "mysql",
-  "mysql": { "host": "…", "port": 3306, "database": "oneblock", "user": "…", "password": "…" }
+  "mysql": { "host": "…", "port": 3306, "database": "cobblemon_oneblock", "user": "…", "password": "…" }
 }
 ```
 
@@ -102,7 +102,7 @@ migrated** — switch before the server goes live, or move the data yourself.
 The database and the world must be backed up **together and from the same moment**. Islands
 are stored in the database, their builds in the world files; restoring one without the other
 leaves islands pointing at the wrong terrain. Stop the server, back up `world/` and either
-`config/oneblock/data.db` or your MySQL dump, then start again.
+`config/cobblemon_oneblock/data.db` or your MySQL dump, then start again.
 
 ## 5. Permission nodes
 
@@ -115,44 +115,44 @@ zero configuration and still gives networks full control.
 
 | Node | Command |
 |---|---|
-| `oneblock.command` | access to `/ob` at all |
-| `oneblock.command.create` | `/ob create` |
-| `oneblock.command.home` | `/ob home` |
-| `oneblock.command.spawn` | `/ob spawn` |
-| `oneblock.command.visit` | `/ob visit <player>` |
-| `oneblock.command.info` | `/ob info` |
-| `oneblock.command.reset` | `/ob reset` |
-| `oneblock.command.delete` | `/ob delete` |
-| `oneblock.command.party` | `/ob party invite\|accept\|deny\|kick\|leave\|list` |
-| `oneblock.command.settings` | `/ob settings visitor-catch\|visitor-battle` |
-| `oneblock.command.biome` | `/ob biome pos1\|pos2\|set\|list\|remove` |
-| `oneblock.command.ban` | `/ob ban\|unban\|bans` (own island) |
+| `cobblemon_oneblock.command` | access to `/ob` at all |
+| `cobblemon_oneblock.command.create` | `/ob create` |
+| `cobblemon_oneblock.command.home` | `/ob home` |
+| `cobblemon_oneblock.command.spawn` | `/ob spawn` |
+| `cobblemon_oneblock.command.visit` | `/ob visit <player>` |
+| `cobblemon_oneblock.command.info` | `/ob info` |
+| `cobblemon_oneblock.command.reset` | `/ob reset` |
+| `cobblemon_oneblock.command.delete` | `/ob delete` |
+| `cobblemon_oneblock.command.party` | `/ob party invite\|accept\|deny\|kick\|leave\|list` |
+| `cobblemon_oneblock.command.settings` | `/ob settings visitor-catch\|visitor-battle` |
+| `cobblemon_oneblock.command.biome` | `/ob biome pos1\|pos2\|set\|list\|remove` |
+| `cobblemon_oneblock.command.ban` | `/ob ban\|unban\|bans` (own island) |
 
 ### Admin commands (OP level 4 by default)
 
 | Node | Command |
 |---|---|
-| `oneblock.admin.setup` | `/ob setup` |
-| `oneblock.admin.reload` | `/ob reload` |
-| `oneblock.admin.buff` | `/ob buff <player> <type> <value> <minutes>` |
-| `oneblock.admin.moderate` | `/ob admin kick\|info\|reset\|delete` |
-| `oneblock.admin.bypass` | ignore island protection, build in the hub, catch/battle anywhere (OP level 2) |
+| `cobblemon_oneblock.admin.setup` | `/ob setup` |
+| `cobblemon_oneblock.admin.reload` | `/ob reload` |
+| `cobblemon_oneblock.admin.buff` | `/ob buff <player> <type> <value> <minutes>` |
+| `cobblemon_oneblock.admin.moderate` | `/ob admin kick\|info\|reset\|delete` |
+| `cobblemon_oneblock.admin.bypass` | ignore island protection, build in the hub, catch/battle anywhere (OP level 2) |
 
 Example: let everyone play but restrict moderation to a staff group.
 
 ```
-lp group default permission set oneblock.command true
-lp group moderator permission set oneblock.admin.moderate true
-lp group moderator permission set oneblock.admin.bypass true
+lp group default permission set cobblemon_oneblock.command true
+lp group moderator permission set cobblemon_oneblock.admin.moderate true
+lp group moderator permission set cobblemon_oneblock.admin.bypass true
 ```
 
 ## 6. Protection precedence
 
 The first rule that applies wins:
 
-1. **Hub zone** — nobody builds or breaks inside `hub_radius`. Exception: `oneblock.admin.bypass`
+1. **Hub zone** — nobody builds or breaks inside `hub_radius`. Exception: `cobblemon_oneblock.admin.bypass`
    holders when `hub_allow_building` is on.
-2. **Admin bypass** — `oneblock.admin.bypass` ignores all island rules from here on.
+2. **Admin bypass** — `cobblemon_oneblock.admin.bypass` ignores all island rules from here on.
 3. **Island ban** — banned players are bounced to the hub regardless of anything else.
    Owners and members cannot be banned from their own island.
 4. **Island membership** — owner and members may do anything inside the island's *current*
@@ -173,7 +173,7 @@ level, break count and party usage — start here for support tickets.
 work from the console too. Both archive the island: it stays restorable for
 `reset_archive_days` (default 7) before the purge removes it.
 
-Every moderation action is written to `config/oneblock/audit.log` as a single JSON line and
+Every moderation action is written to `config/cobblemon_oneblock/audit.log` as a single JSON line and
 published to addons via the API. Set `discord_webhook_url` in `main.json5` to mirror the
 audit trail into a Discord channel. All of this happens off the server thread — a dead
 webhook cannot lag the server.

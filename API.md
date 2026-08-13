@@ -2,8 +2,8 @@
 
 Everything a third-party mod needs to extend Cobblemon OneBlock without touching the core.
 
-- **Module:** `oneblock-api` (Java 21, Fabric 1.21.1)
-- **Depends on:** Fabric API only — **not** on `oneblock-core`, **not** on Cobblemon
+- **Module:** `cobblemon-oneblock-api` (Java 21, Fabric 1.21.1)
+- **Depends on:** Fabric API only — **not** on `cobblemon-oneblock-core`, **not** on Cobblemon
 - **Working reference:** [`example-addon/`](example-addon) — builds in this repository, so a
   breaking API change fails the build instead of silently rotting in the docs
 
@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-    modImplementation("io.github.sk4ndulf.oneblock:oneblock-api:0.1.0")
+    modImplementation("io.github.sk4ndulf.cobblemon.oneblock:cobblemon-oneblock-api:0.1.0")
 }
 ```
 
@@ -27,11 +27,11 @@ In `fabric.mod.json`:
 
 ```json
 "depends": {
-  "oneblock_api": "*"
+  "cobblemon_oneblock_api": "*"
 }
 ```
 
-Depend on `oneblock_api`, not on `oneblock` — your addon then also loads on a server that
+Depend on `cobblemon_oneblock_api`, not on `cobblemon_oneblock` — your addon then also loads on a server that
 only ships the API, and you never pull Cobblemon into your build.
 
 ## 2. Getting the API
@@ -104,7 +104,7 @@ other listeners.
 | `AuditEvent` | any moderation action (create, reset, ban, admin override, ...) | `action()`, `actor()`, `target()`, `details()` |
 
 `AuditEvent` is the hook for external moderation tooling — a Discord bot, a dashboard, an
-external database. The core already writes these to `config/oneblock/audit.log`.
+external database. The core already writes these to `config/cobblemon_oneblock/audit.log`.
 
 Events implementing `Cancellable` can be prevented; cancelled events are still delivered to
 the remaining listeners so they can observe the cancellation.
@@ -156,8 +156,8 @@ A boss on level 8 is harder than on level 2 and drops exactly the same. Granting
 your event's own job, which is also why there is no separate "reward provider" interface.
 
 Registering an already-taken id replaces the previous type (logged), so you can deliberately
-override a built-in event. The core ships `oneblock:mob_wave`, `oneblock:boss_fight`,
-`oneblock:resource_burst` and `oneblock:legendary_encounter`.
+override a built-in event. The core ships `cobblemon_oneblock:mob_wave`, `cobblemon_oneblock:boss_fight`,
+`cobblemon_oneblock:resource_burst` and `cobblemon_oneblock:legendary_encounter`.
 
 **Failure handling:** an exception in `start` drops that trigger; an exception in `tick`
 fails the event and runs `cleanup`. Your bugs cannot wedge the core.
@@ -191,14 +191,14 @@ Providers are asked in registration order; the first non-empty answer wins. Retu
 you care about while the server's own loot table keeps working for everything else.
 Called once per break on the server thread — keep it fast and never block.
 
-Server owners configure the base pool in `config/oneblock/loottable.json5` (default: every
+Server owners configure the base pool in `config/cobblemon_oneblock/loottable.json5` (default: every
 breakable, fluid-free block from Minecraft, Cobblemon and every other installed mod).
 
 ---
 
 ## 7. Versioning
 
-`oneblock-api` follows semantic versioning:
+`cobblemon-oneblock-api` follows semantic versioning:
 
 - **Patch** (`0.1.0` → `0.1.1`): implementation fixes, JavaDoc, no signature changes.
 - **Minor** (`0.1.0` → `0.2.0`): new interfaces, new methods with `default` implementations,

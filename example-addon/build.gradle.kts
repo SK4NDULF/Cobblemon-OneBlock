@@ -4,7 +4,7 @@ plugins {
 }
 
 base {
-    archivesName = "oneblock-example-addon"
+    archivesName = "cobblemon-oneblock-example-addon"
 }
 
 repositories {
@@ -12,7 +12,7 @@ repositories {
 }
 
 // This is what a real addon's dependency block looks like: Fabric + the OneBlock API.
-// Note there is NO dependency on oneblock-core and none on Cobblemon.
+// Note there is NO dependency on cobblemon-oneblock-core and none on Cobblemon.
 dependencies {
     minecraft("com.mojang:minecraft:${property("minecraft_version")}")
     mappings(loom.officialMojangMappings())
@@ -20,9 +20,9 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}")
 
     // In your own project this is a normal Maven coordinate:
-    //   modImplementation("io.github.sk4ndulf.oneblock:oneblock-api:<version>")
+    //   modImplementation("io.github.sk4ndulf.cobblemon.oneblock:cobblemon-oneblock-api:<version>")
     // Inside this repository we consume the sibling module directly instead.
-    implementation(project(":oneblock-api", configuration = "namedElements"))
+    implementation(project(":cobblemon-oneblock-api", configuration = "namedElements"))
 }
 
 java {
