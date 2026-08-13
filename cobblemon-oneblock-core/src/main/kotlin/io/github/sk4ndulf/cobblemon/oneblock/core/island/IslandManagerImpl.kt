@@ -13,6 +13,7 @@ import io.github.sk4ndulf.cobblemon.oneblock.core.biome.BiomeService
 import io.github.sk4ndulf.cobblemon.oneblock.core.config.MainConfig
 import io.github.sk4ndulf.cobblemon.oneblock.core.lang.ServerLang
 import io.github.sk4ndulf.cobblemon.oneblock.core.moderation.AuditLog
+import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechService
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.GridMath
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.HubManager
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.OneBlockDimension
@@ -344,6 +345,13 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
             for (island in toPurge) {
                 island.state = IslandState.PURGED
                 repository.updateStateAsync(island.id, IslandState.PURGED, island.archivedAt)
+                // Tech progress dies here rather than at archive time: archiving is
+                // restorable, so an archived island has to keep its unlocks and its claims
+                // for the restore to mean anything. A purge is the point of no return, and
+                // from here every source is claimable again by whoever owns the slot next
+                // (PROGRESSION_REWORK.md §4.3). A player who runs /ob reset gets a brand new
+                // island id and therefore an empty tree immediately, which is what they see.
+                TechService.clear(island.id)
                 // Slot stays reserved: the area still contains the old builds. Slot reuse
                 // arrives together with chunk clearing (see PROJECT_PLAN.md open points).
                 OneBlockCore.LOGGER.info("Purged archived island {} (slot {}).", island.id, island.slot())

@@ -28,6 +28,71 @@ Running record of what was changed, why, and how far it was actually verified.
 
 ---
 
+## 2026-08-13 — Progression rework slice A: the tech tree core
+
+**Asked:** after the design review was accepted and D1/D2/D4 were settled, build the spine of
+the new progression system.
+
+**What was built:** a new `core.progression` package, plus the wiring around it.
+
+| Piece | What it does |
+|---|---|
+| `TechCategory` | the six branches, in display order |
+| `TechEffect` | nine typed payloads, each validated at load |
+| `TechRequirement` | `node:x>=2`, `boss:x`, `tech_points>=n` |
+| `TechNode` | levels, per-level costs, per-level effects |
+| `TechTree` | validation and the dropped-node report |
+| `TechTreeFile` | reads `techtree.json5`, writes the bundled default on first start |
+| `IslandTechState` | levels, claims, spenders, balance, lifetime earned |
+| `TechRepository` | migration 9 tables; the claim insert is synchronous on purpose |
+| `TechService` | the only writer of levels and balances |
+| `TechPointService` | the only entry point for content-driven points |
+| `TechCommands` | `/ob tech` list / info / unlock / delegate / grant |
+
+Migration 9 adds `island_tech`, `island_claims`, `islands.tech_points`,
+`islands.tech_points_earned` and `island_members.may_spend_tech`.
+
+**Three decisions worth recording:**
+
+- **The claim insert is synchronous and leans on the primary key**, unlike every other write
+  in this codebase. Two members of one island finishing the same gym battle in the same tick
+  would both pass an in-memory check and bank the points twice; letting the unique constraint
+  arbitrate is the only version that cannot race.
+- **Tech data is wiped on purge, not on archive.** Archiving is restorable, so an archived
+  island has to keep its unlocks for a restore to mean anything. `/ob reset` gives the player
+  a brand new island id and therefore an empty tree immediately, which is the behaviour they
+  actually see.
+- **`max_level` is derived from the length of the cost list**, not read as its own field.
+  Two sources of truth for the same number is how a level ends up free or unreachable.
+
+**Verified how:** `./gradlew build` green on all three modules. Dev server booted headless
+with Cobblemon 1.7.3: migration 9 applied and schema version reported as 9, the default tree
+was written to `config/cobblemon_oneblock/techtree.json5` and loaded as 22 nodes across 5
+categories costing 459 points, and `/ob tech` reached its executor from the console (it
+answered "A player is required to run this command here", which is the expected refusal).
+
+Validation was exercised by injecting eight deliberately broken nodes into the config and
+restarting: unknown category, requirement pointing at a node that does not exist, requirement
+above a node's maximum level, a two-node cycle, a duplicate id, an unknown effect type, an
+effect on a level the node does not have, and an unparseable requirement string. Every one was
+caught, logged with the node id and dropped, and the cascade onto two further nodes that
+depended on a dropped one worked as intended. The first run of that test produced a vague
+message ("requires a node that does not exist, or a level above its maximum") on nodes whose
+requirement plainly existed in the file; that was fixed to name the offending requirement and
+the reason, and re-verified.
+
+Also found and fixed while testing: `/ob reload` reloaded the loot table but not the tech
+tree, so an edited `techtree.json5` needed a full restart.
+
+**Still unverified:** buying a node end to end. It needs an island, an island needs `/ob
+create`, and island creation cannot be driven from the server console — same reason tests 7-9
+in `HANDOFF.md` §4 need a human. Everything up to and including the command executor is
+verified; the spend path itself is compiled and reviewed, not played. Concretely untested in
+game: `/ob tech unlock`, `/ob tech delegate`, `/ob tech grant`, and the island-wide
+announcement on a purchase.
+
+---
+
 ## 2026-08-13 — Progression rework: full design from the owner, reviewed and written down
 
 **Asked:** the owner delivered a complete system design — a six-category tech tree (OneBlock,

@@ -7,12 +7,18 @@ everything.
 This file is the snapshot; `WORKLOG.md` is the running history. Keep both current.
 
 **Active work:** `PROGRESSION_REWORK.md` — the progression system is being redesigned as a
-six-category tech tree. It now carries the owner's full design, the review of it, the node and
-storage model, the point economy, verified Cobblemon 1.7.3 hooks, seven open decisions and an
+six-category tech tree. It carries the owner's full design, the review of it, the node and
+storage model, the point economy, verified Cobblemon 1.7.3 hooks, the open decisions and an
 eight-slice build plan. **Read it before touching progression, loot or Cobblemon code.**
-Nothing there is built yet, and nothing gets coded from a decision still marked ⬜ — D1 (chest
-menu vs book), D2 (may work faint a Pokémon?) and D4 (is progression finite?) block slices A,
-B and H respectively.
+
+**Slice A (tree core) is shipped and boot-verified.** Slice B (the OneBlock biome ladders) is
+next and is the one that actually changes the game. Nothing gets coded from a decision still
+marked ⬜; D3 and D5 block slices H and E, neither of which is next.
+
+⚠️ **The tree currently costs 459 points and nothing pays them out yet.** Slice C wires up the
+real sources (NPC victories, advancements); until then `/ob tech grant` is the only income.
+459 is also a balance signal in its own right — at 1-5 points per NPC that is a lot of content,
+and it is the first thing to look at when tuning.
 
 ---
 

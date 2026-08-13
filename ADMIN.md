@@ -199,6 +199,7 @@ zero configuration and still gives networks full control.
 | `cobblemon_oneblock.command.settings` | `/ob settings visitor-catch\|visitor-battle` |
 | `cobblemon_oneblock.command.biome` | `/ob biome pos1\|pos2\|set\|list\|remove` |
 | `cobblemon_oneblock.command.ban` | `/ob ban\|unban\|bans` (own island) |
+| `cobblemon_oneblock.command.tech` | `/ob tech`, `list`, `info`, `unlock`, `delegate` |
 
 ### Admin commands (OP level 4 by default)
 
@@ -208,6 +209,7 @@ zero configuration and still gives networks full control.
 | `cobblemon_oneblock.admin.reload` | `/ob reload` |
 | `cobblemon_oneblock.admin.buff` | `/ob buff <player> <type> <value> <minutes>` |
 | `cobblemon_oneblock.admin.moderate` | `/ob admin kick\|info\|reset\|delete` |
+| `cobblemon_oneblock.admin.tech` | `/ob tech grant <player> <amount>` |
 | `cobblemon_oneblock.admin.bypass` | ignore island protection, build in the hub, catch/battle anywhere (OP level 2) |
 
 Example: let everyone play but restrict moderation to a staff group.

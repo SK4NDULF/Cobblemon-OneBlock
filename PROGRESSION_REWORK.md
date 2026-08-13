@@ -563,9 +563,9 @@ mining counter, start `tech_points` at 0. Needs migration 9 (schema is at 8).
 Ordered so the mod is playable at every stop, and so the largest risk is not also the first
 thing built. Slices A–C are the ones that must be right.
 
-- **A — Tree core.** Node model, `techtree.json5` with validation, migration 9,
-  `TechPointService` with island-scoped claims, `/ob tech` over chat. An admin grant command
-  makes it testable before any real source exists. No payloads yet.
+- **A — Tree core. ✅ shipped 2026-08-13.** Node model, `techtree.json5` with validation,
+  migration 9, `TechPointService` with island-scoped claims, `/ob tech` over chat, an admin
+  grant command for testing before any real source exists. No payloads yet.
 - **B — The OneBlock ladder.** Biome tiers feeding `OneBlockLootTable`, yield nodes, chest
   chance. **This is the slice where the game actually changes** — §3.1.
 - **C — Real point sources.** NPC victories via `BATTLE_VICTORY` + trainer `config` ids,
@@ -591,3 +591,4 @@ Append one entry per slice, newest at the bottom. No code shipped yet.
 |---|---|---|---|
 | 2026-08-13 | — | Document created. Analysis of the current system, the Palworld reframe, candidate unlocks, seven open decisions. No code touched. | n/a |
 | 2026-08-13 | — | Rewritten for the owner's full design: six categories, biome ladders, Pokémon labour, boosts, boss gates, content-based point economy. Added the review (§3), the node/effect/storage model (§4), the claim-based point economy answering the NPC identity question (§5), the labour design with four stat roles (§7), and Cobblemon API ground truth read from tag 1.7.3 (§8). Six of the original decisions settled by the design; seven new ones opened. No code touched. | Cobblemon hooks in §8 read from the 1.7.3 tag; the codebase claims in §1 and §3.2f read from the working tree |
+| 2026-08-13 | A | Tree core shipped: `TechNode`/`TechEffect`/`TechRequirement` model, `TechTree` validation, `TechTreeFile` reading `techtree.json5` from a bundled default, migration 9 (`island_tech`, `island_claims`, two point columns, `may_spend_tech`), `TechService` as the only writer of levels and balances, `TechPointService` as the only entry for content-driven points, `/ob tech` with list/info/unlock/delegate/grant. Tech data is wiped on purge, not on archive, so a restore still works. | `./gradlew build` green; dev server booted with Cobblemon 1.7.3, migration 9 applied (schema 9), default tree written and loaded (22 nodes, 5 categories, 459 points), `/ob tech` reached its executor. Validation exercised by injecting eight broken nodes: unknown category, dangling requirement, level above maximum, two-node cycle, duplicate id, unknown effect type, out-of-range effect level, unparseable requirement — every one was caught, logged and dropped, including the correct cascade onto two nodes that depended on a dropped one. **Not played:** no island exists on a headless server, so buying a node end-to-end is untested. |

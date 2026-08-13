@@ -18,6 +18,8 @@ import io.github.sk4ndulf.cobblemon.oneblock.core.cobblemon.BuffService
 import io.github.sk4ndulf.cobblemon.oneblock.core.cobblemon.CobblemonIntegration
 import io.github.sk4ndulf.cobblemon.oneblock.core.moderation.BanService
 import io.github.sk4ndulf.cobblemon.oneblock.core.permission.ProtectionManager
+import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechService
+import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechTreeFile
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.HubManager
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.OneBlockDimension
 import net.fabricmc.api.ModInitializer
@@ -51,6 +53,8 @@ object OneBlockCore : ModInitializer {
 
     val lootTable = OneBlockLootTable(FabricLoader.getInstance().configDir.resolve(MOD_ID), LOGGER)
 
+    val techTreeFile = TechTreeFile(FabricLoader.getInstance().configDir.resolve(MOD_ID), LOGGER)
+
     val playerRepository: PlayerRepository?
         get() = database?.let { PlayerRepository(it) }
 
@@ -72,6 +76,7 @@ object OneBlockCore : ModInitializer {
         configManager.loadAll()
         ServerLang.load(configManager.mainConfig.language, LOGGER)
         lootTable.load()
+        loadTechTree()
 
         OneBlockAPIHolder.set(OneBlockAPIImpl(eventBus))
         ObCommands.register()
@@ -176,6 +181,18 @@ object OneBlockCore : ModInitializer {
         )
     }
 
+    /**
+     * Reads techtree.json5 and hands the validated tree to [TechService].
+     *
+     * Kept separate from island loading because the tree is config, not world state: it is
+     * read once at startup and again on `/ob reload`, while island tech state comes from the
+     * database and is reloaded with the islands.
+     */
+    fun loadTechTree() {
+        techTreeFile.load()
+        TechService.setTree(techTreeFile.tree)
+    }
+
     /** (Re-)creates the island registry from the database. Server thread only. */
     fun reloadIslands() {
         val db = database
@@ -184,6 +201,7 @@ object OneBlockCore : ModInitializer {
             return
         }
         islandManager = IslandManagerImpl(IslandRepository(db)).also { it.loadAll() }
+        TechService.loadAll(db)
         BuffService.loadAll(db)
         BiomeService.reload(BiomeRepository(db))
         BanService.reload(db)

@@ -128,6 +128,36 @@ class MigrationRunner(private val database: Database, private val logger: Logger
                 """.trimIndent(),
             )
         },
+        Migration(9, "island tech tree: unlocks, point claims, balances, spend delegation") { _ ->
+            listOf(
+                """
+                CREATE TABLE IF NOT EXISTS island_tech (
+                    island_id   BIGINT      NOT NULL,
+                    node_id     VARCHAR(64) NOT NULL,
+                    level       INT         NOT NULL,
+                    unlocked_at BIGINT      NOT NULL,
+                    PRIMARY KEY (island_id, node_id)
+                )
+                """.trimIndent(),
+                // The primary key here is load-bearing, not just an index: it is what stops
+                // two members of the same island banking the same source in the same tick.
+                // See TechRepository.claimSync.
+                """
+                CREATE TABLE IF NOT EXISTS island_claims (
+                    island_id  BIGINT       NOT NULL,
+                    source_id  VARCHAR(128) NOT NULL,
+                    claimed_by CHAR(36)     NOT NULL,
+                    claimed_at BIGINT       NOT NULL,
+                    PRIMARY KEY (island_id, source_id)
+                )
+                """.trimIndent(),
+                // Two counters: the spendable balance, and a lifetime total that never drops,
+                // so a `tech_points>=N` gate cannot close again when the island spends.
+                "ALTER TABLE islands ADD COLUMN tech_points BIGINT NOT NULL DEFAULT 0",
+                "ALTER TABLE islands ADD COLUMN tech_points_earned BIGINT NOT NULL DEFAULT 0",
+                "ALTER TABLE island_members ADD COLUMN may_spend_tech INT NOT NULL DEFAULT 0",
+            )
+        },
     )
 
     fun run() {

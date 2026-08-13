@@ -81,6 +81,7 @@ object ObCommands {
                             .requires { ObPermissions.check(it, ObPermissions.COMMAND_INFO, 0) }
                             .executes(::info)
                     )
+                    .then(TechCommands.build())
                     .then(
                         Commands.literal("biome")
                             .requires { ObPermissions.check(it, ObPermissions.COMMAND_BIOME, 0) }
@@ -541,6 +542,7 @@ object ObCommands {
         OneBlockCore.configManager.loadAll()
         ServerLang.load(OneBlockCore.configManager.mainConfig.language, OneBlockCore.LOGGER)
         OneBlockCore.lootTable.load()
+        OneBlockCore.loadTechTree()
 
         // Reconnecting the pool and testing the connection blocks — keep it off the server thread.
         CompletableFuture.supplyAsync { OneBlockCore.connectDatabase() }

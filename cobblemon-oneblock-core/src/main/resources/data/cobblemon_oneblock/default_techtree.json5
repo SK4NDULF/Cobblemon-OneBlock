@@ -1,0 +1,401 @@
+/*
+ * Default island tech tree for Cobblemon OneBlock.
+ *
+ * This file is copied to config/cobblemon_oneblock/techtree.json5 on first start and never
+ * touched again, so your edits always win. Delete it to get this default back.
+ * Reload with /ob reload.
+ *
+ * A node has levels 0..N. Level 0 means "not bought". "costs" lists the price of each step,
+ * so the first entry buys level 1 and the number of entries IS the maximum level.
+ * "effects" are keyed by level and are cumulative: reaching level 3 means levels 1, 2 and 3
+ * all apply. That is what lets a biome ladder widen the OneBlock pool step by step.
+ *
+ * "requires" gates a node. All entries must hold:
+ *   "node:forest>=2"    another node at that level or higher ("node:fly" means level 1)
+ *   "tech_points>=50"   lifetime points earned, for coarse tiering
+ *   "boss:nether_king"  a Special this island has defeated
+ *
+ * Boss gates are parsed and enforced, but the Special system is not built yet, so a node
+ * gated behind a boss can never be unlocked right now. The startup log says how many are.
+ * The syntax is shown on the "end" node below, commented out, so it is ready when bosses land.
+ *
+ * Points come from NPC trainers, custom advancements and Special bosses — never from mining
+ * or player EXP. Every source is claimable once per island. Check the startup log for the
+ * total cost of this tree and make sure your server's content adds up to more than that,
+ * or the last nodes are unreachable for everyone.
+ */
+{
+  "nodes": [
+
+    // ---------------------------------------------------------------------------------
+    // OneBlock — what comes out of the block. The most important category by far: it is
+    // the only one that changes the core loop rather than decorating it. An island with
+    // nothing bought gets grass, dirt, cobblestone and oak planks, and that is meant to
+    // feel poor.
+    // ---------------------------------------------------------------------------------
+
+    {
+      "id": "forest",
+      "category": "oneblock",
+      "name": "Forest",
+      "description": "Wood, leaves and everything that grows above ground.",
+      "icon": "minecraft:oak_log",
+      "costs": [1, 2, 3, 4, 5],
+      "requires": [],
+      "effects": {
+        "1": [{ "type": "oneblock_biome", "biome": "forest", "tier": 1 }],
+        "2": [{ "type": "oneblock_biome", "biome": "forest", "tier": 2 }],
+        "3": [{ "type": "oneblock_biome", "biome": "forest", "tier": 3 }],
+        "4": [{ "type": "oneblock_biome", "biome": "forest", "tier": 4 }],
+        "5": [{ "type": "oneblock_biome", "biome": "forest", "tier": 5 }],
+      },
+    },
+    {
+      "id": "cave",
+      "category": "oneblock",
+      "name": "Cave",
+      "description": "Stone, ores and the deep dark.",
+      "icon": "minecraft:deepslate",
+      "costs": [2, 3, 4, 5, 6],
+      "requires": ["node:forest>=1"],
+      "effects": {
+        "1": [{ "type": "oneblock_biome", "biome": "cave", "tier": 1 }],
+        "2": [{ "type": "oneblock_biome", "biome": "cave", "tier": 2 }],
+        "3": [{ "type": "oneblock_biome", "biome": "cave", "tier": 3 }],
+        "4": [{ "type": "oneblock_biome", "biome": "cave", "tier": 4 }],
+        "5": [{ "type": "oneblock_biome", "biome": "cave", "tier": 5 }],
+      },
+    },
+    {
+      "id": "ocean",
+      "category": "oneblock",
+      "name": "Ocean",
+      "description": "Coral, prismarine and everything that sinks.",
+      "icon": "minecraft:prismarine",
+      "costs": [2, 3, 4, 5, 6],
+      "requires": ["node:forest>=2"],
+      "effects": {
+        "1": [{ "type": "oneblock_biome", "biome": "ocean", "tier": 1 }],
+        "2": [{ "type": "oneblock_biome", "biome": "ocean", "tier": 2 }],
+        "3": [{ "type": "oneblock_biome", "biome": "ocean", "tier": 3 }],
+        "4": [{ "type": "oneblock_biome", "biome": "ocean", "tier": 4 }],
+        "5": [{ "type": "oneblock_biome", "biome": "ocean", "tier": 5 }],
+      },
+    },
+    {
+      "id": "tundra",
+      "category": "oneblock",
+      "name": "Tundra",
+      "description": "Ice, snow and spruce.",
+      "icon": "minecraft:packed_ice",
+      "costs": [2, 3, 4, 5, 6],
+      "requires": ["node:cave>=2"],
+      "effects": {
+        "1": [{ "type": "oneblock_biome", "biome": "tundra", "tier": 1 }],
+        "2": [{ "type": "oneblock_biome", "biome": "tundra", "tier": 2 }],
+        "3": [{ "type": "oneblock_biome", "biome": "tundra", "tier": 3 }],
+        "4": [{ "type": "oneblock_biome", "biome": "tundra", "tier": 4 }],
+        "5": [{ "type": "oneblock_biome", "biome": "tundra", "tier": 5 }],
+      },
+    },
+    {
+      "id": "nether",
+      "category": "oneblock",
+      "name": "Nether",
+      "description": "Netherrack, quartz, blackstone and ancient debris at the top.",
+      "icon": "minecraft:netherrack",
+      "costs": [3, 4, 5, 6, 8],
+      "requires": ["node:cave>=3"],
+      "effects": {
+        "1": [{ "type": "oneblock_biome", "biome": "nether", "tier": 1 }],
+        "2": [{ "type": "oneblock_biome", "biome": "nether", "tier": 2 }],
+        "3": [{ "type": "oneblock_biome", "biome": "nether", "tier": 3 }],
+        "4": [{ "type": "oneblock_biome", "biome": "nether", "tier": 4 }],
+        "5": [{ "type": "oneblock_biome", "biome": "nether", "tier": 5 }],
+      },
+    },
+    {
+      "id": "end",
+      "category": "oneblock",
+      "name": "End",
+      "description": "End stone, purpur, shulker boxes and elytra-tier payloads.",
+      "icon": "minecraft:end_stone",
+      // Once the Special system lands, this is where a boss gate belongs — the End should
+      // open because something was beaten, not because points accumulated:
+      //   "requires": ["node:nether>=3", "boss:nether_king"],
+      "costs": [4, 5, 6, 8, 10],
+      "requires": ["node:nether>=3"],
+      "effects": {
+        "1": [{ "type": "oneblock_biome", "biome": "end", "tier": 1 }],
+        "2": [{ "type": "oneblock_biome", "biome": "end", "tier": 2 }],
+        "3": [{ "type": "oneblock_biome", "biome": "end", "tier": 3 }],
+        "4": [{ "type": "oneblock_biome", "biome": "end", "tier": 4 }],
+        "5": [{ "type": "oneblock_biome", "biome": "end", "tier": 5 }],
+      },
+    },
+    {
+      "id": "forestcutter",
+      "category": "oneblock",
+      "name": "Forestcutter",
+      "description": "A chance that forest blocks from the OneBlock drop twice.",
+      "icon": "minecraft:iron_axe",
+      "costs": [3, 5, 8],
+      "requires": ["node:forest>=5"],
+      "effects": {
+        "1": [{ "type": "oneblock_yield", "biome": "forest", "chance": 0.10 }],
+        "2": [{ "type": "oneblock_yield", "biome": "forest", "chance": 0.20 }],
+        "3": [{ "type": "oneblock_yield", "biome": "forest", "chance": 0.35 }],
+      },
+    },
+    {
+      "id": "stonebreaker",
+      "category": "oneblock",
+      "name": "Stonebreaker",
+      "description": "A chance that cave blocks from the OneBlock drop twice.",
+      "icon": "minecraft:iron_pickaxe",
+      "costs": [3, 5, 8],
+      "requires": ["node:cave>=5"],
+      "effects": {
+        "1": [{ "type": "oneblock_yield", "biome": "cave", "chance": 0.10 }],
+        "2": [{ "type": "oneblock_yield", "biome": "cave", "chance": 0.20 }],
+        "3": [{ "type": "oneblock_yield", "biome": "cave", "chance": 0.35 }],
+      },
+    },
+    {
+      "id": "treasure_hunter",
+      "category": "oneblock",
+      "name": "Treasure Hunter",
+      "description": "Raises the chance that the OneBlock becomes a treasure chest.",
+      "icon": "minecraft:chest",
+      "costs": [3, 5, 8],
+      "requires": ["node:cave>=1"],
+      "effects": {
+        "1": [{ "type": "chest_chance", "added": 0.02 }],
+        "2": [{ "type": "chest_chance", "added": 0.04 }],
+        "3": [{ "type": "chest_chance", "added": 0.08 }],
+      },
+    },
+
+    // ---------------------------------------------------------------------------------
+    // Island — space and island-wide limits. Border growth is bought here instead of
+    // happening on its own, which is what makes "wider island or better loot?" a real
+    // decision rather than two things that both just happen.
+    // ---------------------------------------------------------------------------------
+
+    {
+      "id": "border",
+      "category": "island",
+      "name": "Island Size",
+      "description": "How far your island reaches from the OneBlock.",
+      "icon": "minecraft:grass_block",
+      "costs": [2, 3, 4, 6, 8, 11, 15],
+      "requires": [],
+      "effects": {
+        "1": [{ "type": "border_size", "size": 32 }],
+        "2": [{ "type": "border_size", "size": 64 }],
+        "3": [{ "type": "border_size", "size": 112 }],
+        "4": [{ "type": "border_size", "size": 176 }],
+        "5": [{ "type": "border_size", "size": 288 }],
+        "6": [{ "type": "border_size", "size": 496 }],
+        "7": [{ "type": "border_size", "size": 1024 }],
+      },
+    },
+    {
+      "id": "biome_regions",
+      "category": "island",
+      "name": "Biome Regions",
+      "description": "How many separate biome regions you may paint on your island.",
+      "icon": "minecraft:jungle_sapling",
+      "costs": [3, 5, 8],
+      "requires": ["node:border>=2"],
+      "effects": {
+        "1": [{ "type": "island_int", "key": "max_biome_regions", "value": 4 }],
+        "2": [{ "type": "island_int", "key": "max_biome_regions", "value": 8 }],
+        "3": [{ "type": "island_int", "key": "max_biome_regions", "value": 16 }],
+      },
+    },
+    {
+      "id": "party_size",
+      "category": "island",
+      "name": "Party Size",
+      "description": "How many players may join your island.",
+      "icon": "minecraft:player_head",
+      "costs": [4, 7],
+      "requires": ["node:border>=1"],
+      "effects": {
+        "1": [{ "type": "island_int", "key": "max_party_size", "value": 6 }],
+        "2": [{ "type": "island_int", "key": "max_party_size", "value": 8 }],
+      },
+    },
+
+    // ---------------------------------------------------------------------------------
+    // Players — quality of life for members, active only inside their own island border.
+    // Flight is deliberately the single most expensive node in the tree: a OneBlock island
+    // is tense because there is nothing under you, and flight deletes that permanently.
+    // ---------------------------------------------------------------------------------
+
+    {
+      "id": "well_fed",
+      "category": "players",
+      "name": "Well Fed",
+      "description": "Hunger drains more slowly on your island.",
+      "icon": "minecraft:bread",
+      "costs": [2, 3, 5],
+      "requires": [],
+      "effects": {
+        "1": [{ "type": "player_effect", "key": "hunger", "magnitude": 0.20 }],
+        "2": [{ "type": "player_effect", "key": "hunger", "magnitude": 0.40 }],
+        "3": [{ "type": "player_effect", "key": "hunger", "magnitude": 0.60 }],
+      },
+    },
+    {
+      "id": "island_rest",
+      "category": "players",
+      "name": "Island Rest",
+      "description": "Slow passive healing on your island, even on a low hunger bar.",
+      "icon": "minecraft:golden_apple",
+      "costs": [3, 5, 8],
+      "requires": ["node:well_fed>=1"],
+      "effects": {
+        "1": [{ "type": "player_effect", "key": "regen", "magnitude": 0.5 }],
+        "2": [{ "type": "player_effect", "key": "regen", "magnitude": 1.0 }],
+        "3": [{ "type": "player_effect", "key": "regen", "magnitude": 2.0 }],
+      },
+    },
+    {
+      "id": "sure_footing",
+      "category": "players",
+      "name": "Sure Footing",
+      "description": "Less fall damage on your island.",
+      "icon": "minecraft:feather",
+      "costs": [2, 3, 5],
+      "requires": [],
+      "effects": {
+        "1": [{ "type": "player_effect", "key": "fall", "magnitude": 0.25 }],
+        "2": [{ "type": "player_effect", "key": "fall", "magnitude": 0.50 }],
+        "3": [{ "type": "player_effect", "key": "fall", "magnitude": 1.00 }],
+      },
+    },
+    {
+      "id": "flight",
+      "category": "players",
+      "name": "Flight",
+      "description": "Island members may fly — inside their own border only.",
+      "icon": "minecraft:elytra",
+      "costs": [20],
+      "requires": ["node:sure_footing>=3", "node:border>=5", "tech_points>=120"],
+      "effects": {
+        "1": [{ "type": "player_effect", "key": "fly", "magnitude": 1.0 }],
+      },
+    },
+
+    // ---------------------------------------------------------------------------------
+    // Boosts — timed, island-wide, activated on demand rather than permanently on.
+    // The tree buys strength and duration; activating is free but has a cooldown.
+    // ---------------------------------------------------------------------------------
+
+    {
+      "id": "shiny_boost",
+      "category": "boosts",
+      "name": "Shiny Boost",
+      "description": "A timed island-wide multiplier on the shiny rate.",
+      "icon": "minecraft:nether_star",
+      "costs": [4, 6, 8, 11, 15],
+      "requires": ["tech_points>=30"],
+      "effects": {
+        "1": [{ "type": "boost_unlock", "boost": "shiny", "strength": 1.5, "duration_minutes": 10 }],
+        "2": [{ "type": "boost_unlock", "boost": "shiny", "strength": 2.0, "duration_minutes": 20 }],
+        "3": [{ "type": "boost_unlock", "boost": "shiny", "strength": 3.0, "duration_minutes": 30 }],
+        "4": [{ "type": "boost_unlock", "boost": "shiny", "strength": 4.0, "duration_minutes": 45 }],
+        "5": [{ "type": "boost_unlock", "boost": "shiny", "strength": 5.0, "duration_minutes": 60 }],
+      },
+    },
+    {
+      "id": "spawn_boost",
+      "category": "boosts",
+      "name": "Typing Boost",
+      "description": "For a while, a chosen typing makes up a much larger share of island spawns.",
+      "icon": "minecraft:ender_eye",
+      "costs": [4, 6, 8, 11, 15],
+      "requires": ["tech_points>=30"],
+      "effects": {
+        "1": [{ "type": "boost_unlock", "boost": "typing", "strength": 0.20, "duration_minutes": 10 }],
+        "2": [{ "type": "boost_unlock", "boost": "typing", "strength": 0.35, "duration_minutes": 20 }],
+        "3": [{ "type": "boost_unlock", "boost": "typing", "strength": 0.50, "duration_minutes": 30 }],
+        "4": [{ "type": "boost_unlock", "boost": "typing", "strength": 0.65, "duration_minutes": 45 }],
+        "5": [{ "type": "boost_unlock", "boost": "typing", "strength": 0.80, "duration_minutes": 60 }],
+      },
+    },
+
+    // ---------------------------------------------------------------------------------
+    // Pokémon — the labour system. This is a SAMPLE BRANCH for one type, not the finished
+    // category: the full design covers all 18 types, which is a project of its own and the
+    // last slice on the plan. Costed as written, one type is about 70 points, so all 18
+    // would dwarf the rest of the tree combined — the real per-type costs have to come down
+    // a long way, or types have to share upgrades. Decide that before writing 17 more.
+    //
+    // Note "threshold": at level 0 there is NO threshold and the Pokémon works until it
+    // faints. Buying level 1 costs uptime and buys safety; levels 2-5 win the uptime back.
+    // ---------------------------------------------------------------------------------
+
+    {
+      "id": "fire_threshold",
+      "category": "pokemon",
+      "name": "Fire — Knows When To Stop",
+      "description": "Fire types stop working and sleep at this share of their health. Without it, they work until they faint.",
+      "icon": "minecraft:campfire",
+      "costs": [2, 3, 4, 5, 7],
+      "requires": [],
+      "effects": {
+        "1": [{ "type": "pokemon_work", "pokemon_type": "fire", "axis": "threshold", "magnitude": 0.75 }],
+        "2": [{ "type": "pokemon_work", "pokemon_type": "fire", "axis": "threshold", "magnitude": 0.50 }],
+        "3": [{ "type": "pokemon_work", "pokemon_type": "fire", "axis": "threshold", "magnitude": 0.25 }],
+        "4": [{ "type": "pokemon_work", "pokemon_type": "fire", "axis": "threshold", "magnitude": 0.10 }],
+        "5": [{ "type": "pokemon_work", "pokemon_type": "fire", "axis": "threshold", "magnitude": 0.05 }],
+      },
+    },
+    {
+      "id": "fire_speed",
+      "category": "pokemon",
+      "name": "Fire — Work Speed",
+      "description": "Fire types work faster.",
+      "icon": "minecraft:blaze_powder",
+      "costs": [2, 4, 6],
+      "requires": ["node:fire_threshold>=1"],
+      "effects": {
+        "1": [{ "type": "pokemon_work", "pokemon_type": "fire", "axis": "speed", "magnitude": 0.15 }],
+        "2": [{ "type": "pokemon_work", "pokemon_type": "fire", "axis": "speed", "magnitude": 0.30 }],
+        "3": [{ "type": "pokemon_work", "pokemon_type": "fire", "axis": "speed", "magnitude": 0.50 }],
+      },
+    },
+    {
+      "id": "fire_resist",
+      "category": "pokemon",
+      "name": "Fire — Endurance",
+      "description": "Fire types lose less health per work action.",
+      "icon": "minecraft:magma_cream",
+      "costs": [2, 4, 6],
+      "requires": ["node:fire_threshold>=1"],
+      "effects": {
+        "1": [{ "type": "pokemon_work", "pokemon_type": "fire", "axis": "resist", "magnitude": 0.15 }],
+        "2": [{ "type": "pokemon_work", "pokemon_type": "fire", "axis": "resist", "magnitude": 0.30 }],
+        "3": [{ "type": "pokemon_work", "pokemon_type": "fire", "axis": "resist", "magnitude": 0.50 }],
+      },
+    },
+    {
+      "id": "fire_sleep",
+      "category": "pokemon",
+      "name": "Fire — Deep Sleep",
+      "description": "Fire types recover faster while sleeping.",
+      "icon": "minecraft:red_bed",
+      "costs": [2, 4, 6],
+      "requires": ["node:fire_threshold>=2"],
+      "effects": {
+        "1": [{ "type": "pokemon_work", "pokemon_type": "fire", "axis": "sleep_regen", "magnitude": 0.25 }],
+        "2": [{ "type": "pokemon_work", "pokemon_type": "fire", "axis": "sleep_regen", "magnitude": 0.50 }],
+        "3": [{ "type": "pokemon_work", "pokemon_type": "fire", "axis": "sleep_regen", "magnitude": 1.00 }],
+      },
+    },
+
+  ],
+}
