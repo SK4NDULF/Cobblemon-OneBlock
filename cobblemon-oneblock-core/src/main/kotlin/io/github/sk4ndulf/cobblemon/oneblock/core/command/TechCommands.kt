@@ -7,6 +7,7 @@ import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
 import io.github.sk4ndulf.cobblemon.oneblock.core.OneBlockCore
+import io.github.sk4ndulf.cobblemon.oneblock.core.gui.TechMenu
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.IslandData
 import io.github.sk4ndulf.cobblemon.oneblock.core.lang.ServerLang
 import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechCategory
@@ -37,7 +38,8 @@ object TechCommands {
     fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands.literal("tech")
             .requires { ObPermissions.check(it, ObPermissions.COMMAND_TECH, 0) }
-            .executes(::overview)
+            .executes(::openMenu)
+            .then(Commands.literal("chat").executes(::overview))
             .then(
                 Commands.literal("list").then(
                     Commands.argument("category", StringArgumentType.word())
@@ -84,6 +86,18 @@ object TechCommands {
         SharedSuggestionProvider.suggest(TechService.tree.nodes.keys.sorted(), builder)
 
     // --- listings ----------------------------------------------------------------------------
+
+    /** `/ob tech` — the chest menu. `/ob tech chat` keeps the text version for anyone who wants it. */
+    private fun openMenu(context: CommandContext<CommandSourceStack>): Int {
+        val player = context.source.playerOrException
+        val island = islandOf(context, player) ?: return 0
+        if (TechService.tree.nodes.isEmpty()) {
+            context.source.sendFailure(ServerLang.msg("cobblemon_oneblock.tech.empty"))
+            return 0
+        }
+        TechMenu.openMain(player, island)
+        return Command.SINGLE_SUCCESS
+    }
 
     private fun overview(context: CommandContext<CommandSourceStack>): Int {
         val player = context.source.playerOrException

@@ -28,6 +28,59 @@ Running record of what was changed, why, and how far it was actually verified.
 
 ---
 
+## 2026-08-13 — The tech chest menus
+
+**Asked:** "wichtig ist das wir mehrere kisten guis nutzen das skilltree hauptmenu und diese
+splitten sich in die jeweiligen themen dann" — several menus, not one menu with tabs.
+
+**What was built** (slice D, taken out of order ahead of B and C because it depends only on
+slice A and the owner wanted to see the shape):
+
+- `StaticMenu` — a read-only chest menu. This is what makes a GUI possible on vanilla clients
+  at all: a chest menu is plain vanilla protocol. The cost is that every vanilla inventory
+  interaction has to be suppressed by hand, so `clicked` deliberately does not call `super`
+  and `quickMoveStack` returns empty. It resyncs the client afterwards, because the client
+  predicted a change the server never made.
+- `MenuItems` — item building. Two traps worth recording: item names and lore render *italic*
+  by default and have to be un-italicised explicitly, and the operator form of `withStyle`
+  must be used, because `withStyle(Style.EMPTY.withItalic(false))` merges styles and drops
+  the colour. Also, an `ItemStack` with count 0 is the empty stack, so rank 0 becomes count 1
+  — which renders no number, exactly what "not bought" should look like.
+- `TechMenuLayout` — **what** the menus contain, as a pure function. Split from the opener on
+  purpose: opening a container needs a client, so the plumbing cannot be tested headlessly,
+  but the contents can.
+- `TechMenu` — opens the two menus and routes clicks.
+
+Main menu is 3 rows: island summary plus the six categories, each showing its rank count and
+points spent. A category menu is 6 rows: header and back button on row 0, then **one row per
+tier**. Closed tiers are a wall of red panes saying how many more points that branch needs, so
+the next tier is visible before it is affordable.
+
+**The tier rows are derived, not configured.** They come from the distinct `spent:` thresholds
+of the category's nodes, so retuning a gate in `techtree.json5` moves the row with it and the
+two can never disagree.
+
+`/ob tech` now opens the menu; `/ob tech chat` keeps the text version.
+
+**Verified how:** build green. Dev server boots and the new startup report shows the derived
+tier structure, which is the only part of the GUI that can be checked without a client:
+oneblock 9 nodes in 5 tiers at 0/5/15/30/50, island 3 in 3, players 4 in 3, pokemon 4 in 1,
+boosts 2 in 1. OneBlock landing on exactly 5 tiers matters — that is precisely the number of
+rows a 6-row menu has below its header. The report also warns when a category has more tiers
+than rows or a tier wider than 9 nodes; neither fired.
+
+**Still unverified, and this is a big one:** the menus have never been opened by a client.
+Nothing about the rendering, the click routing, buying from the GUI, or — most importantly —
+whether items can be pulled out of the menu has been observed. A leak there would duplicate
+items. `HANDOFF.md` §4 test 10 is the script for this and it needs to be run before anyone
+plays on it.
+
+**Noted for later:** the pokemon and boosts categories have no `spent:` gates yet, so each
+renders as a single row. That is fine while pokemon is a sample branch, but both want tiers
+once they are real content.
+
+---
+
 ## 2026-08-13 — WoW-style ranks and tier gates
 
 **Asked:** the owner wants the game grindy, and pointed out that not every node has to be

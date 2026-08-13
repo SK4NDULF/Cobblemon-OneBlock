@@ -11,9 +11,13 @@ six-category tech tree. It carries the owner's full design, the review of it, th
 storage model, the point economy, verified Cobblemon 1.7.3 hooks, the open decisions and an
 eight-slice build plan. **Read it before touching progression, loot or Cobblemon code.**
 
-**Slice A (tree core) is shipped and boot-verified.** Slice B (the OneBlock biome ladders) is
-next and is the one that actually changes the game. Nothing gets coded from a decision still
+**Slices A (tree core) and D (chest menus) are shipped.** Slice B (the OneBlock biome ladders)
+is next and is the one that actually changes the game. Nothing gets coded from a decision still
 marked ⬜; D3 and D5 block slices H and E, neither of which is next.
+
+⚠️ **The chest menus have never been opened by a real client.** They compile and their
+*contents* are covered by the tier report in the startup log, but every pixel of them is
+unverified — see the test script in §4.
 
 ⚠️ **The tree currently costs 439 points and nothing pays them out yet.** Slice C wires up the
 real sources (NPC victories, advancements); until then `/ob tech grant` is the only income.
@@ -218,8 +222,21 @@ cannot cross a border, enter the hub, or leak into the void buffer).
    (or wait 60 s for the repair sweep): bedrock appears. Set it back to `false`: it goes
    away again. Place your own block under the anchor first and confirm it survives both.
 
-Tests 7–9 all need a client for the same reason: nothing that breaks a block or creates an
-island can be driven from the server console.
+10. **The tech menus** — `/ob create`, then `/ob tech grant <you> 60`, then `/ob tech`.
+    - Does the 3-row main menu open, with the island summary and the category items?
+    - Does clicking a category open its 6-row menu, with row 1 = tier 0 and closed tiers as
+      red panes saying "N more points in this branch"?
+    - Does clicking a green node buy it — rank number on the item goes up, points drop, the
+      island gets a chat message?
+    - Does a newly satisfied tier open without closing and reopening the menu?
+    - **Can you take anything out?** Try left-click, right-click, shift-click, double-click,
+      number keys, and drag across slots. Nothing may ever end up in your inventory, and
+      nothing may vanish from the menu. This is the one that matters — a leak here duplicates
+      items.
+    - `/ob tech chat` still prints the text version.
+
+Tests 7–10 all need a client for the same reason: nothing that breaks a block, creates an
+island or opens a container can be driven from the server console.
 
 ---
 

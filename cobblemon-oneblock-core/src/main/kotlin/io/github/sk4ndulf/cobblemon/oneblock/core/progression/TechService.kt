@@ -2,6 +2,7 @@ package io.github.sk4ndulf.cobblemon.oneblock.core.progression
 
 import io.github.sk4ndulf.cobblemon.oneblock.core.OneBlockCore
 import io.github.sk4ndulf.cobblemon.oneblock.core.db.Database
+import io.github.sk4ndulf.cobblemon.oneblock.core.gui.TechMenuLayout
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.IslandData
 import java.util.UUID
 
@@ -22,6 +23,7 @@ object TechService {
 
     fun setTree(loaded: TechTree) {
         tree = loaded
+        reportTiers()
         reportBossGates()
     }
 
@@ -141,6 +143,44 @@ object TechService {
     }
 
     // --- reporting ---------------------------------------------------------------------------
+
+    /**
+     * Logs the tier structure each category will render as, one row per tier.
+     *
+     * This is the only part of the chest menu that can be checked without a client, and it is
+     * the part most likely to be wrong after an admin retunes a `spent:` gate — the rows are
+     * derived from those thresholds, so a mistake shows up here as a category with one giant
+     * tier or with more tiers than the menu has rows.
+     */
+    private fun reportTiers() {
+        for (category in TechCategory.entries) {
+            val nodes = tree.byCategory[category].orEmpty()
+            if (nodes.isEmpty()) continue
+            val tiers = TechMenuLayout.tiersOf(tree, category)
+            OneBlockCore.LOGGER.info(
+                "Tech category {}: {} nodes in {} tier(s) at {} points spent.",
+                category.key, nodes.size, tiers.size, tiers.joinToString("/"),
+            )
+            val rowsAvailable = TechMenuLayout.CATEGORY_ROWS - 1
+            if (tiers.size > rowsAvailable) {
+                OneBlockCore.LOGGER.warn(
+                    "Category {} has {} tiers but the menu only has {} rows — the deepest {} " +
+                        "will not be shown in the GUI.",
+                    category.key, tiers.size, rowsAvailable, tiers.size - rowsAvailable,
+                )
+            }
+            val widest = nodes.groupingBy { node ->
+                node.requires.filterIsInstance<TechRequirement.CategorySpend>()
+                    .filter { it.category == category }.maxOfOrNull { it.amount } ?: 0L
+            }.eachCount().maxOf { it.value }
+            if (widest > 9) {
+                OneBlockCore.LOGGER.warn(
+                    "Category {} has a tier with {} nodes but a menu row holds 9 — {} will be hidden.",
+                    category.key, widest, widest - 9,
+                )
+            }
+        }
+    }
 
     /**
      * Says at startup how much of the tree is currently unreachable because it sits behind a

@@ -179,5 +179,26 @@
   "cobblemon_oneblock.tech.undelegated_you": "You may no longer spend your island's tech points.",
   "cobblemon_oneblock.tech.unlocked": "%s unlocked %s (level %d) for %d points. %d left.",
   "cobblemon_oneblock.tech.granted": "Granted %d tech points to %s's island (now %d).",
-  "cobblemon_oneblock.tech.claimed": "%s earned your island %d tech points! Total: %d."
+  "cobblemon_oneblock.tech.claimed": "%s earned your island %d tech points! Total: %d.",
+
+  "cobblemon_oneblock.tech.locked_generic": "You don't meet the requirements for that yet.",
+  "cobblemon_oneblock.menu.main_title": "Island Tech",
+  "cobblemon_oneblock.menu.island_title": "%s's Island",
+  "cobblemon_oneblock.menu.points_available": "Points available: %d",
+  "cobblemon_oneblock.menu.points_earned": "Earned in total: %d",
+  "cobblemon_oneblock.menu.tree_total": "Whole tree costs: %d",
+  "cobblemon_oneblock.menu.category_ranks": "Ranks: %d/%d",
+  "cobblemon_oneblock.menu.category_spent": "Spent in this branch: %d",
+  "cobblemon_oneblock.menu.click_open": "Click to open",
+  "cobblemon_oneblock.menu.click_buy": "Click to unlock",
+  "cobblemon_oneblock.menu.back": "Back",
+  "cobblemon_oneblock.menu.next_rank": "Rank %d costs %d points",
+  "cobblemon_oneblock.menu.requires": "Requires: %s",
+  "cobblemon_oneblock.menu.tier_locked": "%d more points in this branch",
+  "cobblemon_oneblock.menu.category.oneblock": "OneBlock",
+  "cobblemon_oneblock.menu.category.island": "Island",
+  "cobblemon_oneblock.menu.category.players": "Players",
+  "cobblemon_oneblock.menu.category.pokemon": "Pokemon",
+  "cobblemon_oneblock.menu.category.boosts": "Boosts",
+  "cobblemon_oneblock.menu.category.special": "Special"
 }

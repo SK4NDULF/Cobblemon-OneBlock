@@ -583,17 +583,30 @@ thing built. Slices A–C are the ones that must be right.
   chance. **This is the slice where the game actually changes** — §3.1.
 - **C — Real point sources.** NPC victories via `BATTLE_VICTORY` + trainer `config` ids,
   the advancement mixin, and the announcement. Until this lands the tree has no economy.
-- **D — Chest menu.** Presentation over a model that already works.
+- **D — Chest menu. ✅ shipped 2026-08-13** (out of order, ahead of B and C: the menu depends
+  only on slice A, and the owner wanted to see the shape). Presentation over a model that
+  already works.
 
-  Layout, decided with the owner 2026-08-13: a 9×6 chest menu is nine columns by six rows,
-  which is exactly the shape of a talent tree — **one row per tier.** Top row = the six
-  category tabs. Rows 2-6 = the tiers of the open category, in `spent:` order, so a player
-  reads the branch top to bottom the way they would in WoW. Each node is one item: icon from
-  the node, display name, rank as `2/5` in the name, cost and unmet requirements in the lore,
-  click to buy. Locked tiers render as grey panes with "N more points in this branch".
+  Layout, decided with the owner 2026-08-13: **several menus, not one menu with tabs.**
 
-  This is the reason the tier gates were worth building before the GUI: without them the menu
-  would be an unordered grid of nodes with no vertical meaning.
+  - **Main menu** (3 rows). The island's overview: available points, lifetime earned, and the
+    six categories as one item each showing that branch's progress. Clicking a category opens
+    it. This is the screen the owner originally described — see where you stand, then choose
+    what to improve.
+  - **Category menu** (6 rows), one per category. Row 0 is the header and the back button.
+    Rows 1-5 are **one row per tier**, in `spent:` order, so the branch reads top to bottom
+    the way a WoW tree does. Each node is one item: its icon, the display name with the rank
+    (`2/5`), and cost plus unmet requirements in the lore. Click to buy.
+
+  The tiers are not configured twice: the rows are derived from the distinct `spent:`
+  thresholds of the nodes in that category, so an admin who retunes a gate in
+  `techtree.json5` moves the row with it. That is the reason the tier gates were worth
+  building before the GUI — without them the menu is an unordered grid with no vertical
+  meaning.
+
+  **Island names do not exist in the data model.** `IslandData` has an id, a slot and an
+  owner, no name. The menu titles use the owner's name until a rename feature exists; adding
+  one is a DB column and its own decision.
 - **E — Island and Players categories.** Mostly re-pointing existing knobs at per-island
   values; `/fly` last and gated.
 - **F — Boosts.** Shiny multiplier conversion (§3.2f), typing spawn share (§3.2e),

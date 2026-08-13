@@ -179,5 +179,26 @@
   "cobblemon_oneblock.tech.undelegated_you": "Du darfst die Technologiepunkte eurer Insel nicht mehr ausgeben.",
   "cobblemon_oneblock.tech.unlocked": "%s hat %s (Stufe %d) für %d Punkte freigeschaltet. %d übrig.",
   "cobblemon_oneblock.tech.granted": "%d Technologiepunkte an die Insel von %s vergeben (jetzt %d).",
-  "cobblemon_oneblock.tech.claimed": "%s hat eurer Insel %d Technologiepunkte gebracht! Gesamt: %d."
+  "cobblemon_oneblock.tech.claimed": "%s hat eurer Insel %d Technologiepunkte gebracht! Gesamt: %d.",
+
+  "cobblemon_oneblock.tech.locked_generic": "Dafür erfüllst du die Voraussetzungen noch nicht.",
+  "cobblemon_oneblock.menu.main_title": "Insel-Technologie",
+  "cobblemon_oneblock.menu.island_title": "Insel von %s",
+  "cobblemon_oneblock.menu.points_available": "Verfügbare Punkte: %d",
+  "cobblemon_oneblock.menu.points_earned": "Insgesamt verdient: %d",
+  "cobblemon_oneblock.menu.tree_total": "Ganzer Baum kostet: %d",
+  "cobblemon_oneblock.menu.category_ranks": "Stufen: %d/%d",
+  "cobblemon_oneblock.menu.category_spent": "In diesem Ast ausgegeben: %d",
+  "cobblemon_oneblock.menu.click_open": "Zum Öffnen klicken",
+  "cobblemon_oneblock.menu.click_buy": "Zum Freischalten klicken",
+  "cobblemon_oneblock.menu.back": "Zurück",
+  "cobblemon_oneblock.menu.next_rank": "Stufe %d kostet %d Punkte",
+  "cobblemon_oneblock.menu.requires": "Benötigt: %s",
+  "cobblemon_oneblock.menu.tier_locked": "Noch %d Punkte in diesem Ast",
+  "cobblemon_oneblock.menu.category.oneblock": "OneBlock",
+  "cobblemon_oneblock.menu.category.island": "Insel",
+  "cobblemon_oneblock.menu.category.players": "Spieler",
+  "cobblemon_oneblock.menu.category.pokemon": "Pokémon",
+  "cobblemon_oneblock.menu.category.boosts": "Boosts",
+  "cobblemon_oneblock.menu.category.special": "Special"
 }
