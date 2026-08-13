@@ -28,6 +28,51 @@ Running record of what was changed, why, and how far it was actually verified.
 
 ---
 
+## 2026-08-13 — Progression rework: full design from the owner, reviewed and written down
+
+**Asked:** the owner delivered a complete system design — a six-category tech tree (OneBlock,
+Island, Players, Pokémon, Boosts, Special), biome unlock ladders replacing the phase system,
+Pokémon that work for their trainer, timed island boosts, Terraria-style boss gates, and a
+point economy fed by NPC trainers, advancements and bosses instead of EXP or block breaking —
+and asked for a sparring review before any code.
+
+**What was built:** no code. `PROGRESSION_REWORK.md` rewritten from the ground up as the
+design of record:
+
+- §3 the review: five things that are right and ten that have to change, each with the
+  reasoning rather than a verdict
+- §4 the node/effect/storage model, including migration 9 and the `island_claims` table
+- §5 the point economy, and the answer to the owner's two open questions — player→island is
+  already solved by `IslandManagerImpl.activeByPlayer`; "has this island already beaten this
+  trainer" belongs in our database keyed on a Cobblemon NPC `config` variable, **not** in
+  MoLang, because MoLang variables are per-entity and die with the entity
+- §7 Pokémon labour: the anti-overpowered rule ("never creates a resource"), and four
+  non-overlapping stat roles that answer the owner's open question about Attack/Sp. Atk
+- §8 Cobblemon API ground truth read from tag `1.7.3`
+- §9 six of the original decisions settled by the design, seven new ones opened
+- §10 an eight-slice build plan ordered so the mod stays playable throughout
+
+**Substantive corrections to the design, argued in §3.2:** work must not faint or kill a
+Pokémon (it contradicts the sleep threshold the design itself defines); HP drain must be flat
+or the HP stat buys nothing; point claims must be island-scoped or a four-person island
+progresses four times as fast on the same content; all three point sources are one-shot, so
+progression currently dead-ends; the typing spawn boost can shift the *share* of spawns but
+not the total, which is the standing project decision in `HANDOFF.md` §5; `SHINY_RATE` is
+stored as an absolute probability and has to become a multiplier for "1.5× → 5×" to mean
+anything; `/fly` deletes the core tension of a void island and needs to be gated hard.
+
+**Verified how:** every Cobblemon hook in §8 was read from the `1.7.3` tag of
+`gitlab.com/cable-mc/cobblemon` — `BATTLE_VICTORY`, `SHINY_CHANCE_CALCULATION` (where the
+divisor semantics of `shinyRate` were confirmed from `PokemonProperties.roll`), the cancelable
+`ENTITY_SPAWN`, and the NPC class README for `config` variables. Every claim about this
+codebase in §1 and §3.2 was read from the working tree.
+
+**Still unverified:** which `ServerPlayer` Cobblemon passes into `PokemonProperties.roll` for
+an ambient wild spawn — it may be null. Noted in §8; the shiny design deliberately does not
+depend on it. Nothing in this entry has been compiled or run, because nothing was built.
+
+---
+
 ## 2026-08-13 — Trigger event system removed completely
 
 **Asked:** scrap the whole trigger event system. The owner does not like it — it is not fun —
