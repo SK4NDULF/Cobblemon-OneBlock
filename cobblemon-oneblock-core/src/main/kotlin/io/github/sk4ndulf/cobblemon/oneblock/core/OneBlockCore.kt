@@ -19,6 +19,8 @@ import io.github.sk4ndulf.cobblemon.oneblock.core.cobblemon.BuffService
 import io.github.sk4ndulf.cobblemon.oneblock.core.cobblemon.CobblemonIntegration
 import io.github.sk4ndulf.cobblemon.oneblock.core.moderation.BanService
 import io.github.sk4ndulf.cobblemon.oneblock.core.permission.ProtectionManager
+import io.github.sk4ndulf.cobblemon.oneblock.core.progression.NpcPoints
+import io.github.sk4ndulf.cobblemon.oneblock.core.progression.PointSourceConfig
 import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechService
 import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechTreeFile
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.HubManager
@@ -56,6 +58,8 @@ object OneBlockCore : ModInitializer {
 
     val techTreeFile = TechTreeFile(FabricLoader.getInstance().configDir.resolve(MOD_ID), LOGGER)
 
+    val pointSources = PointSourceConfig(FabricLoader.getInstance().configDir.resolve(MOD_ID), LOGGER)
+
     val playerRepository: PlayerRepository?
         get() = database?.let { PlayerRepository(it) }
 
@@ -79,12 +83,14 @@ object OneBlockCore : ModInitializer {
         lootTable.load()
         BiomePools.load(FabricLoader.getInstance().configDir.resolve(MOD_ID), LOGGER)
         loadTechTree()
+        pointSources.load()
 
         OneBlockAPIHolder.set(OneBlockAPIImpl(eventBus))
         ObCommands.register()
         ProtectionManager.register()
 
         CobblemonIntegration.register()
+        NpcPoints.register()
 
         PlayerBlockBreakEvents.AFTER.register { level, player, pos, state, _ ->
             if (level is ServerLevel && player is ServerPlayer) {

@@ -207,5 +207,6 @@
   "cobblemon_oneblock.rename.too_long": "Der Name ist zu lang (max. %d Zeichen).",
   "cobblemon_oneblock.rename.invalid": "Dieser Name geht nicht. Nimm ein paar normale Zeichen.",
   "cobblemon_oneblock.info.header_named": "%s — Border-Level %d (%dx%d)",
-  "cobblemon_oneblock.visit.arrived_named": "Willkommen auf %s. Du bist hier Besucher."
+  "cobblemon_oneblock.visit.arrived_named": "Willkommen auf %s. Du bist hier Besucher.",
+  "cobblemon_oneblock.tech.already_claimed": "Eure Insel hat %s bereits eingelöst."
 }

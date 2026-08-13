@@ -6,7 +6,8 @@
   "mixins": [
     "FallingBlockMixin",
     "ExplosionMixin",
-    "FlowingFluidMixin"
+    "FlowingFluidMixin",
+    "PlayerAdvancementsMixin"
   ],
   "injectors": {
     "defaultRequire": 1

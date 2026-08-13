@@ -583,8 +583,8 @@ thing built. Slices A–C are the ones that must be right.
   yield nodes, chest chance. **This is the slice where the game actually changes** — §3.1.
   `all_blocks` is now legacy; `biomes` is the default mode. Block sets live in
   `oneblock_biomes.json5`.
-- **C — Real point sources.** NPC victories via `BATTLE_VICTORY` + trainer `config` ids,
-  the advancement mixin, and the announcement. Until this lands the tree has no economy.
+- **C — Real point sources. ✅ shipped 2026-08-13.** NPC victories via `BATTLE_VICTORY` and
+  trainer `config` ids, the advancement mixin, the announcement, and `points.json5`.
 - **D — Chest menu. ✅ shipped 2026-08-13** (out of order, ahead of B and C: the menu depends
   only on slice A, and the owner wanted to see the shape). Presentation over a model that
   already works.

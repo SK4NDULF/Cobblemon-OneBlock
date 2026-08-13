@@ -615,6 +615,7 @@ object ObCommands {
         OneBlockCore.lootTable.load()
         BiomePools.load(OneBlockCore.configManager.configDir, OneBlockCore.LOGGER)
         OneBlockCore.loadTechTree()
+        OneBlockCore.pointSources.load()
 
         // Reconnecting the pool and testing the connection blocks — keep it off the server thread.
         CompletableFuture.supplyAsync { OneBlockCore.connectDatabase() }

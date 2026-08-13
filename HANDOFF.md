@@ -11,10 +11,14 @@ six-category tech tree. It carries the owner's full design, the review of it, th
 storage model, the point economy, verified Cobblemon 1.7.3 hooks, the open decisions and an
 eight-slice build plan. **Read it before touching progression, loot or Cobblemon code.**
 
-**Slices A (tree core), B (OneBlock biome ladders) and D (chest menus) are shipped.** Slice C
-(real point sources: NPC victories and advancements) is next and is what the whole economy is
-waiting on. Nothing gets coded from a decision still marked ⬜; D3 and D5 block slices H and E,
-neither of which is next.
+**Slices A, B, C and D are shipped** — tree core, OneBlock biome ladders, real point sources,
+chest menus. That is the whole minimum-playable set from the build plan. What remains is
+additive: E (Island/Players payloads), F (Boosts), G (Special/bosses), H (Pokémon labour).
+Nothing gets coded from a decision still marked ⬜; D3 and D5 block H and E.
+
+⚠️ **Nothing from any of these four slices has been played.** Everything is build- and
+boot-verified, and the pieces that can be checked without a client have been; the rest is
+waiting on the owner's live test. `HANDOFF.md` §4 tests 10-13 are the script.
 
 ⚠️ **The chest menus have never been opened by a real client.** They compile and their
 *contents* are covered by the tier report in the startup log, but every pixel of them is
@@ -235,6 +239,19 @@ cannot cross a border, enter the hub, or leak into the void buffer).
       nothing may vanish from the menu. This is the one that matters — a leak here duplicates
       items.
     - `/ob tech chat` still prints the text version.
+
+13. **Point sources.** Two halves, and the NPC half is the one nobody has ever run.
+    - Place a Cobblemon NPC trainer, then
+      `/npc edit <npc> variable trainer_id gym_test` and `/npc edit <npc> variable points 3`.
+      Beat it: the whole island should get a chat message and 3 points.
+    - Beat it again with the **same** player and with a **second member of the same island** —
+      both must be told it is already claimed, and the balance must not move.
+    - Beat it with someone from a **different** island: that island claims it normally.
+    - Rebuild the NPC with the same `trainer_id` and confirm the island still cannot re-claim.
+    - An NPC with no `trainer_id` grants nothing and logs once. Check the log line appears once
+      and not on every battle.
+    - Advancements: complete one from `points.json5` while on an island — points arrive.
+      Note the documented limit: an advancement finished *before* you had an island never pays.
 
 12. **The biome ladders** — the slice that changes the game, and the one that most needs eyes.
     - Fresh island, break the block twenty times. You should see **only** grass, dirt,

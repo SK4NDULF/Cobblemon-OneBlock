@@ -28,6 +28,53 @@ Running record of what was changed, why, and how far it was actually verified.
 
 ---
 
+## 2026-08-13 — Slice C: real point sources
+
+**Asked:** build slice C. With it, A–D are done and the whole minimum-playable set from the
+build plan is in.
+
+**What was built:**
+
+- `NpcPoints` — subscribes to `BATTLE_VICTORY` and claims for every island among the winning
+  players. Trainer identity comes from a Cobblemon **MoLang config variable on the NPC**, not
+  from a config file and not from the entity UUID: `/npc edit <npc> variable trainer_id
+  gym_rock` and `variable points 3`. Adding a gym is then placing an entity and typing two
+  commands — no config edit, no reload — and rebuilding or moving the NPC keeps every island's
+  progress because the identity travels with the configuration. Whether the island already
+  beat it stays our database's business; a MoLang variable lives on one entity and that
+  question is about an island.
+- `AdvancementPoints` + `PlayerAdvancementsMixin` — a mixin because Fabric API has no
+  advancement hook in 1.21.1. Injected at `RETURN` and reading the progress afterwards rather
+  than at vanilla's internal reward branch: that branch moves between versions, "award
+  returned true and the advancement is now done" does not.
+- `PointSourceConfig` and `points.json5`, with a default list of 45 **real Cobblemon
+  advancement ids** read out of the Cobblemon jar rather than guessed.
+
+**One limit that must not be discovered as a bug:** advancements are per-player and permanent
+while claims are per-island, so only advancements completed *while the player has an island*
+pay out. Anything finished beforehand never fires again. That is the deliberate direction to
+fail in — granting everything already completed on island creation would turn `/ob reset` into
+an infinite point machine. Documented in `AdvancementPoints`, in `points.json5` and in the
+test script.
+
+**Verified how:** build green. Server boots and reports `45 advancements worth 135 points. The
+tech tree costs 439 to complete, so NPC trainers and bosses need to cover the remaining 304` —
+the point-budget check from §3.2d, now live at startup.
+
+**The mixin was verified properly, not assumed.** A clean boot proves nothing here:
+`PlayerAdvancements` is only classloaded when the first player joins, and a mixin applies at
+classload, so a broken `@Inject` or an unresolvable `@Shadow` would have surfaced in front of a
+player rather than in the log. A temporary probe was added that force-loads the target at
+startup; it logged the class loading cleanly, which with `"required": true` and
+`defaultRequire: 1` means both the injection point and the shadows resolved. The probe was
+then removed and the build re-verified.
+
+**Still unverified:** the NPC path end to end — it needs a real trainer, a real battle and a
+second island. Advancement points likewise need a player. Both are compiled, and the mixin is
+now known to apply; what has never run is the code inside it. `HANDOFF.md` §4 test 13.
+
+---
+
 ## 2026-08-13 — Slice B: the OneBlock biome ladders
 
 **Asked:** build slice B — the one the whole rework exists for.
