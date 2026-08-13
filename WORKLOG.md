@@ -28,6 +28,68 @@ Running record of what was changed, why, and how far it was actually verified.
 
 ---
 
+## 2026-08-13 — OneBlock drops go to the inventory; anchor foundation is now optional
+
+**Asked:** items from the OneBlock fall into the void — can they go straight into the
+breaker's inventory instead? If that works, remove the bedrock platform under the anchor.
+Also: spell the chest `chance` scale out in the config comment (1.0 = 100%, 0.10 = 10%,
+0.01 = 1%).
+
+**Corrected first:** it was never a 3×3 platform — a *single* bedrock block at anchor Y−1.
+And the drops were already being lost *with* it there: the replacement block is placed in
+the same tick, items spawn inside it, get pushed out sideways and fall past a one-block
+foundation anyway. So the diagnosis was right and the fix was needed either way.
+
+**Built:**
+
+- New `core.island.DropCollector`. A break registers the anchor; at the end of the tick the
+  items and experience orbs around it go to the breaker, with vanilla's pickup animation and
+  sound. Inventory full → the remainder is repositioned to the player's feet rather than
+  discarded or left over the void.
+- `main.json5` gains `oneblock_drops_to_inventory` (default `true`) and
+  `anchor_bedrock_foundation` (default `false`). Both applied by `/ob reload`. Not wizard
+  questions.
+- `ensureFoundation` now reconciles in both directions: places bedrock when the setting is
+  on, removes it when off. It only ever removes *bedrock*, so a block a player placed under
+  their own anchor survives either way.
+
+**Two findings that decided the design — verified against the jars, not assumed:**
+
+1. **`PlayerBlockBreakEvents.AFTER` fires before the drops exist.** Fabric injects it at
+   `Block#onBroken` (`ServerPlayerInteractionManagerMixin`, confirmed in the sources jar),
+   and vanilla's `ServerPlayerGameMode.destroyBlock` calls in this order:
+   `playerWillDestroy` → `removeBlock` → **`Block.destroy` ← AFTER** → `mineBlock` →
+   **`playerDestroy` ← the drops**. Collecting items inside the break hook would find
+   nothing. Hence the end-of-tick sweep.
+2. **Sweeping the ground beats computing the drops.** `Block#getDrops` would miss the
+   contents of a broken treasure chest (those come from `Containers#dropContents`) and
+   anything another mod adds on break. Letting vanilla drop and picking the items up keeps
+   Fortune, Silk Touch and mod compatibility as vanilla's business.
+
+**Guards worth knowing:** the sweep takes only entities with `tickCount <= 4` within 1.5
+blocks of the anchor, so it cannot vacuum up items a player deliberately dropped nearby or
+trigger event rewards lying around. Each break stays watched for 2 ticks as insurance
+against tick-ordering surprises. The queue is empty in the common case, so the per-tick cost
+is one `isEmpty()`.
+
+**Risk introduced by removing the bedrock, and the mitigation:** `minecraft:cobweb` is in the
+block pool, survives as a lone floating block, and has no collision. A player standing on the
+anchor when it turns into cobweb now drifts into the void instead of landing on bedrock.
+Documented in `ADMIN.md` as a blacklist candidate. Not blacklisted by default — that is the
+server owner's call, and the same argument would apply to turning the bedrock back on.
+
+**Verified:** compiles; server boots with the new tick hook and no errors; `main.json5`
+regenerates with both keys at the documented defaults.
+
+**🟡 Not verified — needs a client:** everything the change actually does. Nothing that
+breaks a block or creates an island can be driven from the server console (`/ob create`
+needs `source.player`; the admin commands need an online player argument), so neither the
+collection nor the foundation toggle could be exercised. Recorded as tests 9 and 10 in
+`HANDOFF.md`. This is now the second feature in a row whose core behaviour is client-gated —
+the live test session is where all of it gets confirmed.
+
+---
+
 ## 2026-08-13 — Treasure chests from the OneBlock
 
 **Asked:** breaking the OneBlock should sometimes produce loot chests filled from

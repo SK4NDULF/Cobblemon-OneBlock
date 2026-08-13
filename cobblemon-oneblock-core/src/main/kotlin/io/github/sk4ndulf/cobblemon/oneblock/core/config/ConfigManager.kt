@@ -74,6 +74,8 @@ class ConfigManager(val configDir: Path, private val logger: Logger) {
             cobblemonSpawnMultiplier = json.double("cobblemon_spawn_multiplier", defaults.cobblemonSpawnMultiplier),
             serverPublic = json.bool("server_public", defaults.serverPublic),
             hubAllowBuilding = json.bool("hub_allow_building", defaults.hubAllowBuilding),
+            oneBlockDropsToInventory = json.bool("oneblock_drops_to_inventory", defaults.oneBlockDropsToInventory),
+            anchorBedrockFoundation = json.bool("anchor_bedrock_foundation", defaults.anchorBedrockFoundation),
             resetArchiveDays = json.int("reset_archive_days", defaults.resetArchiveDays),
             inactivityPurgeDays = json.int("inactivity_purge_days", defaults.inactivityPurgeDays),
             inviteTimeoutSeconds = json.int("invite_timeout_seconds", defaults.inviteTimeoutSeconds),
@@ -129,6 +131,18 @@ class ConfigManager(val configDir: Path, private val logger: Logger) {
             "Whether this server is public.")
         json.put("hub_allow_building", JsonPrimitive(config.hubAllowBuilding),
             "If true, admins may build inside the hub radius. Everyone else never can.")
+        json.put("oneblock_drops_to_inventory", JsonPrimitive(config.oneBlockDropsToInventory),
+            "Send what the OneBlock drops straight into the breaker's inventory, experience " +
+                "included. On by default, because the anchor floats over the void and the drops " +
+                "would otherwise fall out of the world. If the inventory is full, the rest lands " +
+                "at the player's feet instead. Set to false for vanilla dropping.")
+        json.put("anchor_bedrock_foundation", JsonPrimitive(config.anchorBedrockFoundation),
+            "Keep an indestructible bedrock block one below every OneBlock. Off by default: it is " +
+                "a visible slab under what should look like a single floating block, and with " +
+                "oneblock_drops_to_inventory on nothing depends on it. Its remaining value is as a " +
+                "safety net if the anchor ever ends up empty and someone standing there falls " +
+                "before the 60 s repair sweep restores it. Turning it off removes the bedrock again " +
+                "— only bedrock, so a block a player placed there themselves is left alone.")
         json.put("reset_archive_days", JsonPrimitive(config.resetArchiveDays.toLong()),
             "Days a reset island stays restorable before it is purged.")
         json.put("inactivity_purge_days", JsonPrimitive(config.inactivityPurgeDays.toLong()),

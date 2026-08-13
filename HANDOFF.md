@@ -192,6 +192,18 @@ cannot cross a border, enter the hub, or leak into the void buffer).
    breaking that chest should regenerate the anchor as normal. The break path runs on
    `PlayerBlockBreakEvents.AFTER` and cannot be reached from the server console, so no
    headless test covers it.
+9. **Drops to inventory** — break the OneBlock: items and experience should land in your
+   inventory with the pickup sound, nothing should fall. Then fill your inventory
+   completely and break again: the remainder must drop at your feet, not into the void.
+   Break a treasure chest without opening it — its contents should arrive too. Check that
+   Fortune and Silk Touch still behave.
+10. **Anchor foundation toggle** — with the default `anchor_bedrock_foundation: false` there
+    must be nothing under the OneBlock. Set it to `true`, `/ob reload`, walk away and back
+    (or wait 60 s for the repair sweep): bedrock appears. Set it back to `false`: it goes
+    away again. Place your own block under the anchor first and confirm it survives both.
+
+Tests 8–10 all need a client for the same reason: nothing that breaks a block or creates an
+island can be driven from the server console.
 
 ---
 

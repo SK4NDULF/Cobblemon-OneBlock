@@ -38,6 +38,28 @@ data class MainConfig(
     /** Whether admins may build inside the hub radius. Wizard question 8. */
     val hubAllowBuilding: Boolean = false,
 
+    /**
+     * Send everything a broken OneBlock produced straight into the breaker's inventory.
+     *
+     * On by default because the alternative is losing it: the anchor floats over the void, the
+     * replacement block is placed in the same tick, and the drops get pushed out of it and fall.
+     * Turning this off restores vanilla dropping, which on a OneBlock island means the player
+     * needs something under the anchor to catch it — see [anchorBedrockFoundation].
+     */
+    val oneBlockDropsToInventory: Boolean = true,
+
+    /**
+     * Keep an indestructible bedrock block one below every anchor.
+     *
+     * Off by default: it is a visible slab under what should look like a single floating block,
+     * and with [oneBlockDropsToInventory] on, nothing depends on it any more. It remains a
+     * safety net for the rare case where the anchor ends up empty — an explosion, a stray
+     * command, another mod — and a player standing there drops into the void before the 60 s
+     * repair sweep restores it. Switching it back on re-places it; switching it off removes the
+     * bedrock again, and only bedrock, so a block a player put there themselves is left alone.
+     */
+    val anchorBedrockFoundation: Boolean = false,
+
     /** Days an island stays restorable after /ob reset before it is purged. */
     val resetArchiveDays: Int = 7,
 

@@ -7,6 +7,7 @@ import io.github.sk4ndulf.cobblemon.oneblock.core.command.ObCommands
 import io.github.sk4ndulf.cobblemon.oneblock.core.config.ConfigManager
 import io.github.sk4ndulf.cobblemon.oneblock.core.db.Database
 import io.github.sk4ndulf.cobblemon.oneblock.core.db.PlayerRepository
+import io.github.sk4ndulf.cobblemon.oneblock.core.island.DropCollector
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.IslandManagerImpl
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.IslandRepository
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.OneBlockLootTable
@@ -66,7 +67,7 @@ object OneBlockCore : ModInitializer {
     private const val POKEMON_CONTAINMENT_INTERVAL_TICKS = 100
     private var containmentTickCounter = 0
 
-    /** How often missing OneBlocks and their bedrock foundation are restored (60 s). */
+    /** How often missing OneBlocks are restored, and the anchor foundation reconciled (60 s). */
     private const val ANCHOR_REPAIR_INTERVAL_TICKS = 1200
     private var anchorRepairTickCounter = 0
 
@@ -112,6 +113,9 @@ object OneBlockCore : ModInitializer {
         }
 
         ServerTickEvents.END_SERVER_TICK.register { server ->
+            // First thing in the tick's tail: by now vanilla has dropped what the OneBlock
+            // produced, and the items have barely moved.
+            DropCollector.tick(server)
             TriggerEventService.tick(server)
             if (++containmentTickCounter >= POKEMON_CONTAINMENT_INTERVAL_TICKS) {
                 containmentTickCounter = 0
@@ -134,6 +138,7 @@ object OneBlockCore : ModInitializer {
         }
 
         ServerLifecycleEvents.SERVER_STOPPED.register { _ ->
+            DropCollector.clear()
             database?.close()
             database = null
         }

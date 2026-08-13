@@ -243,9 +243,10 @@ class OneBlockLootTable(private val configDir: Path, private val logger: Logger)
         )
         chests.put(
             "chance", JsonPrimitive(ChestLoot.DEFAULT_CHANCE),
-            "Share of breaks that produce a chest. 0.02 = 2%, roughly one chest every 50 blocks. " +
-                "Clamped to 0.0-1.0. Flat by design: it never scales with border level, because " +
-                "difficulty scales on this project and rewards do not.",
+            "Share of breaks that produce a chest, as a fraction of 1. " +
+                "1.0 = 100% (every break), 0.10 = 10%, 0.02 = 2% (default, about one chest every " +
+                "50 blocks), 0.01 = 1%, 0.0 = never. Clamped to 0.0-1.0. Flat by design: it never " +
+                "scales with border level, because difficulty scales on this project and rewards do not.",
         )
         chests.put(
             "include_modded", JsonPrimitive(ChestLoot.DEFAULT_INCLUDE_MODDED),

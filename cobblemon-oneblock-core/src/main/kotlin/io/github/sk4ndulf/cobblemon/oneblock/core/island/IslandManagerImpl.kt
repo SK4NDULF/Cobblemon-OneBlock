@@ -235,6 +235,9 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
         level.setBlockAndUpdate(pos, next)
         // Only after the block exists — the chest's block entity is created by the placement.
         chestTable?.let { ChestLoot.fill(level, pos, it) }
+        // Vanilla has not dropped anything yet at this point (see DropCollector); this only
+        // registers the anchor to be swept at the end of the tick.
+        DropCollector.queue(pos, player)
         ProgressionService.onBreak(island, level.server)
         TriggerEventService.onBreak(island, level)
         repository.updateProgressAsync(island.id, island.breakCount, island.points, island.borderLevel)
@@ -277,8 +280,13 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
      */
     private fun ensureFoundation(level: ServerLevel, island: IslandData) {
         val below = island.oneBlockPos().below()
-        if (!level.getBlockState(below).`is`(Blocks.BEDROCK)) {
-            level.setBlockAndUpdate(below, Blocks.BEDROCK.defaultBlockState())
+        val isBedrock = level.getBlockState(below).`is`(Blocks.BEDROCK)
+        if (OneBlockCore.configManager.mainConfig.anchorBedrockFoundation) {
+            if (!isBedrock) level.setBlockAndUpdate(below, Blocks.BEDROCK.defaultBlockState())
+        } else if (isBedrock) {
+            // The setting was turned off: take our own bedrock back out. Only bedrock, so a
+            // block the player put under their anchor themselves survives.
+            level.setBlockAndUpdate(below, Blocks.AIR.defaultBlockState())
         }
     }
 

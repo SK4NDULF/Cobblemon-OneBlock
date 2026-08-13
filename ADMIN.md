@@ -123,6 +123,39 @@ either. List those explicitly under `extra` if you want them:
 Ids that do not parse or do not exist on this server are named in the log and skipped —
 a typo costs you one entry, never the whole pool.
 
+### OneBlock drops and the anchor foundation
+
+Two settings in `main.json5`, both applied by `/ob reload`. They are not wizard questions —
+edit the file.
+
+| Key | Default | Meaning |
+|---|---|---|
+| `oneblock_drops_to_inventory` | `true` | everything the OneBlock drops, experience included, goes straight to the breaker |
+| `anchor_bedrock_foundation` | `false` | keep an indestructible bedrock block one below every anchor |
+
+**Why drops go to the inventory.** The anchor floats over the void. The replacement block is
+placed in the same tick the old one breaks, so the drops spawn *inside* it, get pushed out
+sideways and fall out of the world. Sending them to the breaker is the fix. If the inventory
+is full the remainder lands at the player's feet instead of over the void. Only the anchor is
+covered — blocks a player places and re-breaks elsewhere on the island drop normally, which
+is ordinary skyblock behaviour.
+
+Fortune, Silk Touch and any drop another mod adds all still work, because vanilla still does
+the dropping — the items are collected off the ground, not recomputed. The contents of a
+broken treasure chest come along for the same reason.
+
+**Why the bedrock is off.** It is a visible slab under what should look like a single floating
+block, and once drops go to the inventory nothing depends on it. What it still buys you is one
+rare case: if the anchor ever ends up empty — an explosion, a stray command, another mod — a
+player standing there falls into the void before the 60-second repair sweep restores it.
+Turning the setting on re-places the bedrock; turning it off removes it again, and only
+bedrock, so a block a player put under their own anchor is left alone.
+
+> **If you run without the bedrock, consider blacklisting `minecraft:cobweb`** in
+> `loottable.json5`. It is the one block in the pool with no collision that still survives as
+> a lone floating block: a player standing on the anchor when it turns into cobweb drifts down
+> into the void instead of standing on something.
+
 ### Switching to MySQL / MariaDB
 
 SQLite is fine for a single server. For a network, edit `database.json5`:
