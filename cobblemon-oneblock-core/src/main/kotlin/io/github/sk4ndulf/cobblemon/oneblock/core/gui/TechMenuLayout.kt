@@ -193,7 +193,9 @@ object TechMenuLayout {
         val cost = node.costOfNext(level)
         val unmet = TechService.unmetRequirements(island, node)
 
+        val implemented = tree.isImplemented(node)
         val colour = when {
+            !implemented -> ChatFormatting.DARK_PURPLE
             cost == null -> ChatFormatting.DARK_GRAY
             unmet.isNotEmpty() -> ChatFormatting.RED
             state.balance < cost -> ChatFormatting.YELLOW
@@ -206,6 +208,11 @@ object TechMenuLayout {
         }
         lore += Component.empty()
         when {
+            // Said first and said plainly. A node that is merely expensive and one that does
+            // not exist yet look identical otherwise, and only one of them is worth saving for.
+            !implemented ->
+                lore += ServerLang.msg("cobblemon_oneblock.tech.not_implemented")
+                    .withStyle(ChatFormatting.DARK_PURPLE)
             cost == null ->
                 lore += ServerLang.msg("cobblemon_oneblock.tech.maxed").withStyle(ChatFormatting.DARK_GRAY)
             else -> {
@@ -213,13 +220,15 @@ object TechMenuLayout {
                     .withStyle(if (state.balance >= cost) ChatFormatting.GREEN else ChatFormatting.YELLOW)
             }
         }
-        for (requirement in unmet) {
-            lore += ServerLang.msg("cobblemon_oneblock.menu.requires", describe(tree, requirement))
-                .withStyle(ChatFormatting.RED)
-        }
-        if (cost != null && unmet.isEmpty() && state.balance >= cost) {
-            lore += Component.empty()
-            lore += ServerLang.msg("cobblemon_oneblock.menu.click_buy").withStyle(ChatFormatting.YELLOW)
+        if (implemented) {
+            for (requirement in unmet) {
+                lore += ServerLang.msg("cobblemon_oneblock.menu.requires", describe(tree, requirement))
+                    .withStyle(ChatFormatting.RED)
+            }
+            if (cost != null && unmet.isEmpty() && state.balance >= cost) {
+                lore += Component.empty()
+                lore += ServerLang.msg("cobblemon_oneblock.menu.click_buy").withStyle(ChatFormatting.YELLOW)
+            }
         }
 
         return Entry(

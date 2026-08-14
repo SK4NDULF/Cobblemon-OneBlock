@@ -80,6 +80,8 @@ object TechMenu {
                     )
                 }
             }
+            TechService.Outcome.NotImplemented ->
+                deny(player, ServerLang.msg("cobblemon_oneblock.tech.not_implemented"))
             TechService.Outcome.AlreadyMaxed ->
                 deny(player, ServerLang.msg("cobblemon_oneblock.tech.maxed"))
             TechService.Outcome.NotAllowed ->

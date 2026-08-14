@@ -23,6 +23,26 @@ class TechTree private constructor(
 
     fun node(id: String): TechNode? = nodes[id]
 
+    /**
+     * Whether buying this node would actually do anything yet.
+     *
+     * The tree is written ahead of the slices that implement its payloads, so a node can exist
+     * and cost points long before anything reads its effect. Selling one of those is the worst
+     * outcome available: the player spends a scarce, content-gated currency and nothing
+     * happens, with no way to get it back.
+     *
+     * A node counts as implemented when at least one of its effects has a consumer, or when it
+     * has no effects at all — the latter is a pure gate node, which exists to be a requirement
+     * for something else and is doing its job by being bought.
+     */
+    fun isImplemented(node: TechNode): Boolean {
+        val types = node.effects.values.flatten().map { it.type }.toSet()
+        return types.isEmpty() || types.any { it in TechEffect.CONSUMED }
+    }
+
+    /** Nodes that cannot be bought yet because nothing reads their effects. */
+    fun unimplementedNodes(): List<TechNode> = nodes.values.filterNot(::isImplemented).sortedBy { it.id }
+
     /** Sum of every node taken to its maximum level — the denominator of the point budget. */
     val totalCost: Long get() = nodes.values.sumOf { it.totalCost }
 
@@ -40,10 +60,13 @@ class TechTree private constructor(
             .toSortedSet()
         val unconsumed = present - TechEffect.CONSUMED
         if (unconsumed.isEmpty()) return
+        val blocked = unimplementedNodes()
         logger.warn(
             "Tech tree uses {} effect type(s) that no slice consumes yet: {}. " +
-                "Nodes using them can be bought and will cost points, but have no in-game effect.",
+                "The {} node(s) that rely on them are locked and cannot be bought, so nobody " +
+                "spends points on nothing: {}.",
             unconsumed.size, unconsumed.joinToString(", "),
+            blocked.size, blocked.joinToString(", ") { it.id },
         )
     }
 

@@ -53,6 +53,8 @@ object TechService {
         data class Bought(val node: TechNode, val newLevel: Int, val spent: Long, val balanceLeft: Long) : Outcome
         data object UnknownNode : Outcome
         data object AlreadyMaxed : Outcome
+        /** The node exists but the slice that reads its effects has not shipped. */
+        data object NotImplemented : Outcome
         data class NotEnoughPoints(val needed: Long, val have: Long) : Outcome
         data class Locked(val unmet: List<TechRequirement>) : Outcome
         data object NotAllowed : Outcome
@@ -92,6 +94,9 @@ object TechService {
     fun buy(island: IslandData, player: UUID, nodeId: String): Outcome {
         if (!maySpend(island, player)) return Outcome.NotAllowed
         val node = tree.node(nodeId) ?: return Outcome.UnknownNode
+        // Checked before anything else that could succeed: points are content-gated and there
+        // is no refund, so selling a node whose payload does not exist yet is unrecoverable.
+        if (!tree.isImplemented(node)) return Outcome.NotImplemented
         val state = stateOf(island.id)
 
         val current = state.levelOf(nodeId)

@@ -28,6 +28,38 @@ Running record of what was changed, why, and how far it was actually verified.
 
 ---
 
+## 2026-08-13 — Unimplemented nodes are locked instead of sellable
+
+**Asked:** the owner had a Charmander out next to a furnace full of raw iron and asked why it
+was not smelting. Answer: the Pokémon labour system is slice H and does not exist — only the
+Fire branch's *tree nodes* do, as a sample.
+
+**The real problem the question exposed:** the tree is written ahead of the slices that
+implement its payloads, so 13 of its 22 nodes could be bought and did nothing. Counted up,
+**277 of the tree's 439 points bought literally nothing** — the entire Island, Players, Boosts
+and Pokémon categories. Points are content-gated and there is no refund, so that is the worst
+possible failure: a player spends a scarce currency and the game silently shrugs.
+
+**What was built:** `TechTree.isImplemented` — a node counts as implemented when at least one
+of its effects has a consumer, or when it has no effects at all (a pure gate node is doing its
+job by being bought). `TechService.buy` now refuses unimplemented nodes before anything else
+that could succeed, and both the chat listing and the chest menu label them plainly rather
+than letting them look merely expensive. The startup warning changed from "can be bought and
+will cost points" to naming the locked nodes.
+
+They unlock by themselves: a node becomes buyable the moment its effect type is added to
+`TechEffect.CONSUMED`, which happens in the same commit as its consumer. Nothing to remember.
+
+**Verified how:** build green; the server now reports `The 13 node(s) that rely on them are
+locked and cannot be bought` and lists exactly the 13 nodes an independent audit of the tree
+file found — biome_regions, border, the four fire nodes, flight, island_rest, party_size,
+shiny_boost, spawn_boost, sure_footing, well_fed.
+
+**Still unverified:** that the lock actually reads as locked in game. It needs a client, same
+as the rest of the GUI.
+
+---
+
 ## 2026-08-13 — Slice C: real point sources
 
 **Asked:** build slice C. With it, A–D are done and the whole minimum-playable set from the

@@ -171,6 +171,8 @@ object TechCommands {
         val unmet = TechService.unmetRequirements(island, node)
 
         val (suffix, colour) = when {
+            !TechService.tree.isImplemented(node) ->
+                ServerLang.raw("cobblemon_oneblock.tech.not_implemented_short") to ChatFormatting.DARK_PURPLE
             cost == null -> ServerLang.raw("cobblemon_oneblock.tech.maxed") to ChatFormatting.DARK_GRAY
             unmet.isNotEmpty() ->
                 ServerLang.raw("cobblemon_oneblock.tech.locked_short", describe(unmet)) to ChatFormatting.RED
@@ -248,6 +250,9 @@ object TechCommands {
             }
             TechService.Outcome.AlreadyMaxed -> {
                 context.source.sendFailure(ServerLang.msg("cobblemon_oneblock.tech.maxed")); 0
+            }
+            TechService.Outcome.NotImplemented -> {
+                context.source.sendFailure(ServerLang.msg("cobblemon_oneblock.tech.not_implemented")); 0
             }
             TechService.Outcome.NotAllowed -> {
                 context.source.sendFailure(ServerLang.msg("cobblemon_oneblock.tech.not_allowed")); 0

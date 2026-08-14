@@ -208,5 +208,7 @@
   "cobblemon_oneblock.rename.invalid": "Dieser Name geht nicht. Nimm ein paar normale Zeichen.",
   "cobblemon_oneblock.info.header_named": "%s — Border-Level %d (%dx%d)",
   "cobblemon_oneblock.visit.arrived_named": "Willkommen auf %s. Du bist hier Besucher.",
-  "cobblemon_oneblock.tech.already_claimed": "Eure Insel hat %s bereits eingelöst."
+  "cobblemon_oneblock.tech.already_claimed": "Eure Insel hat %s bereits eingelöst.",
+  "cobblemon_oneblock.tech.not_implemented": "Noch nicht gebaut — kommt in einem späteren Update. Spar dir die Punkte.",
+  "cobblemon_oneblock.tech.not_implemented_short": "— noch nicht gebaut"
 }
