@@ -48,9 +48,10 @@ goal is to widen and harden the foundation until it is genuinely playable.
 - **PR:** [#1](https://github.com/SK4NDULF/Cobblemon-OneBlock/pull/1) → `main`, open.
   **All work goes here** — the owner's standing instruction (2026-08-13) is that this project
   only ever uses PR #1. Never open a second one.
-- **Branch:** `claude/cobblemon-oneblock-mod-49flzn` is PR #1's head, so that is the branch to
-  push to. If a session is handed a different working branch, finish on it and then
-  fast-forward it into the PR head rather than opening anything new.
+- **Branch:** `claude/cobblemon-oneblock-mod-49flzn` is PR #1's head. **Work on it directly.**
+  If a session is handed a different working branch, switch onto this one rather than keeping
+  a mirror in sync — a parallel branch is how PR #2 got opened from the Claude Code UI on
+  2026-08-13 (closed the same day, same commit, nothing lost). One branch, one PR.
 - **Working tree:** clean, everything pushed.
 
 ### The rename (done, verified)

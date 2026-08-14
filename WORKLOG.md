@@ -28,6 +28,27 @@ Running record of what was changed, why, and how far it was actually verified.
 
 ---
 
+## 2026-08-13 — One branch, one PR
+
+**Asked:** "ja alles zsm in einen pr nur".
+
+**What was done:** PR #2 closed with a note that its branch and PR #1's pointed at the same
+commit, so nothing was lost. Local work moved off the mirror branch onto
+`claude/cobblemon-oneblock-mod-49flzn` — PR #1's head — so future commits land there directly
+and no parallel branch exists for a PR to be opened from.
+
+PR #2 existed because this session was handed a working branch that was not the PR's head, and
+that branch was kept in sync as a mirror; the Claude Code UI then opened a PR from it. The
+lesson is in `HANDOFF.md` §1 now: switch onto the PR branch, do not mirror.
+
+PR #1's description was refreshed at the same time. It still described slice A alone while
+B, C and D had landed, and on a single long-lived PR the description is the page people read.
+
+**Verified how:** both PRs re-read after the change — #2 closed, #1 open at `4a66c62` with 40
+commits, local branch and upstream matching.
+
+---
+
 ## 2026-08-13 — Unimplemented nodes are locked instead of sellable
 
 **Asked:** the owner had a Charmander out next to a furnace full of raw iron and asked why it
