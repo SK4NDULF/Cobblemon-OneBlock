@@ -101,9 +101,16 @@ uses a single long-lived PR, so a stale description stays wrong for a long time.
 ## 2. Build, run, ship
 
 ```bash
-./gradlew build                      # all three modules
+./gradlew build                      # all three modules, and the unit tests
+./gradlew :cobblemon-oneblock-core:test        # tests alone, ~30 s
 ./gradlew :cobblemon-oneblock-core:runServer   # dev server, needs cobblemon-oneblock-core/run/eula.txt
 ```
+
+**Tests exist now — use them.** 47 of them, covering the pure logic: gate parsing, tree
+validation, rank arithmetic, name sanitising, effect rendering and language-file consistency.
+They run in seconds and replace most of what previously needed a two-minute server boot. Boot
+the server for anything touching a world, a registry or a packet; use tests for everything
+else. GitHub Actions runs both on every push (`.github/workflows/build.yml`).
 
 Java 21. Server jar: `cobblemon-oneblock-core/build/libs/cobblemon-oneblock-core-0.1.0.jar` (the plain one —
 API and all libraries are bundled jar-in-jar).

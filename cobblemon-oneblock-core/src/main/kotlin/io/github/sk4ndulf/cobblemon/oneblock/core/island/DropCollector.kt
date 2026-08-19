@@ -51,6 +51,15 @@ object DropCollector {
     /** How many ticks one break stays watched. One is enough; two is insurance against ordering. */
     private const val TICKS_WATCHED = 2
 
+    /**
+     * Scoreboard tag marking an item the yield bonus has already been decided for.
+     *
+     * Scoreboard tags rather than a set of entity ids: the mark has to survive for as long as
+     * the entity does, including across the two sweep ticks and any later break's sweep that
+     * happens to cover the same spot, and it costs nothing to carry.
+     */
+    private const val BONUS_CONSIDERED = "cobblemon_oneblock_bonus_considered"
+
     private data class Pending(
         val pos: BlockPos,
         val player: UUID,
@@ -96,7 +105,13 @@ object DropCollector {
             // Copied before the stack is handed to the inventory, because add() mutates it.
             // Doubling what vanilla actually dropped — rather than recomputing the drops —
             // means Fortune, Silk Touch and anything another mod added are all doubled too.
-            val bonus = if (doubled) stack.copy() else null
+            //
+            // The tag is what stops this duplicating items. A break is swept for two ticks, and
+            // an item that did not fit is parked at the player's feet — which is inside the
+            // sweep box, because the player is standing on the anchor. Without the mark, the
+            // second tick would see the same drop again and mint a second bonus from it; free
+            // a slot between the two ticks and that repeats. Marked once, doubled once.
+            val bonus = if (doubled && item.addTag(BONUS_CONSIDERED)) stack.copy() else null
             val before = stack.count
             // add() mutates the stack in place, so what is left afterwards is the remainder.
             player.inventory.add(stack)
@@ -138,6 +153,9 @@ object DropCollector {
         }
         val dropped = ItemEntity(level, player.x, player.y, player.z, stack)
         dropped.setNoPickUpDelay()
+        // Marked on the way out: a bonus that lands in the sweep box must never itself be
+        // treated as a drop worth doubling.
+        dropped.addTag(BONUS_CONSIDERED)
         level.addFreshEntity(dropped)
     }
 

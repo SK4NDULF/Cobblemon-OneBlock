@@ -36,8 +36,23 @@ object NpcPoints {
     /**
      * NPCs already reported as unconfigured, so the log says it once instead of on every
      * battle. Keyed by entity uuid — a rebuilt NPC is a new entity and worth reporting again.
+     *
+     * Bounded, because NPCs can be spawned and despawned indefinitely on a long-running
+     * server and this would otherwise be a slow leak. Dropping the oldest entry only risks
+     * logging a very old NPC a second time, which is the harmless direction.
      */
-    private val reportedUnconfigured = HashSet<UUID>()
+    private const val REPORT_MEMORY = 256
+
+    private val reportedUnconfigured = LinkedHashSet<UUID>()
+
+    /** True when this NPC has not been reported yet. Forgets the oldest once past the bound. */
+    private fun shouldReport(npcId: UUID): Boolean {
+        if (!reportedUnconfigured.add(npcId)) return false
+        while (reportedUnconfigured.size > REPORT_MEMORY) {
+            reportedUnconfigured.remove(reportedUnconfigured.first())
+        }
+        return true
+    }
 
     fun register() {
         CobblemonEvents.BATTLE_VICTORY.subscribe(Priority.NORMAL) { event ->
@@ -57,7 +72,7 @@ object NpcPoints {
         val config = OneBlockCore.pointSources
         val trainerId = npc.config.map[config.npcIdVariable]?.asString()?.trim().orEmpty()
         if (trainerId.isEmpty()) {
-            if (reportedUnconfigured.add(npc.uuid)) {
+            if (shouldReport(npc.uuid)) {
                 OneBlockCore.LOGGER.info(
                     "NPC {} at {} has no '{}' variable, so beating it grants no tech points. " +
                         "Set one with: /npc edit <npc> variable {} <id>",

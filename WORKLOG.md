@@ -28,6 +28,66 @@ Running record of what was changed, why, and how far it was actually verified.
 
 ---
 
+## 2026-08-14 — Polish pass: a duplication bug, 47 tests, CI, and effects you can read
+
+**Asked:** polish the mod and its infrastructure, and the talent tree specifically.
+
+### The bug worth the whole pass
+
+**`DropCollector` could duplicate items.** A break is swept for two ticks, and anything that
+did not fit is parked at the player's feet — which is *inside* the sweep box, because the
+player is standing on the anchor. With the yield bonus active, the second tick saw the same
+drop again and minted a second bonus from it; free an inventory slot between the two ticks and
+it repeated. The bonus item spawned by the first tick was itself a candidate on the second.
+
+Fixed by marking each item with a scoreboard tag the moment the bonus is decided for it, and
+marking spawned bonuses on the way out. Scoreboard tags rather than a set of ids because the
+mark has to outlive the sweep, including any later break covering the same spot.
+
+### Infrastructure
+
+**There were no tests at all.** There are now **47**, covering the pure logic that was
+previously checked by booting a server for two minutes per run: gate parsing, tree validation
+and cascade, rank arithmetic, name sanitising, effect rendering, and language-file
+consistency.
+
+They were checked for sharpness rather than assumed: two deliberate mutations were introduced
+— stop stripping the section sign, and treat every node as implemented — and exactly the four
+tests that should fail did.
+
+**CI** (`.github/workflows/build.yml`) builds and tests on every push, uploads the test report
+even on failure, and publishes the server jar as an artifact.
+
+### Two real defects the tests found immediately
+
+- **A wrong assumption of mine in `IslandNames`:** control characters were *removed*, so
+  "Rocket\nBase" became "RocketBase". They now become a space, because a newline was a
+  separator in the player's head. Formatting markers are still removed outright.
+- **A wrong assumption in my own test:** the first version compared format specifiers *in
+  order* and flagged `admin.confirm_prompt`, whose German translation legitimately uses
+  positional arguments (`%2$s ... %1$s`) because the word order differs. The test now compares
+  position → conversion, which is the thing that actually has to match. The mod was right and
+  the test was wrong; worth recording because the failure looked convincing.
+
+### The talent tree
+
+Nodes now **show what they actually give**, read from the typed payload rather than the prose:
+"35% chance that Cave blocks drop twice", "+3% treasure chest chance". Prose goes stale the
+first time an admin retunes a number in `techtree.json5`; a rendered payload cannot. Both the
+chest menu and `/ob tech info` show the next rank's gain and, separately, what is already
+active.
+
+`/ob tech info` also states plainly when a node is not built yet, which previously only the
+chest menu did.
+
+**Verified how:** `./gradlew build` green including all 47 tests; server boots clean.
+
+**Still unverified:** everything needing a client, unchanged. The duplication fix in
+particular wants the specific test in `HANDOFF.md` §4 test 12 — break forest blocks with a
+full inventory and confirm the bonus lands once.
+
+---
+
 ## 2026-08-13 — One branch, one PR
 
 **Asked:** "ja alles zsm in einen pr nur".

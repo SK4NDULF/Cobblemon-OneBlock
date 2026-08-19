@@ -16,7 +16,10 @@ import net.minecraft.server.MinecraftServer
  *    containing it can turn the rest of a chat line a different colour, make it magic-obfuscated,
  *    or hide it. Several code paths still interpret it, so the only safe answer is that the
  *    character never reaches one.
- *  - **Control characters and newlines are removed**, so a name cannot forge extra lines.
+ *  - **Control characters become a space**, so a name cannot forge extra lines while a
+ *    newline the player meant as a separator still reads as one.
+ *  - **Unicode bidi controls are removed** — they are not ISO control characters, and a
+ *    right-to-left override reverses how the rest of the sentence renders.
  *  - **Length is capped**, because a chest menu title has a fixed width and a very long name
  *    pushes everything else out of view.
  *
@@ -51,8 +54,20 @@ object IslandNames {
         }
     }
 
+    /**
+     * Two different treatments, because the characters mean two different things.
+     *
+     * Formatting markers — the section sign and the bidi controls — are *removed*: they are
+     * invisible instructions to the renderer, and the text around them was meant to be
+     * adjacent. Control characters are *replaced with a space*: a newline or a tab was a
+     * separator in the player's head, so "Rocket\nBase" should read "Rocket Base" and not
+     * "RocketBase". Runs collapse afterwards, so either path ends up tidy.
+     */
     private fun sanitise(raw: String): String =
-        raw.filter { it != SECTION_SIGN && !it.isISOControl() && it !in BIDI_CONTROLS }
+        raw.asSequence()
+            .filterNot { it == SECTION_SIGN || it in BIDI_CONTROLS }
+            .map { if (it.isISOControl()) ' ' else it }
+            .joinToString("")
             .replace(WHITESPACE_RUN, " ")
             .trim()
 

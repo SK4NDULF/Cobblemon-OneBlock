@@ -11,6 +11,7 @@ import io.github.sk4ndulf.cobblemon.oneblock.core.gui.TechMenu
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.IslandData
 import io.github.sk4ndulf.cobblemon.oneblock.core.lang.ServerLang
 import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechCategory
+import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechEffectText
 import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechNode
 import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechRequirement
 import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechService
@@ -215,6 +216,11 @@ object TechCommands {
         if (node.description.isNotBlank()) {
             player.sendSystemMessage(Component.literal(node.description).withStyle(ChatFormatting.GRAY))
         }
+        if (!TechService.tree.isImplemented(node)) {
+            player.sendSystemMessage(
+                ServerLang.msg("cobblemon_oneblock.tech.not_implemented").withStyle(ChatFormatting.DARK_PURPLE),
+            )
+        }
         val cost = node.costOfNext(level)
         if (cost == null) {
             player.sendSystemMessage(ServerLang.msg("cobblemon_oneblock.tech.maxed").withStyle(ChatFormatting.DARK_GRAY))
@@ -223,6 +229,18 @@ object TechCommands {
                 ServerLang.msg("cobblemon_oneblock.tech.info_next", level + 1, cost, state.balance)
                     .withStyle(ChatFormatting.YELLOW),
             )
+            // The numbers the next rank actually grants, straight from the payload.
+            for (line in TechEffectText.describe(node.effects[level + 1].orEmpty())) {
+                player.sendSystemMessage(Component.literal("  $line").withStyle(ChatFormatting.AQUA))
+            }
+        }
+        if (level > 0) {
+            player.sendSystemMessage(
+                ServerLang.msg("cobblemon_oneblock.menu.active_now").withStyle(ChatFormatting.DARK_GRAY),
+            )
+            for (line in TechEffectText.describe(node.effectsUpTo(level))) {
+                player.sendSystemMessage(Component.literal("  $line").withStyle(ChatFormatting.DARK_GREEN))
+            }
         }
         val unmet = TechService.unmetRequirements(island, node)
         if (unmet.isNotEmpty()) {

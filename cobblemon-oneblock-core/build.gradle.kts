@@ -37,6 +37,21 @@ dependencies {
         implementation(it)
         include(it)
     }
+
+    // Unit tests cover the pure logic only — validation, parsing, sanitising, arithmetic.
+    // Anything needing a world or a registry is verified by booting a real server instead,
+    // because a mocked Minecraft proves nothing about the real one.
+    testImplementation(kotlin("test"))
+    testImplementation("org.junit.jupiter:junit-jupiter:${property("junit_version")}")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.test {
+    useJUnitPlatform()
+    testLogging {
+        events("failed")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
 }
 
 java {

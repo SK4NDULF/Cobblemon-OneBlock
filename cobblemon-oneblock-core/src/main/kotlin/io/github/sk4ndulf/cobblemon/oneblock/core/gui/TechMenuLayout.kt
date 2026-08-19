@@ -3,6 +3,7 @@ package io.github.sk4ndulf.cobblemon.oneblock.core.gui
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.IslandData
 import io.github.sk4ndulf.cobblemon.oneblock.core.lang.ServerLang
 import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechCategory
+import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechEffectText
 import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechNode
 import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechRequirement
 import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechService
@@ -218,6 +219,18 @@ object TechMenuLayout {
             else -> {
                 lore += ServerLang.msg("cobblemon_oneblock.menu.next_rank", level + 1, cost)
                     .withStyle(if (state.balance >= cost) ChatFormatting.GREEN else ChatFormatting.YELLOW)
+                // What the next rank actually adds, read from the payload rather than from the
+                // node's prose — the prose goes stale the first time an admin retunes a number.
+                for (line in TechEffectText.describe(node.effects[level + 1].orEmpty())) {
+                    lore += Component.literal("  $line").withStyle(ChatFormatting.AQUA)
+                }
+            }
+        }
+        if (level > 0) {
+            lore += Component.empty()
+            lore += ServerLang.msg("cobblemon_oneblock.menu.active_now").withStyle(ChatFormatting.DARK_GRAY)
+            for (line in TechEffectText.describe(node.effectsUpTo(level))) {
+                lore += Component.literal("  $line").withStyle(ChatFormatting.DARK_GREEN)
             }
         }
         if (implemented) {

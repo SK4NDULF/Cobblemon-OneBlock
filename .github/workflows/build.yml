@@ -1,0 +1,62 @@
+name: Build
+
+# Runs on every push and pull request. The point is not ceremony: this project has a single
+# long-lived pull request, so "it built on my machine three commits ago" is otherwise the only
+# evidence there is.
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  # A newer push to the same branch makes the older run pointless.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          # Java 21 is not a preference — the toolchain and the mixin compatibility level
+          # both pin it, and Minecraft 1.21.1 requires it.
+          java-version: "21"
+          distribution: temurin
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build and test
+        # Loom needs to download Minecraft, the mappings and Cobblemon, so the first run on a
+        # cold cache is slow. `build` covers all three modules and runs the unit tests.
+        run: ./gradlew build --stacktrace
+
+      - name: Upload test report
+        # Runs even when the build failed — that is exactly when the report is wanted.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: cobblemon-oneblock-core/build/reports/tests/test
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Upload server jar
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobblemon-oneblock
+          # The plain jar is the one to install: the API and every library are bundled
+          # jar-in-jar. Sources and the dev jars are excluded so nobody installs the wrong one.
+          path: |
+            cobblemon-oneblock-core/build/libs/cobblemon-oneblock-core-*.jar
+            !cobblemon-oneblock-core/build/libs/*-sources.jar
+            !cobblemon-oneblock-core/build/libs/*-dev*.jar
+          retention-days: 30
