@@ -24,10 +24,16 @@ waiting on the owner's live test. `HANDOFF.md` §4 tests 10-13 are the script.
 *contents* are covered by the tier report in the startup log, but every pixel of them is
 unverified — see the test script in §4.
 
-⚠️ **The tree currently costs 439 points and nothing pays them out yet.** Slice C wires up the
-real sources (NPC victories, advancements); until then `/ob tech grant` is the only income.
-439 is also a balance signal in its own right — at 1-5 points per NPC that is a lot of content,
-and it is the first thing to look at when tuning.
+⚠️ **The tree costs 439 points; advancements cover 135 of them.** NPC trainers and bosses have
+to make up the remaining 304 — the startup log prints that arithmetic every boot. At 1-5 points
+per NPC that is a lot of content, and it is the first thing to look at when tuning.
+
+⚠️ **Nether portals are blocked in `cobblemon_oneblock:world`, and must stay blocked.** A
+working portal leads to the real, infinite, unprotected vanilla Nether, and a second portal
+there reaches the vanilla Overworld — every border and protection rule in this mod stops
+mattering the moment a player steps through, and the tech tree itself hands out the obsidian.
+Two mixins block it (`PortalShapeMixin`, `NetherPortalBlockMixin`). Do not remove either
+without reading §4 test 14.
 
 ---
 
@@ -247,6 +253,12 @@ cannot cross a border, enter the hub, or leak into the void buffer).
       nothing may vanish from the menu. This is the one that matters — a leak here duplicates
       items.
     - `/ob tech chat` still prints the text version.
+
+14. **Nether portals must stay dead.** Get obsidian (Nether ladder tier 4, or `/give`), build a
+    frame on your island and light it. Nothing may happen — no portal blocks, no travel. Then
+    the nastier case: `/setblock` a `minecraft:nether_portal` block by hand and walk into it.
+    You must not move. If you ever end up in the Nether, every border and protection rule in
+    the mod is void, because the whole vanilla world is on the other side.
 
 13. **Point sources.** Two halves, and the NPC half is the one nobody has ever run.
     - Place a Cobblemon NPC trainer, then

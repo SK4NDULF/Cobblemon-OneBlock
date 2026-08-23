@@ -46,6 +46,28 @@ object WorldHooks {
     }
 
     /**
+     * PortalShapeMixin and NetherPortalBlockMixin: no Nether portal works in the OneBlock world.
+     *
+     * **This closes an escape hatch that made the whole mod pointless.** A nether portal sends
+     * an entity to whatever dimension is not the Nether — from our world, that is the real,
+     * infinite, unprotected vanilla Nether, and a second portal there reaches the vanilla
+     * Overworld. Every border, every protection rule and the entire island economy stop
+     * mattering the moment a player steps through, because the whole vanilla world is on the
+     * other side.
+     *
+     * The tech tree itself hands out the key: the Nether biome ladder drops obsidian at tier 4,
+     * and the End ladder drops more. Verified on a dev server before the fix — a pig placed in
+     * a portal here landed in the Nether at nether-scaled coordinates, exactly as it does in
+     * the vanilla Overworld.
+     *
+     * Blocked in two places rather than one: the shape check stops new portals from forming at
+     * all, and the entity check makes any portal that already exists in an old world inert.
+     */
+    @JvmStatic
+    fun blocksPortals(level: LevelAccessor): Boolean =
+        level is Level && level.dimension() == OneBlockDimension.WORLD_KEY
+
+    /**
      * FlowingFluidMixin: fluids may only spread inside an island's CURRENT border area.
      * Blocks flow into the hub, the void buffer, and across island borders.
      */

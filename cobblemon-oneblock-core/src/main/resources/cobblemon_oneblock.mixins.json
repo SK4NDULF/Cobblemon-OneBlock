@@ -7,7 +7,9 @@
     "FallingBlockMixin",
     "ExplosionMixin",
     "FlowingFluidMixin",
-    "PlayerAdvancementsMixin"
+    "PlayerAdvancementsMixin",
+    "PortalShapeMixin",
+    "NetherPortalBlockMixin"
   ],
   "injectors": {
     "defaultRequire": 1

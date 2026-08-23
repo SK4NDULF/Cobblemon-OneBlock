@@ -28,6 +28,59 @@ Running record of what was changed, why, and how far it was actually verified.
 
 ---
 
+## 2026-08-14 — Nether portals were an unlocked back door out of the whole mod
+
+**Asked:** the owner shared a competing SkyBlock mod's feature list and asked what was worth
+taking from it. One line on it was "Custom Nether portal linking per island" — which is a
+feature for them and was an **unhandled hole** for us.
+
+**What was wrong:** there was no portal handling anywhere in the mod. A nether portal sends an
+entity to whatever dimension is not the Nether, so from `cobblemon_oneblock:world` that is the
+real, infinite, unprotected vanilla Nether — and a portal there reaches the vanilla Overworld.
+Every border, every protection rule and the entire island economy stop mattering the moment a
+player walks through, because the whole vanilla world is on the other side. The tech tree
+itself hands out the key: the Nether ladder drops obsidian at tier 4 and the End ladder drops
+more.
+
+**Verified before fixing, and it took three attempts to get an honest answer:**
+
+1. `/setblock` fire in a frame produced no portal — but the fire was gone a second later, so
+   the test proved nothing.
+2. A pig placed in a hand-built portal did not travel — but it had been summoned with
+   `NoAI:1b`, which the control did not have. An `execute in the_nether if entity` check
+   *did* report a hit, which looked like confirmation and was not; the pig's position had
+   never changed, and a real Nether entry divides coordinates by eight.
+3. Same setup without `NoAI`, against a vanilla-Overworld control: the control pig moved to
+   nether-scaled coordinates, and so did the pig in our world — from `(100.5, 100.5, 100.5)`
+   to `(15.3, 101, 16.3)`. Exploit confirmed.
+
+The control is what made it trustworthy. Without it, step 2's negative would have read as "we
+are fine" and shipped.
+
+**The fix:** two mixins, blocking both halves.
+
+- `PortalShapeMixin` cancels `findEmptyPortalShape` in our dimension, so a portal never forms.
+  Reporting "no valid shape here" is the gentlest refusal available — vanilla already handles
+  that answer everywhere it asks it.
+- `NetherPortalBlockMixin` cancels `entityInside`, so a portal block that already exists in an
+  older world is inert rather than merely un-creatable.
+
+**Verified after:** the identical setup that formed a portal in the vanilla Overworld forms
+nothing in ours, and the pig that previously jumped to nether-scaled coordinates now stays at
+`(101.3, 100, 100.5)`. Both mixins applied cleanly — with `required: true` and
+`defaultRequire: 1`, a boot proves the injection points matched.
+
+**Still unverified:** a real player lighting a real portal with flint and steel. The block
+path is the same one the test drove, but a player has their own travel timing.
+`HANDOFF.md` §4 test 14.
+
+**Left as a recommendation, not built:** the same list's "Player TOPs" is the one genuine
+feature gap — a leaderboard needs an island score, which does not exist yet. Everything else
+on it we already have, or it does not apply to a OneBlock (their configurable cobblestone
+generator is what our OneBlock loot table already is, only per-island and tech-driven).
+
+---
+
 ## 2026-08-14 — Polish pass: a duplication bug, 47 tests, CI, and effects you can read
 
 **Asked:** polish the mod and its infrastructure, and the talent tree specifically.
