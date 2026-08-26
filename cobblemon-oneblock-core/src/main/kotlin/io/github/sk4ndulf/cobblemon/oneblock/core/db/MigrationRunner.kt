@@ -181,6 +181,43 @@ class MigrationRunner(private val database: Database, private val logger: Logger
                 "DROP TABLE IF EXISTS island_claims",
             )
         },
+        Migration(12, "hub_portals: admin-linked portals and the hub each one leads to") { _ ->
+            // Identified by dimension plus the lower corner of the portal's block region rather
+            // than by a surrogate id. A portal cannot move, so those coordinates are already a
+            // stable identity — and it saves reading a generated key back out of an async write.
+            listOf(
+                """
+                CREATE TABLE IF NOT EXISTS hub_portals (
+                    dimension VARCHAR(32) NOT NULL,
+                    min_x     INT         NOT NULL,
+                    min_y     INT         NOT NULL,
+                    min_z     INT         NOT NULL,
+                    max_x     INT         NOT NULL,
+                    max_y     INT         NOT NULL,
+                    max_z     INT         NOT NULL,
+                    target    VARCHAR(32) NOT NULL,
+                    linked_by CHAR(36),
+                    linked_at BIGINT      NOT NULL,
+                    PRIMARY KEY (dimension, min_x, min_y, min_z)
+                )
+                """.trimIndent(),
+            )
+        },
+        Migration(13, "player_unlocks: what a player has earned the right to do") { _ ->
+            // Deliberately a key/value list rather than a column per unlock: the quest system
+            // that will grant these does not exist yet, and a new unlock must not need a
+            // migration. Rows are only ever added or deleted, never updated.
+            listOf(
+                """
+                CREATE TABLE IF NOT EXISTS player_unlocks (
+                    uuid       CHAR(36)    NOT NULL,
+                    unlock_key VARCHAR(64) NOT NULL,
+                    granted_at BIGINT      NOT NULL,
+                    PRIMARY KEY (uuid, unlock_key)
+                )
+                """.trimIndent(),
+            )
+        },
     )
 
     fun run() {

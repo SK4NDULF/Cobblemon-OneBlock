@@ -28,6 +28,61 @@ Running record of what was changed, why, and how far it was actually verified.
 
 ---
 
+## 2026-08-26 — Portals you bind by hand, and the unlock that gates them
+
+**Asked:** the way to a hub should be a portal the owner builds — any frame, Nether or End,
+any size — then a command, then a click on the portal to bind it. Any portal must be able to
+lead to any hub. Access is per player and will eventually be earned through a quest.
+
+**Built, in two halves that meet in one place.**
+
+`HubPortals` owns the bindings. `/ob admin portal link <overworld|nether|end>` arms a
+selection for 120 seconds; the next portal the admin clicks is flood-filled to find every
+connected portal block, and the box around them is stored with the target hub. `unlink` plus a
+click removes one, `list` prints them all. Both mouse buttons work, and clicking a *frame*
+block next to the portal counts — an admin standing in their own portal cannot aim at its
+surface, and the thin portal hitbox is fiddly at the best of times.
+
+Storing the box rather than the blocks is deliberate: a portal that goes out and is lit again
+comes back in the same place, so the binding survives it, while a portal two blocks away is
+still a different portal. A position only counts as bound when there is a portal block there
+now, so a generous box around a non-rectangular portal costs nothing. Re-linking a bound
+portal replaces the old binding instead of adding a second one that could never win.
+
+`Unlocks` owns the gate: a per-player key/value table, checked in `IslandPortals` when the
+traveller is a player and the target is the Nether or End hub. `/ob admin unlock grant|revoke|
+list` is the only way to hand one out today, which is the point — the condition is meant to be
+a quest, and an unlock granted automatically would be a gate in name only. The table is a key
+list rather than a column per unlock so the quest system can add its own without a migration.
+
+A player without the unlock is left standing where they are, told why in the action bar.
+Vanilla's portal cooldown keeps that from firing every tick while they stand in the portal.
+Moving them somewhere else was the alternative and reads worse: nobody asked to be teleported.
+
+Two migrations, 12 (`hub_portals`) and 13 (`player_unlocks`). The portal table is keyed by
+dimension plus the box's lower corner rather than a surrogate id — a portal cannot move, so
+that is already a stable identity, and it avoids reading a generated key back out of an
+async insert.
+
+`HubPortals.register()` runs **before** `ProtectionManager.register()`. That ordering is
+load-bearing: Fabric runs interaction callbacks in registration order, and a pending binding
+has to be consumed before the protection rules get a chance to refuse the click.
+
+**Verified:** `./gradlew :cobblemon-oneblock-core:build` green, 18 tests pass, including the
+language consistency test over the 25 new keys in both files. Portal blocks are ray-traceable
+(`NetherPortalBlock` and `EndPortalBlock` both return a non-empty `getShape`), which is what
+the click flow depends on — and the frame fallback exists in case a client still refuses to
+target one.
+
+**Not verified — all of it, in the way that matters.** Nobody has built a portal, run the
+command, clicked anything, or walked through. Specifically untested: whether the click
+actually reaches `UseBlockCallback` for a portal block, whether the flood fill finds a large
+irregular portal in one go, whether a bound End portal really sends you to the Nether hub,
+what the locked case looks like from inside the portal, and whether both migrations apply
+cleanly to an existing database.
+
+---
+
 ## 2026-08-26 — A hub in every dimension
 
 **Asked:** the spawn hub should exist in the Nether and the End as well, exactly like the

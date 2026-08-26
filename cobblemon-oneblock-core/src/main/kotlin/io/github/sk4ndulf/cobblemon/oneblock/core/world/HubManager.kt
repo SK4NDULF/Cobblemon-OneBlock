@@ -131,7 +131,7 @@ object HubManager {
      * never got written (the database was down on that first start) would otherwise drop
      * the arriving player into the void.
      */
-    private fun ensureFloor(level: ServerLevel) {
+    fun ensureFloor(level: ServerLevel) {
         if (!level.getBlockState(BlockPos(0, HUB_Y - 1, 0)).isAir) return
         OneBlockCore.LOGGER.warn(
             "Hub platform in {} was missing on arrival — rebuilding it.", level.dimension().location(),

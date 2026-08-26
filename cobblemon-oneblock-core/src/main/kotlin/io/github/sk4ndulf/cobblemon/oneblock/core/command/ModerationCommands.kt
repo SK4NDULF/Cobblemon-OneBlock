@@ -152,6 +152,10 @@ object ModerationCommands {
                             .then(Commands.literal("confirm").executes { confirmForce(it, reset = false) })
                     )
             )
+            // Hub travel lives in its own file; it hangs here because it is admin work and
+            // shares this branch's permission node.
+            .then(HubCommands.portalBranch())
+            .then(HubCommands.unlockBranch())
 
     private fun targetIsland(context: CommandContext<CommandSourceStack>): Pair<IslandData, UUID>? {
         val profile = GameProfileArgument.getGameProfiles(context, "player").firstOrNull() ?: return null

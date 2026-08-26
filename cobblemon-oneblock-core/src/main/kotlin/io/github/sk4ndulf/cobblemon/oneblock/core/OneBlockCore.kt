@@ -18,7 +18,9 @@ import io.github.sk4ndulf.cobblemon.oneblock.core.cobblemon.BuffService
 import io.github.sk4ndulf.cobblemon.oneblock.core.cobblemon.CobblemonIntegration
 import io.github.sk4ndulf.cobblemon.oneblock.core.moderation.BanService
 import io.github.sk4ndulf.cobblemon.oneblock.core.permission.ProtectionManager
+import io.github.sk4ndulf.cobblemon.oneblock.core.unlock.Unlocks
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.HubManager
+import io.github.sk4ndulf.cobblemon.oneblock.core.world.HubPortals
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.OneBlockDimension
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -76,6 +78,9 @@ object OneBlockCore : ModInitializer {
 
         OneBlockAPIHolder.set(OneBlockAPIImpl(eventBus))
         ObCommands.register()
+        // Before the protection rules: a pending portal binding is a deliberate mode, and it
+        // has to win over the click handler that would otherwise refuse the interaction.
+        HubPortals.register()
         ProtectionManager.register()
 
         CobblemonIntegration.register()
@@ -188,6 +193,8 @@ object OneBlockCore : ModInitializer {
         BuffService.loadAll(db)
         BiomeService.reload(BiomeRepository(db))
         BanService.reload(db)
+        HubPortals.reload(db)
+        Unlocks.reload(db)
     }
 
     fun connectDatabase(): String? {

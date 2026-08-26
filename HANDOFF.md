@@ -265,7 +265,20 @@ cannot cross a border, enter the hub, or leak into the void buffer).
     `minecraft:the_nether`. If `/execute in minecraft:the_nether` ever finds you, every border
     in the mod is void.
 
-Tests 7–12 all need a client for the same reason: nothing that breaks a block, creates an
+13. **A hub in every dimension.** Start the server once and check the log: there must be a
+    `Hub platform generated in cobblemon_oneblock:nether …` and one for `:end`, and **no**
+    third line for `:world` on a world that already had its platform. Then stand in each and
+    confirm you cannot break anything, and that the message says hub, not void buffer.
+
+14. **Bound portals.** Build a portal, `/ob admin portal link nether`, click it — the chat
+    must say `Connected to the Nether hub`. Walk in without the unlock: you stay put and are
+    told why. `/ob admin unlock grant <you> hub.nether`, walk in again: Nether hub. Then the
+    awkward cases: click the obsidian frame instead of the portal surface, link an *End*
+    portal to the Nether hub, re-link a portal that is already bound (the old link must be
+    replaced, not doubled), `unlink` it, and put the portal out and light it again — the
+    binding must survive that.
+
+Tests 7–14 all need a client for the same reason: nothing that breaks a block, creates an
 island or walks through a portal can be driven from the server console.
 
 ---

@@ -1,8 +1,13 @@
 package io.github.sk4ndulf.cobblemon.oneblock.core.world
 
 import io.github.sk4ndulf.cobblemon.oneblock.core.OneBlockCore
+import io.github.sk4ndulf.cobblemon.oneblock.core.lang.ServerLang
+import io.github.sk4ndulf.cobblemon.oneblock.core.unlock.Unlocks
+import net.minecraft.ChatFormatting
 import net.minecraft.core.BlockPos
+import net.minecraft.resources.ResourceKey
 import net.minecraft.server.level.ServerLevel
+import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Blocks
@@ -40,6 +45,7 @@ object IslandPortals {
     @JvmStatic
     fun netherDestination(from: ServerLevel, entity: Entity, portalPos: BlockPos): DimensionTransition? {
         if (!OneBlockDimension.isOurs(from)) return null
+        HubPortals.targetFor(from, portalPos)?.let { return hubDestination(from, entity, it) }
         val target = when (from.dimension()) {
             OneBlockDimension.NETHER_KEY -> OneBlockDimension.OVERWORLD_KEY
             else -> OneBlockDimension.NETHER_KEY
@@ -51,6 +57,7 @@ object IslandPortals {
     @JvmStatic
     fun endDestination(from: ServerLevel, entity: Entity, portalPos: BlockPos): DimensionTransition? {
         if (!OneBlockDimension.isOurs(from)) return null
+        HubPortals.targetFor(from, portalPos)?.let { return hubDestination(from, entity, it) }
         val target = when (from.dimension()) {
             OneBlockDimension.END_KEY -> OneBlockDimension.OVERWORLD_KEY
             else -> OneBlockDimension.END_KEY
@@ -66,6 +73,47 @@ object IslandPortals {
      * from here is the real, infinite Nether — the exact hole this class exists to close. So
      * a refusal is still a transition: back to the hub, which is somewhere safe and obvious.
      */
+    /**
+     * Where a portal an admin bound with `/ob admin portal link` leads: that dimension's hub.
+     *
+     * The unlock is checked here rather than at the command, because it is the traveller who
+     * needs it, not the admin who built the portal. A player without it is left standing where
+     * they are — the portal simply does not work for them, which is easier to read than being
+     * moved somewhere they did not ask for. Vanilla's portal cooldown keeps that from
+     * repeating every tick while they stand in it.
+     *
+     * Non-player entities are never gated: an unlock is something a player earns.
+     */
+    private fun hubDestination(from: ServerLevel, entity: Entity, target: ResourceKey<Level>): DimensionTransition {
+        val level = from.server.getLevel(target) ?: run {
+            OneBlockCore.LOGGER.error(
+                "A portal is linked to the {} hub, which is not loaded — travel refused.", target.location(),
+            )
+            return refuse(from, entity)
+        }
+
+        val player = entity as? ServerPlayer
+        val required = Unlocks.hubUnlockFor(target)
+        if (player != null && required != null && !Unlocks.has(player.uuid, required)) {
+            player.displayClientMessage(
+                ServerLang.msg("cobblemon_oneblock.portal.locked", OneBlockDimension.displayName(target))
+                    .withStyle(ChatFormatting.RED),
+                true,
+            )
+            return DimensionTransition(from, entity, DimensionTransition.DO_NOTHING)
+        }
+
+        HubManager.ensureFloor(level)
+        return DimensionTransition(
+            level,
+            Vec3(HubManager.spawnPos.x + 0.5, HubManager.HUB_Y.toDouble(), HubManager.spawnPos.z + 0.5),
+            Vec3.ZERO,
+            entity.yRot,
+            entity.xRot,
+            DimensionTransition.PLAY_PORTAL_SOUND,
+        )
+    }
+
     private fun refuse(from: ServerLevel, entity: Entity): DimensionTransition {
         val overworld = OneBlockDimension.overworld(from.server) ?: from
         OneBlockCore.LOGGER.debug("Portal outside any island footprint — sending {} to the hub.", entity.name.string)

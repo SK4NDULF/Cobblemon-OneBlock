@@ -1,5 +1,6 @@
 package io.github.sk4ndulf.cobblemon.oneblock.core.world
 
+import io.github.sk4ndulf.cobblemon.oneblock.core.lang.ServerLang
 import net.minecraft.core.registries.Registries
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
@@ -51,4 +52,28 @@ object OneBlockDimension {
 
     /** Every one of our dimensions the server actually loaded, for sweeps that cover all islands. */
     fun loadedLevels(server: MinecraftServer): List<ServerLevel> = ALL.mapNotNull { server.getLevel(it) }
+
+    /**
+     * Short names for commands and database rows: `overworld`, `nether`, `end`.
+     *
+     * Deliberately not the dimension path — the main world's path is `world`, which nobody
+     * types when they mean the Overworld — and deliberately not the full resource location,
+     * which is too long to type and would tie stored rows to the namespace.
+     */
+    private val BY_SHORT_NAME: Map<String, ResourceKey<Level>> = mapOf(
+        "overworld" to OVERWORLD_KEY,
+        "nether" to NETHER_KEY,
+        "end" to END_KEY,
+    )
+
+    val SHORT_NAMES: List<String> = BY_SHORT_NAME.keys.toList()
+
+    fun byShortName(name: String): ResourceKey<Level>? = BY_SHORT_NAME[name.lowercase()]
+
+    fun shortName(key: ResourceKey<Level>): String =
+        BY_SHORT_NAME.entries.first { it.value == key }.key
+
+    /** The translated name shown to players, e.g. "Nether". */
+    fun displayName(key: ResourceKey<Level>): String =
+        ServerLang.raw("cobblemon_oneblock.dimension.${shortName(key)}")
 }

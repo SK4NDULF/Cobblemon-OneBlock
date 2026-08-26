@@ -211,7 +211,7 @@ zero configuration and still gives networks full control.
 | `cobblemon_oneblock.admin.setup` | `/ob setup` |
 | `cobblemon_oneblock.admin.reload` | `/ob reload` |
 | `cobblemon_oneblock.admin.buff` | `/ob buff <player> <type> <value> <minutes>` |
-| `cobblemon_oneblock.admin.moderate` | `/ob admin kick\|info\|reset\|delete` |
+| `cobblemon_oneblock.admin.moderate` | `/ob admin kick\|info\|reset\|delete\|portal\|unlock` |
 | `cobblemon_oneblock.admin.bypass` | ignore island protection, build in the hub, catch/battle anywhere (OP level 2) |
 
 Example: let everyone play but restrict moderation to a staff group.
@@ -254,7 +254,47 @@ published to addons via the API. Set `discord_webhook_url` in `main.json5` to mi
 audit trail into a Discord channel. All of this happens off the server thread — a dead
 webhook cannot lag the server.
 
-## 8. Automatic housekeeping
+## 8. Hub travel: portals and unlocks
+
+Each dimension has its own hub, and the way between them is a portal **you** build. The mod
+places none of them and does not care what kind of frame it is: an End portal may lead to the
+Nether hub.
+
+1. Build the portal anywhere in one of the mod's dimensions — any frame, any size — and light it.
+2. Run `/ob admin portal link nether` (or `overworld`, or `end`).
+3. Click the portal within 120 seconds. Clicking a frame block right next to it works too, so
+   you do not have to hit the thin portal surface. Left click works as well as right click.
+4. The chat says `Connected to the Nether hub`. From now on that portal leads there.
+
+`/ob admin portal list` shows every linked portal with its dimension, corner and target.
+`/ob admin portal unlink` plus a click removes a binding, and the portal goes back to leading
+into the island's own half of the world.
+
+Re-linking a portal that is already bound replaces the old binding rather than adding a second
+one. A binding is stored as the box around the portal's blocks, so putting the portal out and
+lighting it again keeps it — rebuilding it somewhere else does not.
+
+### Who may travel
+
+The Overworld hub is open to everyone. The Nether and End hubs need an unlock **per player**:
+
+| Unlock | Opens |
+|---|---|
+| `hub.nether` | travel to the Nether hub |
+| `hub.end` | travel to the End hub |
+
+```
+/ob admin unlock grant <player> hub.nether
+/ob admin unlock revoke <player> hub.nether
+/ob admin unlock list <player>
+```
+
+Granting by hand is the only way today, on purpose: the condition these unlocks are meant to
+carry is a quest, the quest system does not exist yet, and handing them out automatically
+would make the gate meaningless. A player without the unlock who walks into a linked portal
+stays where they are and is told why.
+
+## 9. Automatic housekeeping
 
 Once an hour the server archives islands whose owner has been inactive for
 `inactivity_purge_days` (default 90; `0` disables it), purges archives past
@@ -262,7 +302,7 @@ Once an hour the server archives islands whose owner has been inactive for
 reused yet, because the old builds are still standing there — the spiral is effectively
 endless, so this costs nothing in practice.
 
-## 9. Temporary island buffs
+## 10. Temporary island buffs
 
 ```
 /ob buff <player> shiny_rate 0.05 60     # 5% shiny chance for 60 minutes
