@@ -28,6 +28,29 @@ Running record of what was changed, why, and how far it was actually verified.
 
 ---
 
+## 2026-08-26 — Everything merged to `main`; one feature at a time from here
+
+**Asked:** merge everything into `main`, get rid of the other branches, and from then on build
+features one after another to avoid errors, then improve and clean the mod.
+
+**What was done:** PR #1 merged into `main` as a merge commit (`0d37101`), keeping all 44
+commits rather than squashing — the individual messages carry the reasoning, and the WORKLOG
+references them. CI was green on the head commit and `./gradlew build` including the 47 tests
+was green locally on the same commit. The PR description was corrected first: it still claimed
+one void dimension and a single-long-lived-PR workflow, both of which had stopped being true.
+
+**Branch cleanup is incomplete and needs the owner.** `git push --delete` is refused by this
+environment's git proxy (HTTP 403) and the GitHub tools available here have no delete-branch
+call. Three merged branches are still on the remote: `claude/cobblemon-oneblock-mod-49flzn`,
+`claude/cobblemon-oneblock-mod-ebnq1e`, `claude/handoff-review-630c9n`. All three were verified
+as fully contained in `main` before the attempt, so deleting them loses nothing.
+
+**The workflow changed** and `HANDOFF.md` §1 now says so: `main` is the trunk, every branch
+starts from it, and one feature is built and merged before the next is started. The point is
+traceability — landing four slices at once means guessing which of them broke something.
+
+---
+
 ## 2026-08-14 — Every island gets a Nether and an End of its own
 
 **Asked:** rather than blocking portals, give each island its own Nether and End at the same

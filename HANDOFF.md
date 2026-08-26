@@ -11,10 +11,13 @@ six-category tech tree. It carries the owner's full design, the review of it, th
 storage model, the point economy, verified Cobblemon 1.7.3 hooks, the open decisions and an
 eight-slice build plan. **Read it before touching progression, loot or Cobblemon code.**
 
-**Slices A, B, C and D are shipped** — tree core, OneBlock biome ladders, real point sources,
-chest menus. That is the whole minimum-playable set from the build plan. What remains is
-additive: E (Island/Players payloads), F (Boosts), G (Special/bosses), H (Pokémon labour).
-Nothing gets coded from a decision still marked ⬜; D3 and D5 block H and E.
+**Slices A, B, C and D are merged into `main`** — tree core, OneBlock biome ladders, real point
+sources, chest menus. That is the whole minimum-playable set from the build plan. What remains
+is additive: E (Island/Players payloads), F (Boosts), G (Special/bosses), H (Pokémon labour),
+and access to the End half. Nothing gets coded from a decision still marked ⬜; D3 and D5 block
+H and E.
+
+**From here: one feature per branch, per PR.** See §1.
 
 ⚠️ **Nothing from any of these four slices has been played.** Everything is build- and
 boot-verified, and the pieces that can be checked without a client have been; the rest is
@@ -52,13 +55,13 @@ The user has since run the mod locally and reports it looks fine. Deliberate pla
 the 🟡 list below: it will be bug-tested live with several players later. Until then the
 goal is to widen and harden the foundation until it is genuinely playable.
 
-- **PR:** [#1](https://github.com/SK4NDULF/Cobblemon-OneBlock/pull/1) → `main`, open.
-  **All work goes here** — the owner's standing instruction (2026-08-13) is that this project
-  only ever uses PR #1. Never open a second one.
-- **Branch:** `claude/cobblemon-oneblock-mod-49flzn` is PR #1's head. **Work on it directly.**
-  If a session is handed a different working branch, switch onto this one rather than keeping
-  a mirror in sync — a parallel branch is how PR #2 got opened from the Claude Code UI on
-  2026-08-13 (closed the same day, same commit, nothing lost). One branch, one PR.
+- **`main` is the trunk.** PR #1 merged on 2026-08-26 and carried the whole foundation:
+  the core mod plus tech tree slices A-D. The long-lived-single-PR phase is over.
+- **One feature at a time, each on its own branch and PR.** The owner's instruction on merging:
+  build features one after another so a problem is always traceable to one change, rather than
+  landing four slices at once and guessing which one broke something. Do not stack unrelated
+  work in a branch, and do not start a second feature before the first is merged.
+- **Every branch starts from `main`.** Fetch first; `main` moves now.
 - **Working tree:** clean, everything pushed.
 
 ### The rename (done, verified)
