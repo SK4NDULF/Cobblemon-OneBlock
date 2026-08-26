@@ -1,0 +1,13 @@
+{
+  "type": "cobblemon_oneblock:end",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "layers": [],
+      "biome": "minecraft:the_end",
+      "features": false,
+      "lakes": false,
+      "structure_overrides": []
+    }
+  }
+}

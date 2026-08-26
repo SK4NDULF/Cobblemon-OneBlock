@@ -28,6 +28,59 @@ Running record of what was changed, why, and how far it was actually verified.
 
 ---
 
+## 2026-08-14 — Every island gets a Nether and an End of its own
+
+**Asked:** rather than blocking portals, give each island its own Nether and End at the same
+coordinates, reached by walking through a portal. The owner's idea, and the right one — a
+portal is something a player expects to work, and blocking it was a patch, not an answer.
+
+**What was built:**
+
+- Two new void dimensions, `cobblemon_oneblock:nether` and `:end`, alongside the existing
+  world. **An island occupies the same X/Z in all three**, so the dimension types use
+  `coordinate_scale: 1.0`: vanilla's 8:1 division would land a player in a neighbour's plot or
+  in the void between two of them.
+- `IslandPortals` replaces the blocking mixins with redirecting ones. A portal on an island
+  leads to that island's own half; the return trip lands where you left. The far side is a
+  void world, so an arrival pours a small platform — once, and never over anything already
+  built there.
+- The End half is registered, protected and wired, but nothing places an End portal yet: a
+  vanilla one needs a stronghold frame, so access has to come from the tech tree. The mixin
+  exists anyway, because an End portal placed by an admin or another mod would otherwise lead
+  to the real End.
+
+**The refactor underneath it.** 27 call sites asked "is this the OneBlock dimension?" and each
+one had to be re-read to decide which question it was really asking. Protection, bans, fluid
+containment and Pokémon containment mean *any* of our three — a rule that only covered the
+Overworld would have left the Nether island lawless. The hub, the OneBlock anchor, drop
+collection and respawn genuinely mean the Overworld one. `OneBlockDimension.isOurs` and
+`OVERWORLD_KEY` now say which is meant, and the KDoc says why the distinction matters.
+
+**A fail-open bug caught while writing the test, not after.** The first version returned null
+when a portal sat outside any island footprint — and null means "vanilla decides", whose
+decision from our world is the real Nether. That is the same failure direction as the tech
+gates, in the code written to close exactly that hole. A portal with nowhere legitimate to go
+now sends the player to the hub, and the rule is written into `HANDOFF.md`: never return null
+for a portal inside our dimensions.
+
+**Verified end to end on a dev server**, with an island inserted straight into the database
+because `/ob create` needs a client:
+
+- island portal → `cobblemon_oneblock:nether` at `(2048.5, 64, 0.5)`, the island's own X/Z,
+  on a platform the arrival poured
+- back through → `(2048.5, 64, 0.5)` in the Overworld, same island
+- portal with no island under it → the hub at `(0.5, 64, 0.5)`, **not** `minecraft:the_nether`
+- both new dimensions answer `/execute in`
+
+**Still unverified:** a real player rather than a pig — players have their own portal timing —
+and everything about the End beyond the dimension existing. `HANDOFF.md` §4 test 14.
+
+**Known gaps this opens:** the biome editor and the OneBlock anchor are Overworld-only, so a
+Nether island is currently unmanaged space with the right biome and mob spawning. Whether it
+should also get an anchor, and how the End is unlocked, are open design questions.
+
+---
+
 ## 2026-08-14 — Nether portals were an unlocked back door out of the whole mod
 
 **Asked:** the owner shared a competing SkyBlock mod's feature list and asked what was worth

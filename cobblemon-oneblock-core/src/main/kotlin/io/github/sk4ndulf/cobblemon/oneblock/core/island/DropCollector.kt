@@ -80,7 +80,7 @@ object DropCollector {
     /** Called once per tick from the core. Cheap when nothing was broken: the list is empty. */
     fun tick(server: MinecraftServer) {
         if (pending.isEmpty()) return
-        val level = OneBlockDimension.level(server)
+        val level = OneBlockDimension.overworld(server)
         val iterator = pending.iterator()
         while (iterator.hasNext()) {
             val entry = iterator.next()

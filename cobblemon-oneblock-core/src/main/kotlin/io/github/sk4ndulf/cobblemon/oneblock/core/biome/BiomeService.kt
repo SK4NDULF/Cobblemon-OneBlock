@@ -87,7 +87,7 @@ object BiomeService {
      */
     fun applySelection(player: ServerPlayer, island: IslandData, biomeId: String): SetResult {
         val repo = repository ?: return SetResult.Error(ServerLang.raw("cobblemon_oneblock.error.not_ready"))
-        val level = OneBlockDimension.level(player.server)
+        val level = OneBlockDimension.overworld(player.server)
             ?: return SetResult.Error(ServerLang.raw("cobblemon_oneblock.error.not_ready"))
 
         val selection = selections[player.uuid]

@@ -23,7 +23,7 @@ object HubManager {
 
     /** True when the position is inside the hub protection circle (ignoring permissions). */
     fun isInHub(level: Level, pos: BlockPos): Boolean {
-        if (level.dimension() != OneBlockDimension.WORLD_KEY) return false
+        if (level.dimension() != OneBlockDimension.OVERWORLD_KEY) return false
         return isInHubArea(pos)
     }
 
@@ -40,7 +40,7 @@ object HubManager {
      * platform exactly once (tracked in the meta table).
      */
     fun onServerStarted(server: MinecraftServer) {
-        val level = OneBlockDimension.level(server)
+        val level = OneBlockDimension.overworld(server)
         if (level == null) {
             OneBlockCore.LOGGER.error("Dimension cobblemon_oneblock:world is missing — datapack not loaded?")
             return
@@ -73,8 +73,8 @@ object HubManager {
 
     /** Teleports a player to the hub spawn and anchors their respawn there. */
     fun sendToHub(player: ServerPlayer) {
-        val level = OneBlockDimension.level(player.server) ?: return
+        val level = OneBlockDimension.overworld(player.server) ?: return
         player.teleportTo(level, 0.5, HUB_Y.toDouble(), 0.5, 0.0f, 0.0f)
-        player.setRespawnPosition(OneBlockDimension.WORLD_KEY, spawnPos, 0.0f, true, false)
+        player.setRespawnPosition(OneBlockDimension.OVERWORLD_KEY, spawnPos, 0.0f, true, false)
     }
 }

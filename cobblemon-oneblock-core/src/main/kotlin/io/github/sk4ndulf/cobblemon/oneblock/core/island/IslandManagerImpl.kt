@@ -160,7 +160,7 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
         usedSlots.add(slot)
         index(island)
 
-        val level = OneBlockDimension.level(player.server)
+        val level = OneBlockDimension.overworld(player.server)
         if (level != null) {
             ensureFoundation(level, island)
             placeInitialBlock(level, island)
@@ -227,7 +227,7 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
     // --- OneBlock break handling (event registered once in OneBlockCore) ------------------------
 
     fun handleBreak(level: ServerLevel, player: ServerPlayer, pos: BlockPos, state: net.minecraft.world.level.block.state.BlockState) {
-        if (level.dimension() != OneBlockDimension.WORLD_KEY) return
+        if (level.dimension() != OneBlockDimension.OVERWORLD_KEY) return
         val island = activeByAnchor[pos] ?: return
 
         // Count the break BEFORE asking loot providers, so a provider sees a break count
@@ -267,7 +267,7 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
      * Used for visitors — dying on a foreign island must not move your bed.
      */
     fun sendToIsland(player: ServerPlayer, island: IslandData) {
-        val level = OneBlockDimension.level(player.server) ?: return
+        val level = OneBlockDimension.overworld(player.server) ?: return
         ensureFoundation(level, island)
         if (level.getBlockState(island.oneBlockPos()).isAir) {
             placeInitialBlock(level, island)
@@ -279,7 +279,7 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
     fun sendHome(player: ServerPlayer, island: IslandData) {
         sendToIsland(player, island)
         player.setRespawnPosition(
-            OneBlockDimension.WORLD_KEY, island.oneBlockPos().above(), 0.0f, true, false,
+            OneBlockDimension.OVERWORLD_KEY, island.oneBlockPos().above(), 0.0f, true, false,
         )
     }
 
@@ -315,7 +315,7 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
      * [sendToIsland] and the next sweep repair it as soon as it matters.
      */
     fun repairAnchors(server: MinecraftServer) {
-        val level = OneBlockDimension.level(server) ?: return
+        val level = OneBlockDimension.overworld(server) ?: return
         for (island in activeBySlot.values) {
             val pos = island.oneBlockPos()
             if (level.chunkSource.getChunkNow(pos.x shr 4, pos.z shr 4) == null) continue

@@ -70,7 +70,7 @@ object ProtectionManager {
 
     /** Null = allowed. Everything else names the reason for the denial. */
     fun denialFor(level: Level, player: Player, pos: BlockPos): Denial? {
-        if (level.dimension() != OneBlockDimension.WORLD_KEY) return null
+        if (!OneBlockDimension.isOurs(level)) return null
 
         val bypass = (player as? ServerPlayer)
             ?.let { ObPermissions.checkPlayer(it, ObPermissions.ADMIN_BYPASS, 2) }

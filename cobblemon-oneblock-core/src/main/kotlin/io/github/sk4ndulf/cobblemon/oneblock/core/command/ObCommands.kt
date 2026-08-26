@@ -104,7 +104,7 @@ object ObCommands {
                                 Commands.literal("set").then(
                                     Commands.argument("biome", StringArgumentType.string())
                                         .suggests { context, builder ->
-                                            val level = OneBlockDimension.level(context.source.server)
+                                            val level = OneBlockDimension.overworld(context.source.server)
                                             SharedSuggestionProvider.suggest(
                                                 level?.let { BiomeEditor.knownBiomeIds(it) } ?: emptyList(), builder,
                                             )

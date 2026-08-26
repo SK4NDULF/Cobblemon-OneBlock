@@ -99,7 +99,7 @@ object BanService {
         val manager = OneBlockCore.islandManager ?: return
         if (bans.isEmpty()) return
         for (player in server.playerList.players) {
-            if (player.level().dimension() != OneBlockDimension.WORLD_KEY) continue
+            if (!OneBlockDimension.isOurs(player.level())) continue
             val island = manager.islandAt(player.blockPosition()) ?: continue
             if (!isBanned(island.id, player.uuid)) continue
 

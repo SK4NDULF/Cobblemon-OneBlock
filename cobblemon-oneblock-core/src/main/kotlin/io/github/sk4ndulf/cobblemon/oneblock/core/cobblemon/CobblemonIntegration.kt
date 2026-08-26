@@ -115,8 +115,10 @@ object CobblemonIntegration {
      * island. Called on a slow interval — chasing this every tick is not worth the cost.
      */
     fun containWanderingPokemon(server: MinecraftServer) {
-        val level = OneBlockDimension.level(server) ?: return
         val manager = OneBlockCore.islandManager ?: return
+        // Every one of our dimensions, not just the Overworld: a Pokémon loose on a Nether
+        // island is exactly as far outside its border as one loose on the main island.
+        for (level in OneBlockDimension.loadedLevels(server)) {
         val wild = level.getEntities(EntityTypeTest.forClass(PokemonEntity::class.java)) { true }
         for (entity in wild) {
             // Pokémon with an owner are party members following their trainer.
@@ -133,12 +135,13 @@ object CobblemonIntegration {
                 entity.discard()
             }
         }
+        }
     }
 
     // --- helpers ---------------------------------------------------------------------------
 
     private fun isInOneBlockWorld(entity: Entity): Boolean =
-        entity.level().dimension() == OneBlockDimension.WORLD_KEY
+        OneBlockDimension.isOurs(entity.level())
 
     /** The island whose footprint contains the entity, or null for hub/void buffer. */
     private fun islandFor(entity: Entity): IslandData? {

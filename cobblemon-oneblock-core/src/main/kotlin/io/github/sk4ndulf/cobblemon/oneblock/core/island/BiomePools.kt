@@ -138,7 +138,7 @@ object BiomePools {
         cache.clear()
         biomeOfBlock.clear()
 
-        val level = OneBlockDimension.level(server)
+        val level = OneBlockDimension.overworld(server)
         if (level == null) {
             logger.warn("{}: OneBlock world missing during build — the support check was skipped.", FILE_NAME)
         }

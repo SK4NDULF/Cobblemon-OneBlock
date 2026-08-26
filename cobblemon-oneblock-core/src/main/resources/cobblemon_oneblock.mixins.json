@@ -8,8 +8,8 @@
     "ExplosionMixin",
     "FlowingFluidMixin",
     "PlayerAdvancementsMixin",
-    "PortalShapeMixin",
-    "NetherPortalBlockMixin"
+    "NetherPortalBlockMixin",
+    "EndPortalBlockMixin"
   ],
   "injectors": {
     "defaultRequire": 1

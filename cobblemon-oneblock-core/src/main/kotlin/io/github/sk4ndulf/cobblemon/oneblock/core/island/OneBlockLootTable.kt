@@ -195,7 +195,7 @@ class OneBlockLootTable(private val configDir: Path, private val logger: Logger)
     }
 
     private fun buildAllBlocksPool(server: MinecraftServer, excluded: Set<String>): List<Entry> {
-        val level = OneBlockDimension.level(server)
+        val level = OneBlockDimension.overworld(server)
         // A guaranteed-air floating position for the canSurvive probe.
         val probePos = BlockPos(8, 200, 8)
 

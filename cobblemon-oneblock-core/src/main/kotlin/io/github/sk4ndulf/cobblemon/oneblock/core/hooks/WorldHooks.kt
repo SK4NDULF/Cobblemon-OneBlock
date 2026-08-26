@@ -20,7 +20,7 @@ object WorldHooks {
     /** FallingBlockMixin: gravity blocks never fall while sitting on a OneBlock anchor. */
     @JvmStatic
     fun isOneBlockAnchor(level: ServerLevel, pos: BlockPos): Boolean =
-        level.dimension() == OneBlockDimension.WORLD_KEY &&
+        level.dimension() == OneBlockDimension.OVERWORLD_KEY &&
             OneBlockCore.islandManager?.isAnchor(pos) == true
 
     /**
@@ -30,7 +30,7 @@ object WorldHooks {
      */
     @JvmStatic
     fun filterExplosion(level: Level, centerX: Double, centerZ: Double, toBlow: MutableList<BlockPos>) {
-        if (level !is ServerLevel || level.dimension() != OneBlockDimension.WORLD_KEY) return
+        if (level !is ServerLevel || !OneBlockDimension.isOurs(level)) return
         val manager = OneBlockCore.islandManager ?: run { toBlow.clear(); return }
         val centerPos = BlockPos.containing(centerX, HubManager.HUB_Y.toDouble(), centerZ)
         val centerIsland = manager.islandAt(centerPos)
@@ -46,34 +46,12 @@ object WorldHooks {
     }
 
     /**
-     * PortalShapeMixin and NetherPortalBlockMixin: no Nether portal works in the OneBlock world.
-     *
-     * **This closes an escape hatch that made the whole mod pointless.** A nether portal sends
-     * an entity to whatever dimension is not the Nether — from our world, that is the real,
-     * infinite, unprotected vanilla Nether, and a second portal there reaches the vanilla
-     * Overworld. Every border, every protection rule and the entire island economy stop
-     * mattering the moment a player steps through, because the whole vanilla world is on the
-     * other side.
-     *
-     * The tech tree itself hands out the key: the Nether biome ladder drops obsidian at tier 4,
-     * and the End ladder drops more. Verified on a dev server before the fix — a pig placed in
-     * a portal here landed in the Nether at nether-scaled coordinates, exactly as it does in
-     * the vanilla Overworld.
-     *
-     * Blocked in two places rather than one: the shape check stops new portals from forming at
-     * all, and the entity check makes any portal that already exists in an old world inert.
-     */
-    @JvmStatic
-    fun blocksPortals(level: LevelAccessor): Boolean =
-        level is Level && level.dimension() == OneBlockDimension.WORLD_KEY
-
-    /**
      * FlowingFluidMixin: fluids may only spread inside an island's CURRENT border area.
      * Blocks flow into the hub, the void buffer, and across island borders.
      */
     @JvmStatic
     fun blockFluidSpread(level: LevelAccessor, pos: BlockPos): Boolean {
-        if (level !is ServerLevel || level.dimension() != OneBlockDimension.WORLD_KEY) return false
+        if (level !is ServerLevel || !OneBlockDimension.isOurs(level)) return false
         if (HubManager.isInHub(level, pos)) return true
         val manager = OneBlockCore.islandManager ?: return true
         val island = manager.islandAt(pos) ?: return true

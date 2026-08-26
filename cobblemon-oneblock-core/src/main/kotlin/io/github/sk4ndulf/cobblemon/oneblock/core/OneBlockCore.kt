@@ -108,7 +108,7 @@ object OneBlockCore : ModInitializer {
             lootTable.buildPool(server)
             CobblemonIntegration.checkVersion()
             CobblemonIntegration.applySpawnMultiplier()
-            OneBlockDimension.level(server)?.let { BiomeService.reapplyAll(it) }
+            OneBlockDimension.overworld(server)?.let { BiomeService.reapplyAll(it) }
             islandManager?.repairAnchors(server)
             islandManager?.runMaintenance(server)
         }
@@ -179,7 +179,7 @@ object OneBlockCore : ModInitializer {
      * stand in dead space, unable to build, with no explanation.
      */
     private fun rescueStrandedPlayer(player: ServerPlayer) {
-        if (player.level().dimension() != OneBlockDimension.WORLD_KEY) return
+        if (!OneBlockDimension.isOurs(player.level())) return
         if (islandManager?.islandDataOf(player.uuid) != null) return
         if (HubManager.isInHubArea(player.blockPosition())) return
 

@@ -28,12 +28,13 @@ unverified — see the test script in §4.
 to make up the remaining 304 — the startup log prints that arithmetic every boot. At 1-5 points
 per NPC that is a lot of content, and it is the first thing to look at when tuning.
 
-⚠️ **Nether portals are blocked in `cobblemon_oneblock:world`, and must stay blocked.** A
-working portal leads to the real, infinite, unprotected vanilla Nether, and a second portal
-there reaches the vanilla Overworld — every border and protection rule in this mod stops
-mattering the moment a player steps through, and the tech tree itself hands out the obsidian.
-Two mixins block it (`PortalShapeMixin`, `NetherPortalBlockMixin`). Do not remove either
-without reading §4 test 14.
+⚠️ **Portals must never reach a vanilla dimension.** A nether portal's vanilla destination
+from our world is the real, infinite, unprotected Nether, and from there the real Overworld —
+every border and protection rule stops mattering the moment a player steps through, and the
+tech tree hands out the obsidian at Nether tier 4. `IslandPortals` redirects them to the
+island's own halves instead. **It never returns null for a portal inside our dimensions**,
+because null means "vanilla decides"; a portal with nowhere legitimate to go sends the player
+to the hub. Keep that property if you touch it, and read §4 test 14 first.
 
 ---
 
@@ -164,8 +165,17 @@ Three Gradle modules:
 | `cobblemon-oneblock-core` | Kotlin | Implementation. Hard dependency on Cobblemon. |
 | `example-addon` | Java | Reference addon, depends on `cobblemon-oneblock-api` **only**. Built by the root build so API breakage fails CI. |
 
-World layout: one void dimension `cobblemon_oneblock:world` (data-driven, flat generator, zero
-layers). Hub platform at `(0, 64, 0)`. Islands sit on an Ulam spiral around it; slot 0 is
+World layout: **three** void dimensions — `cobblemon_oneblock:world`, `:nether` and `:end`
+(data-driven, flat generator, zero layers). An island occupies **the same X/Z in all three**,
+so a portal is a straight move between worlds; the dimension types therefore use
+`coordinate_scale: 1.0`, because vanilla's 8:1 division would land a player in a neighbour's
+plot. Hub platform at `(0, 64, 0)` in the Overworld one.
+
+**When reading dimension checks, note which question is being asked.** `OneBlockDimension.isOurs`
+means "any of our three" and is what protection, bans, fluid containment and Pokémon
+containment use — a rule that only covered the Overworld would leave the Nether island lawless.
+`OVERWORLD_KEY` means the main world specifically, and is right for the hub, the OneBlock
+anchor, drops and respawn. Every call site was classified deliberately when the Nether landed. Islands sit on an Ulam spiral around it; slot 0 is
 the hub and never assigned. Anchor Y is 63, players spawn at 64. The bedrock block at 62 is
 optional and off by default (`anchor_bedrock_foundation`).
 
@@ -254,11 +264,12 @@ cannot cross a border, enter the hub, or leak into the void buffer).
       items.
     - `/ob tech chat` still prints the text version.
 
-14. **Nether portals must stay dead.** Get obsidian (Nether ladder tier 4, or `/give`), build a
-    frame on your island and light it. Nothing may happen — no portal blocks, no travel. Then
-    the nastier case: `/setblock` a `minecraft:nether_portal` block by hand and walk into it.
-    You must not move. If you ever end up in the Nether, every border and protection rule in
-    the mod is void, because the whole vanilla world is on the other side.
+14. **Portals go to your own island, never to vanilla.** Get obsidian, build a portal on your
+    island and walk through. You must arrive in `cobblemon_oneblock:nether` at **the same X/Z**
+    you left, on a small netherrack platform. Walk back through and you must land on your own
+    island again. Then the adversarial half: build a portal in the hub or in the void buffer
+    between islands — you must end up at the hub, and **never** in `minecraft:the_nether`.
+    If `/execute in minecraft:the_nether` ever finds you, every border in the mod is void.
 
 13. **Point sources.** Two halves, and the NPC half is the one nobody has ever run.
     - Place a Cobblemon NPC trainer, then
