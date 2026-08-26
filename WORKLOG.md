@@ -28,6 +28,70 @@ Running record of what was changed, why, and how far it was actually verified.
 
 ---
 
+## 2026-08-26 — The base concept: three islands, three OneBlocks, and the tech tree removed
+
+**Asked:** creating an island should create it in all three dimensions at the same
+coordinates, each with its own OneBlock — Overworld gives Overworld blocks, Nether gives
+Nether, End gives End, and treasure chests follow the same rule. And remove the skill tree
+completely: progression gets designed again later together with a quest system, but first the
+base concept has to be clean.
+
+**Removed, in full.** Following the precedent set when the trigger event system was cut,
+nothing survives: the `core.progression` and `core.gui` packages, `TechCommands`,
+`PlayerAdvancementsMixin`, `techtree.json5`, `points.json5`, both permission nodes, 78
+language keys, and four test classes. Migration 11 drops `island_tech` and `island_claims`.
+
+Two deliberate exceptions, both recorded where someone will find them:
+
+- **Migration 9 stays exactly as it shipped** — migrations are append-only — and the three
+  columns it added to existing tables are *not* dropped. Dropping a column behaves differently
+  across SQLite and MariaDB and is the classic way a migration bricks startup; three unused
+  columns cost nothing.
+- **`PROGRESSION_REWORK.md` is kept**, with a banner saying it is archived and not
+  implemented. Three things in it outlived the system: why the old border progression felt
+  flat, the Cobblemon API ground truth read from tag 1.7.3, and the reasoning behind
+  island-scoped claims and the Pokémon labour stat roles. Deleting it would mean rediscovering
+  all of that.
+
+**Built.** `OneBlockPools` replaces `BiomePools` and `OneBlockLootTable`: one pool per
+dimension, no modes, no unlock state. Where you are decides what you get, and nothing else
+does. The old curated biome sets were merged rather than retyped — forest, cave, ocean and
+tundra became the Overworld list, so the work that went into them survives the redesign.
+`ChestLoot` now sorts loot tables by dimension from their ids, so a Nether anchor gives
+bastion and fortress loot and never a village chest.
+
+`all_blocks` and `custom` modes are gone. `all_blocks` was the original defect — 848 uniformly
+weighted blocks that never changed — and keeping two dead modes around a clean concept is how
+config files become unreadable.
+
+Islands are now created with an anchor in **all three** dimensions rather than one, and the
+repair sweep covers all three. It only touches loaded chunks: forcing them would keep every
+island of every dimension resident, which is three times the memory for nothing.
+
+**Verified how:** `./gradlew build` green, 18 tests green. Fresh-world boot: migration 11
+applied and schema reported as 11, pools loaded as overworld 99 / nether 31 / end 11 blocks,
+chests sorted as overworld 49 / nether 6 / end 1 tables, no warnings.
+
+A test island inserted straight into the database confirmed the part that matters: the repair
+sweep placed an anchor in **all three** dimensions at the same coordinates. The anchor log line
+now names the block it placed — added because it is the only way an admin can see which pool a
+dimension drew from without standing there.
+
+The dimension-to-pool mapping is covered by a unit test rather than by more server runs. It is
+the single place where "where you are" becomes "what you get", it fails silently if wrong, and
+`/data get block` cannot read a plain block, so the server could not answer the question
+cheaply anyway.
+
+**Still unverified:** everything needing a client. In particular nobody has broken a Nether
+anchor and confirmed only Nether blocks come out — `HANDOFF.md` §4 test 10 is now the most
+important test on the list.
+
+**Worth knowing:** the End chest pool is one table (`end_city_treasure`), because that is all
+vanilla has. If End chests should be worth opening, that needs `end_extra` entries or a data
+pack, not a code change.
+
+---
+
 ## 2026-08-26 — Everything merged to `main`; one feature at a time from here
 
 **Asked:** merge everything into `main`, get rid of the other branches, and from then on build

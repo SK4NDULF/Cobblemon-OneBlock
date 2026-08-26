@@ -93,12 +93,12 @@ object IslandNames {
      */
     fun displayName(island: IslandData, server: MinecraftServer): Component {
         island.name?.let { return Component.literal(it) }
-        return ServerLang.msg("cobblemon_oneblock.menu.island_title", ownerName(island, server))
+        return ServerLang.msg("cobblemon_oneblock.island.title_fallback", ownerName(island, server))
     }
 
     /** Plain-string form, for lang arguments that are formatted into a bigger sentence. */
     fun displayText(island: IslandData, server: MinecraftServer): String =
-        island.name ?: ServerLang.raw("cobblemon_oneblock.menu.island_title", ownerName(island, server))
+        island.name ?: ServerLang.raw("cobblemon_oneblock.island.title_fallback", ownerName(island, server))
 
     private fun ownerName(island: IslandData, server: MinecraftServer): String =
         server.playerList.getPlayer(island.owner())?.gameProfile?.name
