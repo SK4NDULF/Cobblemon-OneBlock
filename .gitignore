@@ -19,3 +19,6 @@ remappedSrc/
 # OS
 .DS_Store
 Thumbs.db
+
+# Kotlin build tooling (session state, not source)
+.kotlin/

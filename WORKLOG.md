@@ -28,6 +28,53 @@ Running record of what was changed, why, and how far it was actually verified.
 
 ---
 
+## 2026-08-26 — A hub in every dimension
+
+**Asked:** the spawn hub should exist in the Nether and the End as well, exactly like the
+islands do, so each dimension has an editable spawn that can later hold traders and other
+features. Step one of a longer stretch: hubs first, then admin-linkable portals between them.
+
+**Built.** `HubManager` no longer treats the Overworld as the only place a hub can be:
+
+- `onServerStarted` walks every one of our loaded dimensions and generates the platform
+  there once, tracked per dimension in the meta table. The Overworld deliberately keeps the
+  bare `hub_platform_generated` key it has always used — renaming it would make an existing
+  server pour a second platform on top of whatever an admin built there since. The Nether
+  and End keys are new, so an existing world grows its two missing platforms on the next start.
+- Each dimension gets its own materials: smooth stone with a chiselled centre in the
+  Overworld, polished blackstone in the Nether, end stone bricks with a purpur centre in the
+  End. Radius and protection circle stay shared (`hub_platform_radius`, `hub_radius`).
+- `isInHub` now answers for any of our three dimensions instead of the Overworld alone. That
+  is the load-bearing half of this change: hub protection, `hub_allow_building`, explosion
+  containment and fluid containment all read that one method, so the Nether and End hubs are
+  protected by the same rule and with the same message as the Overworld one. Before, building
+  there was refused as "void buffer" by accident rather than as "hub" on purpose.
+- `sendToHub(player, level)` is new for travelling to a specific dimension's hub, and
+  deliberately leaves the respawn point alone — those hubs are places you travel to, not
+  places you live. The existing `sendToHub(player)` is unchanged: Overworld, respawn anchored.
+  Every one of the ten call sites keeps that behaviour.
+- Arriving at a hub checks the block under the spawn point and re-pours the platform if it is
+  air, so a dimension whose platform never got written (database down on that first start)
+  cannot drop a player into the void.
+
+**Verified:** `./gradlew :cobblemon-oneblock-core:build` green, 18 tests pass. The three
+dimension types allow Y 64 (`min_y: 0`, `height: 256` for Nether and End), so the platform
+height is legal in all of them.
+
+**Not verified:** nothing has been played. Nobody has stood in the Nether or End hub, no
+platform has actually been generated on a running server, and the protection message there
+has not been read in-game. In particular the *second* generation path — an existing world
+that already has an Overworld platform and grows the two new ones on startup — has only been
+reasoned about, not run.
+
+**Decided, for the next step.** The unlock that gates hub travel hangs on the **player**, not
+the island, and its condition will be a quest once the quest system exists. Travel itself is
+not a command but a portal an admin builds by hand: any Nether or End portal frame, any size,
+then `/ob admin portal link <target>`, then click the portal to bind it. A bound portal leads
+to the hub it was bound to, whatever kind of frame it is. None of that is built yet.
+
+---
+
 ## 2026-08-26 — The base concept: three islands, three OneBlocks, and the tech tree removed
 
 **Asked:** creating an island should create it in all three dimensions at the same

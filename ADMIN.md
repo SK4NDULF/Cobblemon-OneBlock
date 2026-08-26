@@ -20,9 +20,12 @@ required: storage defaults to an embedded SQLite file, so there is no database t
 
 ## 2. First start
 
-On the first launch the mod creates the `cobblemon_oneblock:world` void dimension, generates the hub
-platform at `(0, 64, 0)` and writes its config files. Island creation stays locked until an
-operator finishes the wizard.
+On the first launch the mod creates its three void dimensions, generates a hub platform at
+`(0, 64, 0)` in **each** of them — smooth stone in `cobblemon_oneblock:world`, polished
+blackstone in `:nether`, end stone bricks in `:end` — and writes its config files. All three
+sit inside the same `hub_radius` protection circle, so each one is an admin-built area for
+whatever belongs in that dimension. Island creation stays locked until an operator finishes
+the wizard.
 
 Run `/ob setup` and answer seven questions (or click `[keep …]` to accept a default):
 
@@ -223,8 +226,8 @@ lp group moderator permission set cobblemon_oneblock.admin.bypass true
 
 The first rule that applies wins:
 
-1. **Hub zone** — nobody builds or breaks inside `hub_radius`. Exception: `cobblemon_oneblock.admin.bypass`
-   holders when `hub_allow_building` is on.
+1. **Hub zone** — nobody builds or breaks inside `hub_radius`, in any of the three dimensions.
+   Exception: `cobblemon_oneblock.admin.bypass` holders when `hub_allow_building` is on.
 2. **Admin bypass** — `cobblemon_oneblock.admin.bypass` ignores all island rules from here on.
 3. **Island ban** — banned players are bounced to the hub regardless of anything else.
    Owners and members cannot be banned from their own island.
