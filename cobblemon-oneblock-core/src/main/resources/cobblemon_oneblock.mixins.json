@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "package": "io.github.sk4ndulf.cobblemon.oneblock.core.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "minVersion": "0.8",
+  "mixins": [
+    "FallingBlockMixin",
+    "ExplosionMixin",
+    "FlowingFluidMixin",
+    "PlayerAdvancementsMixin",
+    "NetherPortalBlockMixin",
+    "EndPortalBlockMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
