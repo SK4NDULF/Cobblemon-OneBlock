@@ -1,3 +1,15 @@
+> # ⚠️ ARCHIVED — NOT IMPLEMENTED
+>
+> The tech tree described below was built (slices A-D) and then **removed in full** on
+> 2026-08-26, on the owner's decision: the base concept comes first, and progression will be
+> designed again from scratch alongside a quest system. **Do not code from this file.** No
+> `TechService`, no `techtree.json5`, no `/ob tech` exists any more.
+>
+> It is kept for three things that outlived the system: the analysis of why the old
+> border-level progression felt flat (§1-2), the Cobblemon API ground truth read from tag
+> 1.7.3 (§8), and the reasoning behind decisions that will come up again — island-scoped
+> claims, the anti-overpowered rule for Pokémon labour, and the four stat roles (§5, §7).
+
 # Progression Rework — working document
 
 The place where the progression rework is designed, decided and tracked. Started

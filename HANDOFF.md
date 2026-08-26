@@ -6,35 +6,26 @@ everything.
 
 This file is the snapshot; `WORKLOG.md` is the running history. Keep both current.
 
-**Active work:** `PROGRESSION_REWORK.md` — the progression system is being redesigned as a
-six-category tech tree. It carries the owner's full design, the review of it, the node and
-storage model, the point economy, verified Cobblemon 1.7.3 hooks, the open decisions and an
-eight-slice build plan. **Read it before touching progression, loot or Cobblemon code.**
+**Active work: the base concept.** An island exists in all three dimensions at the same
+coordinates, each with its own OneBlock drawing from its own dimension's pool, and its own
+treasure chests. That is the whole of the current design — there is deliberately no
+progression system.
 
-**Slices A, B, C and D are shipped** — tree core, OneBlock biome ladders, real point sources,
-chest menus. That is the whole minimum-playable set from the build plan. What remains is
-additive: E (Island/Players payloads), F (Boosts), G (Special/bosses), H (Pokémon labour).
-Nothing gets coded from a decision still marked ⬜; D3 and D5 block H and E.
+**The tech tree was removed in full on 2026-08-26.** Owner's decision: build the base concept
+cleanly first, then design progression again from scratch alongside a quest system. Nothing of
+it survives in code, config, language files or the database — `PROGRESSION_REWORK.md` is kept
+as an archived design and carries a banner saying so. Do not resurrect pieces of it
+opportunistically; the point is to rebuild deliberately.
 
-⚠️ **Nothing from any of these four slices has been played.** Everything is build- and
-boot-verified, and the pieces that can be checked without a client have been; the rest is
-waiting on the owner's live test. `HANDOFF.md` §4 tests 10-13 are the script.
+**One feature at a time.** See §1.
 
-⚠️ **The chest menus have never been opened by a real client.** They compile and their
-*contents* are covered by the tier report in the startup log, but every pixel of them is
-unverified — see the test script in §4.
+⚠️ **Nothing has been played.** Everything is build- and boot-verified, and everything
+checkable without a client has been checked. `HANDOFF.md` §4 is the in-game test script.
 
-⚠️ **The tree costs 439 points; advancements cover 135 of them.** NPC trainers and bosses have
-to make up the remaining 304 — the startup log prints that arithmetic every boot. At 1-5 points
-per NPC that is a lot of content, and it is the first thing to look at when tuning.
-
-⚠️ **Portals must never reach a vanilla dimension.** A nether portal's vanilla destination
-from our world is the real, infinite, unprotected Nether, and from there the real Overworld —
-every border and protection rule stops mattering the moment a player steps through, and the
-tech tree hands out the obsidian at Nether tier 4. `IslandPortals` redirects them to the
-island's own halves instead. **It never returns null for a portal inside our dimensions**,
-because null means "vanilla decides"; a portal with nowhere legitimate to go sends the player
-to the hub. Keep that property if you touch it, and read §4 test 14 first.
+⚠️ **Portals must never reach a vanilla dimension.** `IslandPortals` redirects them to the
+island's own halves and **never returns null for a portal inside our dimensions**, because null
+means "vanilla decides" — and vanilla's decision is the real, infinite Nether. Keep that
+property if you touch it.
 
 ---
 
@@ -52,13 +43,13 @@ The user has since run the mod locally and reports it looks fine. Deliberate pla
 the 🟡 list below: it will be bug-tested live with several players later. Until then the
 goal is to widen and harden the foundation until it is genuinely playable.
 
-- **PR:** [#1](https://github.com/SK4NDULF/Cobblemon-OneBlock/pull/1) → `main`, open.
-  **All work goes here** — the owner's standing instruction (2026-08-13) is that this project
-  only ever uses PR #1. Never open a second one.
-- **Branch:** `claude/cobblemon-oneblock-mod-49flzn` is PR #1's head. **Work on it directly.**
-  If a session is handed a different working branch, switch onto this one rather than keeping
-  a mirror in sync — a parallel branch is how PR #2 got opened from the Claude Code UI on
-  2026-08-13 (closed the same day, same commit, nothing lost). One branch, one PR.
+- **`main` is the trunk.** PR #1 merged on 2026-08-26 and carried the whole foundation:
+  the core mod plus tech tree slices A-D. The long-lived-single-PR phase is over.
+- **One feature at a time, each on its own branch and PR.** The owner's instruction on merging:
+  build features one after another so a problem is always traceable to one change, rather than
+  landing four slices at once and guessing which one broke something. Do not stack unrelated
+  work in a branch, and do not start a second feature before the first is merged.
+- **Every branch starts from `main`.** Fetch first; `main` moves now.
 - **Working tree:** clean, everything pushed.
 
 ### The rename (done, verified)
@@ -236,7 +227,7 @@ cannot cross a border, enter the hub, or leak into the void buffer).
    (The bedrock half of this moved to test 9 — it is off by default now.)
 6. **`/ob visit <player>`** — teleport, ban enforcement, and that dying as a visitor
    still respawns you at your **own** island.
-7. **Treasure chests** — set `chests.chance` to `1.0` in `loottable.json5`, `/ob reload`,
+7. **Treasure chests** — set `chests.chance` to `1.0` in `oneblock.json5`, `/ob reload`,
    then break the OneBlock. Every break should become a chest holding structure loot, and
    breaking that chest should regenerate the anchor as normal. The break path runs on
    `PlayerBlockBreakEvents.AFTER` and cannot be reached from the server console, so no
@@ -251,60 +242,31 @@ cannot cross a border, enter the hub, or leak into the void buffer).
    (or wait 60 s for the repair sweep): bedrock appears. Set it back to `false`: it goes
    away again. Place your own block under the anchor first and confirm it survives both.
 
-10. **The tech menus** — `/ob create`, then `/ob tech grant <you> 60`, then `/ob tech`.
-    - Does the 3-row main menu open, with the island summary and the category items?
-    - Does clicking a category open its 6-row menu, with row 1 = tier 0 and closed tiers as
-      red panes saying "N more points in this branch"?
-    - Does clicking a green node buy it — rank number on the item goes up, points drop, the
-      island gets a chat message?
-    - Does a newly satisfied tier open without closing and reopening the menu?
-    - **Can you take anything out?** Try left-click, right-click, shift-click, double-click,
-      number keys, and drag across slots. Nothing may ever end up in your inventory, and
-      nothing may vanish from the menu. This is the one that matters — a leak here duplicates
-      items.
-    - `/ob tech chat` still prints the text version.
 
-14. **Portals go to your own island, never to vanilla.** Get obsidian, build a portal on your
-    island and walk through. You must arrive in `cobblemon_oneblock:nether` at **the same X/Z**
-    you left, on a small netherrack platform. Walk back through and you must land on your own
-    island again. Then the adversarial half: build a portal in the hub or in the void buffer
-    between islands — you must end up at the hub, and **never** in `minecraft:the_nether`.
-    If `/execute in minecraft:the_nether` ever finds you, every border in the mod is void.
+10. **The base concept — the one that matters most.** `/ob create`, then check all three:
+    - Your island exists in `cobblemon_oneblock:world`, `:nether` and `:end` at **the same
+      X/Z**, each with its own OneBlock.
+    - Break the Overworld anchor twenty times: only Overworld blocks. Portal to the Nether and
+      break twenty times there: only Nether blocks, never a grass block. Same for the End.
+    - Treasure chests follow the dimension too — a Nether chest must never hold village loot.
+    - Break each anchor and confirm it regenerates immediately, in all three.
+    - Drops land in your inventory in all three, not in the void.
 
-13. **Point sources.** Two halves, and the NPC half is the one nobody has ever run.
-    - Place a Cobblemon NPC trainer, then
-      `/npc edit <npc> variable trainer_id gym_test` and `/npc edit <npc> variable points 3`.
-      Beat it: the whole island should get a chat message and 3 points.
-    - Beat it again with the **same** player and with a **second member of the same island** —
-      both must be told it is already claimed, and the balance must not move.
-    - Beat it with someone from a **different** island: that island claims it normally.
-    - Rebuild the NPC with the same `trainer_id` and confirm the island still cannot re-claim.
-    - An NPC with no `trainer_id` grants nothing and logs once. Check the log line appears once
-      and not on every battle.
-    - Advancements: complete one from `points.json5` while on an island — points arrive.
-      Note the documented limit: an advancement finished *before* you had an island never pays.
-
-12. **The biome ladders** — the slice that changes the game, and the one that most needs eyes.
-    - Fresh island, break the block twenty times. You should see **only** grass, dirt,
-      cobblestone and oak planks. If anything else appears, the base set is leaking.
-    - `/ob tech grant <you> 20`, buy Forest rank 1, break again: oak logs and leaves start
-      appearing, and grass/dirt/cobble/planks are still there. The base never goes away.
-    - Buy Forest up to rank 3 and confirm birch, spruce, jungle and acacia join in.
-    - Buy Cave (needs 5 spent in OneBlock) and confirm stone and ores appear.
-    - Buy Forestcutter and break forest blocks until a double drop happens — both stacks must
-      land in the inventory, and with a full inventory the bonus must drop at your feet, not
-      into the void. Break a *cave* block: it must never double from a forest node.
-    - Break a treasure chest: it must never double either.
-    - Two islands at different tiers must see different blocks at the same time.
-
-11. **Island names** — `/ob rename My Base`, then check `/ob info`, the tech menu title and
-    what a visitor sees. Restart and confirm it survived. Then the adversarial half, which is
+11. **Island names** — `/ob rename My Base`, then check `/ob info` and what a visitor sees. Restart and confirm it survived. Then the adversarial half, which is
     the point of `IslandNames`: try a name containing `§c`, a 40-character name, only spaces,
     and a right-to-left override. None may recolour or scramble anything, and none may be
     stored as given. `/ob rename clear` must fall back to the owner's name everywhere.
 
-Tests 7–10 all need a client for the same reason: nothing that breaks a block, creates an
-island or opens a container can be driven from the server console.
+12. **Portals go to your own island, never to vanilla.** Get obsidian, build a portal on your
+    island and walk through. You must arrive in `cobblemon_oneblock:nether` at **the same X/Z**
+    you left, on a small platform, with your Nether OneBlock right there. Walk back and you
+    must land on your own island again. Then the adversarial half: build a portal in the hub or
+    in the void buffer between islands — you must end up at the hub, and **never** in
+    `minecraft:the_nether`. If `/execute in minecraft:the_nether` ever finds you, every border
+    in the mod is void.
+
+Tests 7–12 all need a client for the same reason: nothing that breaks a block, creates an
+island or walks through a portal can be driven from the server console.
 
 ---
 
@@ -339,8 +301,6 @@ Do not "fix" these without asking — each was a deliberate call, recorded in
 
 **Still open:**
 
-- **The tech tree costs 439 points and nothing pays them out yet.** Slice C wires up the real
-  sources. 439 is also a balance signal: at 1-5 points per NPC that is a lot of content.
 
 **Suggested, not built:**
 

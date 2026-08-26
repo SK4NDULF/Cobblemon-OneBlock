@@ -58,7 +58,7 @@ Every question also works from the console:
 |---|---|
 | `main.json5` | all gameplay settings, written with a comment per field |
 | `database.json5` | storage backend |
-| `loottable.json5` | what the OneBlock turns into |
+| `oneblock.json5` | what the OneBlock turns into, per dimension, and the treasure chests |
 | `data.db` | the SQLite database (only in SQLite mode) |
 | `audit.log` | moderation audit trail, one JSON object per line |
 
@@ -89,7 +89,7 @@ chest is filled from a real chest loot table — the same ones world generation 
 mineshafts, dungeons, temples, villages, strongholds, shipwrecks and so on. Contents are
 vanilla's, not this mod's: change them with a data pack and the OneBlock follows.
 
-Settings live in the `chests` section of `loottable.json5`:
+Settings live in the `chests` section of `oneblock.json5`:
 
 | Key | Default | Meaning |
 |---|---|---|
@@ -151,7 +151,7 @@ Turning the setting on re-places the bedrock; turning it off removes it again, a
 bedrock, so a block a player put under their own anchor is left alone.
 
 > **If you run without the bedrock, consider blacklisting `minecraft:cobweb`** in
-> `loottable.json5`. It is the one block in the pool with no collision that still survives as
+> `oneblock.json5`. It is the one block in the pool with no collision that still survives as
 > a lone floating block: a player standing on the anchor when it turns into cobweb drifts down
 > into the void instead of standing on something.
 
@@ -199,7 +199,6 @@ zero configuration and still gives networks full control.
 | `cobblemon_oneblock.command.settings` | `/ob settings visitor-catch\|visitor-battle` |
 | `cobblemon_oneblock.command.biome` | `/ob biome pos1\|pos2\|set\|list\|remove` |
 | `cobblemon_oneblock.command.ban` | `/ob ban\|unban\|bans` (own island) |
-| `cobblemon_oneblock.command.tech` | `/ob tech`, `list`, `info`, `unlock`, `delegate` |
 | `cobblemon_oneblock.command.rename` | `/ob rename <name>`, `/ob rename clear` (owner only) |
 
 ### Admin commands (OP level 4 by default)
@@ -210,7 +209,6 @@ zero configuration and still gives networks full control.
 | `cobblemon_oneblock.admin.reload` | `/ob reload` |
 | `cobblemon_oneblock.admin.buff` | `/ob buff <player> <type> <value> <minutes>` |
 | `cobblemon_oneblock.admin.moderate` | `/ob admin kick\|info\|reset\|delete` |
-| `cobblemon_oneblock.admin.tech` | `/ob tech grant <player> <amount>` |
 | `cobblemon_oneblock.admin.bypass` | ignore island protection, build in the hub, catch/battle anywhere (OP level 2) |
 
 Example: let everyone play but restrict moderation to a staff group.

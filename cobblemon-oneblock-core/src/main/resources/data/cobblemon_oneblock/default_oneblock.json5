@@ -1,0 +1,208 @@
+/*
+ * What the OneBlock produces, per dimension.
+ *
+ * Copied to config/cobblemon_oneblock/oneblock.json5 on first start and never touched again,
+ * so your edits always win. Delete it to get this default back. Reload with /ob reload.
+ *
+ * THE RULE: an island has one OneBlock in each dimension, and each draws only from its own
+ * dimension's set. The Overworld anchor gives Overworld blocks, the Nether anchor gives Nether
+ * blocks, the End anchor gives End blocks. Same for treasure chests.
+ *
+ * "weight" is relative within a dimension — higher means more common. An entry may also be a
+ * bare block id, which means weight 1. Unknown blocks are logged and skipped, so listing a
+ * modded block that is not installed is safe.
+ *
+ * TWO RULES THE SERVER ENFORCES FOR YOU, both logged when they fire:
+ *  - a block that cannot stand on its own is dropped. Saplings, torches, flowers, crops, rails
+ *    and anything else needing support would pop off the instant it became the anchor.
+ *  - an unbreakable block is dropped. Bedrock as the anchor would soft-lock the island.
+ *
+ * Things worth NOT adding, learned the hard way: ice (melts into water and drains away),
+ * powder snow (players fall through it into the void) and dragon eggs (teleport when hit,
+ * usually off the island). Lanterns and torches look like solid blocks in a list and are not —
+ * the support check catches them, but the log line is the only sign, so read it after editing.
+ */
+{
+  // The main island. Wood, stone, ores, sand, snow — everything above and below ground.
+  "overworld": [
+    { "block": "minecraft:grass_block", "weight": 30 },
+    { "block": "minecraft:dirt", "weight": 30 },
+    { "block": "minecraft:cobblestone", "weight": 25 },
+    { "block": "minecraft:oak_planks", "weight": 15 },
+    { "block": "minecraft:oak_log", "weight": 30 },
+    { "block": "minecraft:oak_leaves", "weight": 24 },
+    { "block": "minecraft:stripped_oak_log", "weight": 10 },
+    { "block": "minecraft:oak_wood", "weight": 8 },
+    { "block": "minecraft:coarse_dirt", "weight": 20 },
+    { "block": "minecraft:rooted_dirt", "weight": 8 },
+    { "block": "minecraft:moss_block", "weight": 6 },
+    { "block": "minecraft:birch_log", "weight": 20 },
+    { "block": "minecraft:birch_leaves", "weight": 16 },
+    { "block": "minecraft:spruce_log", "weight": 35 },
+    { "block": "minecraft:spruce_leaves", "weight": 28 },
+    { "block": "minecraft:podzol", "weight": 10 },
+    { "block": "minecraft:mossy_cobblestone", "weight": 8 },
+    { "block": "minecraft:jungle_log", "weight": 18 },
+    { "block": "minecraft:jungle_leaves", "weight": 14 },
+    { "block": "minecraft:acacia_log", "weight": 16 },
+    { "block": "minecraft:acacia_leaves", "weight": 12 },
+    { "block": "minecraft:bamboo_block", "weight": 8 },
+    { "block": "minecraft:pumpkin", "weight": 6 },
+    { "block": "minecraft:melon", "weight": 6 },
+    { "block": "minecraft:cherry_log", "weight": 14 },
+    { "block": "minecraft:cherry_leaves", "weight": 12 },
+    { "block": "minecraft:mangrove_log", "weight": 12 },
+    { "block": "minecraft:mangrove_leaves", "weight": 10 },
+    { "block": "minecraft:mangrove_roots", "weight": 8 },
+    { "block": "minecraft:muddy_mangrove_roots", "weight": 8 },
+    { "block": "minecraft:packed_mud", "weight": 8 },
+    { "block": "minecraft:bookshelf", "weight": 8 },
+    { "block": "minecraft:barrel", "weight": 6 },
+    { "block": "minecraft:honeycomb_block", "weight": 5 },
+    { "block": "minecraft:beehive", "weight": 3 },
+    { "block": "minecraft:chiseled_bookshelf", "weight": 4 },
+    { "block": "minecraft:cartography_table", "weight": 3 },
+    { "block": "minecraft:fletching_table", "weight": 3 },
+    { "block": "minecraft:stone", "weight": 30 },
+    { "block": "minecraft:andesite", "weight": 23 },
+    { "block": "minecraft:diorite", "weight": 25 },
+    { "block": "minecraft:granite", "weight": 15 },
+    { "block": "minecraft:gravel", "weight": 30 },
+    { "block": "minecraft:tuff", "weight": 10 },
+    { "block": "minecraft:deepslate", "weight": 20 },
+    { "block": "minecraft:cobbled_deepslate", "weight": 18 },
+    { "block": "minecraft:coal_ore", "weight": 12 },
+    { "block": "minecraft:copper_ore", "weight": 10 },
+    { "block": "minecraft:iron_ore", "weight": 8 },
+    { "block": "minecraft:dripstone_block", "weight": 8 },
+    { "block": "minecraft:calcite", "weight": 14 },
+    { "block": "minecraft:deepslate_coal_ore", "weight": 10 },
+    { "block": "minecraft:deepslate_iron_ore", "weight": 8 },
+    { "block": "minecraft:redstone_ore", "weight": 8 },
+    { "block": "minecraft:gold_ore", "weight": 6 },
+    { "block": "minecraft:lapis_ore", "weight": 5 },
+    { "block": "minecraft:amethyst_block", "weight": 4 },
+    { "block": "minecraft:smooth_basalt", "weight": 8 },
+    { "block": "minecraft:deepslate_redstone_ore", "weight": 6 },
+    { "block": "minecraft:deepslate_gold_ore", "weight": 4 },
+    { "block": "minecraft:deepslate_lapis_ore", "weight": 4 },
+    { "block": "minecraft:raw_iron_block", "weight": 3 },
+    { "block": "minecraft:raw_copper_block", "weight": 3 },
+    { "block": "minecraft:diamond_ore", "weight": 3 },
+    { "block": "minecraft:emerald_ore", "weight": 2 },
+    { "block": "minecraft:sculk", "weight": 10 },
+    { "block": "minecraft:deepslate_diamond_ore", "weight": 3 },
+    { "block": "minecraft:deepslate_emerald_ore", "weight": 2 },
+    { "block": "minecraft:sculk_catalyst", "weight": 2 },
+    { "block": "minecraft:raw_gold_block", "weight": 2 },
+    { "block": "minecraft:diamond_block", "weight": 1 },
+    { "block": "minecraft:sand", "weight": 25 },
+    { "block": "minecraft:clay", "weight": 15 },
+    { "block": "minecraft:sandstone", "weight": 12 },
+    { "block": "minecraft:prismarine", "weight": 15 },
+    { "block": "minecraft:prismarine_bricks", "weight": 10 },
+    { "block": "minecraft:dark_prismarine", "weight": 8 },
+    { "block": "minecraft:dried_kelp_block", "weight": 8 },
+    { "block": "minecraft:tube_coral_block", "weight": 6 },
+    { "block": "minecraft:magma_block", "weight": 4 },
+    { "block": "minecraft:brain_coral_block", "weight": 6 },
+    { "block": "minecraft:bubble_coral_block", "weight": 6 },
+    { "block": "minecraft:fire_coral_block", "weight": 6 },
+    { "block": "minecraft:horn_coral_block", "weight": 6 },
+    { "block": "minecraft:sea_lantern", "weight": 13 },
+    { "block": "minecraft:sponge", "weight": 7 },
+    { "block": "minecraft:chiseled_sandstone", "weight": 6 },
+    { "block": "minecraft:gold_block", "weight": 2 },
+    { "block": "minecraft:conduit", "weight": 1 },
+    { "block": "minecraft:snow_block", "weight": 25 },
+    { "block": "minecraft:packed_ice", "weight": 25 },
+    { "block": "minecraft:blue_ice", "weight": 20 },
+    { "block": "minecraft:stripped_spruce_log", "weight": 10 },
+    { "block": "minecraft:spruce_planks", "weight": 12 },
+    { "block": "minecraft:bone_block", "weight": 8 },
+    { "block": "minecraft:white_wool", "weight": 8 },
+    { "block": "minecraft:white_concrete", "weight": 6 },
+    { "block": "minecraft:lapis_block", "weight": 2 },
+    { "block": "minecraft:iron_block", "weight": 2 },
+  ],
+
+  // The Nether island. Reached through a portal built on the Overworld island.
+  "nether": [
+    { "block": "minecraft:netherrack", "weight": 30 },
+    { "block": "minecraft:soul_sand", "weight": 12 },
+    { "block": "minecraft:soul_soil", "weight": 12 },
+    { "block": "minecraft:nether_bricks", "weight": 10 },
+    { "block": "minecraft:basalt", "weight": 12 },
+    { "block": "minecraft:blackstone", "weight": 15 },
+    { "block": "minecraft:crimson_stem", "weight": 12 },
+    { "block": "minecraft:warped_stem", "weight": 12 },
+    { "block": "minecraft:crimson_nylium", "weight": 8 },
+    { "block": "minecraft:warped_nylium", "weight": 8 },
+    { "block": "minecraft:nether_wart_block", "weight": 8 },
+    { "block": "minecraft:warped_wart_block", "weight": 8 },
+    { "block": "minecraft:nether_quartz_ore", "weight": 10 },
+    { "block": "minecraft:nether_gold_ore", "weight": 8 },
+    { "block": "minecraft:glowstone", "weight": 8 },
+    { "block": "minecraft:magma_block", "weight": 8 },
+    { "block": "minecraft:shroomlight", "weight": 5 },
+    { "block": "minecraft:crimson_planks", "weight": 8 },
+    { "block": "minecraft:warped_planks", "weight": 8 },
+    { "block": "minecraft:polished_blackstone", "weight": 8 },
+    { "block": "minecraft:polished_blackstone_bricks", "weight": 6 },
+    { "block": "minecraft:chiseled_polished_blackstone", "weight": 4 },
+    { "block": "minecraft:gilded_blackstone", "weight": 3 },
+    { "block": "minecraft:obsidian", "weight": 4 },
+    { "block": "minecraft:crying_obsidian", "weight": 2 },
+    { "block": "minecraft:chain", "weight": 5 },
+    { "block": "minecraft:quartz_block", "weight": 5 },
+    { "block": "minecraft:lodestone", "weight": 2 },
+    { "block": "minecraft:respawn_anchor", "weight": 1 },
+    { "block": "minecraft:ancient_debris", "weight": 1 },
+    { "block": "minecraft:netherite_block", "weight": 1 },
+  ],
+
+  // The End island. Small and expensive on purpose — it is the last one you reach.
+  "end": [
+    { "block": "minecraft:end_stone", "weight": 30 },
+    { "block": "minecraft:end_stone_bricks", "weight": 15 },
+    { "block": "minecraft:purpur_block", "weight": 10 },
+    { "block": "minecraft:purpur_pillar", "weight": 8 },
+    { "block": "minecraft:obsidian", "weight": 22 },
+    { "block": "minecraft:purpur_slab", "weight": 8 },
+    { "block": "minecraft:end_rod", "weight": 5 },
+    { "block": "minecraft:magenta_stained_glass", "weight": 5 },
+    { "block": "minecraft:crying_obsidian", "weight": 4 },
+    { "block": "minecraft:shulker_box", "weight": 4 },
+    { "block": "minecraft:beacon", "weight": 1 },
+  ],
+
+  // ---------------------------------------------------------------------------------------
+  // Treasure chests. A share of breaks regenerates the anchor as a loot chest instead of a
+  // plain block, filled from a real chest loot table — the same ones world generation uses.
+  //
+  // Tables are sorted by dimension from their ids: anything matching a Nether structure goes
+  // to the Nether pool, End City to the End pool, everything else to the Overworld. So a
+  // Nether anchor gives bastion and fortress loot, and never a village chest.
+  //
+  // The chance is flat and never scales with island progress. Difficulty scales on this
+  // project, rewards do not.
+  // ---------------------------------------------------------------------------------------
+  "chests": {
+    "enabled": true,
+    // Share of breaks that produce a chest, as a fraction of 1. 0.02 is about one chest every
+    // fifty blocks. Clamped to 0.0-1.0.
+    "chance": 0.02,
+    // false = only Minecraft's own chest loot tables. true = every "chests/..." table any mod
+    // or data pack registered. Modded structure loot can be far outside vanilla balance.
+    "include_modded": false,
+    // Loot table ids never used, e.g. "minecraft:chests/end_city_treasure".
+    "blacklist": [],
+    // Tables added to a specific dimension's pool verbatim, whatever their id. Needed because
+    // the "chests/..." convention is Minecraft's alone — Cobblemon keeps its structure loot
+    // under "cobblemon:ruins/gilded_chests/ruins" and similar, so list those here if you want
+    // them. Ids that do not exist are reported in the log and skipped.
+    "overworld_extra": [],
+    "nether_extra": [],
+    "end_extra": [],
+  },
+}

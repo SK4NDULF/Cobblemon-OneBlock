@@ -134,7 +134,8 @@ Providers are asked in registration order; the first non-empty answer wins. Retu
 you care about while the server's own loot table keeps working for everything else.
 Called once per break on the server thread — keep it fast and never block.
 
-Server owners configure the base pool in `config/cobblemon_oneblock/loottable.json5` (default: every
+Server owners configure the pools in `config/cobblemon_oneblock/oneblock.json5`, one list per
+dimension (default: every
 breakable, fluid-free block from Minecraft, Cobblemon and every other installed mod).
 
 **Precedence.** Providers → treasure chest roll → configured block pool. A provider that
