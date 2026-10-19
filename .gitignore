@@ -1,0 +1,21 @@
+# Gradle / build
+.gradle/
+build/
+out/
+*.class
+
+# Loom run directories
+run/
+oneblock-core/run/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+bin/
+
+# Test artefacts
+.jqwik-database

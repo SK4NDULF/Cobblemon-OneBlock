@@ -1,0 +1,76 @@
+plugins {
+    id 'fabric-loom' version "${loom_version}"
+}
+
+base {
+    archivesName = 'cobblemon-oneblock'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+repositories {
+    // Cobblemon publishes its Fabric artefact here; see docs/DEPENDENCY_MATRIX.md.
+    maven {
+        url = 'https://maven.impactdev.net/repository/development/'
+        content { includeGroup 'com.cobblemon' }
+    }
+    mavenCentral()
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+
+    // Cobblemon ships its own runtime dependencies (incl. Fabric Language Kotlin) as jar-in-jar.
+    // Kotlin is only needed here to compile against Cobblemon's Kotlin API (Unit, Function1, ...).
+    modImplementation("com.cobblemon:fabric:${cobblemon_version}") { transitive = false }
+    modImplementation "net.fabricmc:fabric-language-kotlin:${fabric_kotlin_version}"
+
+    implementation "org.xerial:sqlite-jdbc:${sqlite_jdbc_version}"
+    include "org.xerial:sqlite-jdbc:${sqlite_jdbc_version}"
+
+    testImplementation "org.junit.jupiter:junit-jupiter:${junit_version}"
+    testImplementation "net.jqwik:jqwik:${jqwik_version}"
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21
+    it.options.encoding = 'UTF-8'
+    it.options.compilerArgs += ['-Xlint:all', '-Xlint:-processing', '-Xlint:-serial']
+}
+
+test {
+    useJUnitPlatform {
+        includeEngines 'junit-jupiter', 'jqwik'
+    }
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        exceptionFormat 'full'
+    }
+    // Crash tests start a child JVM with the test runtime classpath (resolved lazily, after Loom is set up).
+    doFirst {
+        systemProperty 'oneblock.test.classpath', sourceSets.test.runtimeClasspath.asPath
+    }
+}
+
+jar {
+    from(rootProject.file('LICENSE')) {
+        rename { "${it}_cobblemon-oneblock" }
+    }
+}

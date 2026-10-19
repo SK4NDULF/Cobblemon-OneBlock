@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "cobblemon_oneblock",
+  "version": "${version}",
+  "name": "Cobblemon OneBlock",
+  "description": "Server-side OneBlock game mode for Cobblemon in its own void dimension.",
+  "authors": ["SK4NDULF"],
+  "contact": {
+    "sources": "https://github.com/SK4NDULF/Cobblemon-OneBlock",
+    "issues": "https://github.com/SK4NDULF/Cobblemon-OneBlock/issues"
+  },
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["io.github.sk4ndulf.cobblemon.oneblock.bootstrap.OneBlockMod"]
+  },
+  "depends": {
+    "fabricloader": ">=0.17.2",
+    "minecraft": "1.21.1",
+    "java": ">=21",
+    "fabric-api": ">=0.116.6+1.21.1",
+    "cobblemon": "1.8.2"
+  }
+}

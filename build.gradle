@@ -1,0 +1,1 @@
+// Root project only aggregates subprojects. Mod build logic lives in oneblock-core/build.gradle.
