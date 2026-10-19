@@ -1,6 +1,6 @@
 # ADR 003: Weg für biomabhängige Spawns
 
-- **Status:** Vorschlag. Die Entscheidung liegt beim Owner am Phase-0B-Gate (`DECISIONS` Nr. 12).
+- **Status:** Akzeptiert (`DECISIONS` Nr. 12, 2026-10-19)
 - **Datum:** 2026-10-19
 
 ## Kontext

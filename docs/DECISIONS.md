@@ -26,7 +26,7 @@
 | 9 | Lizenz des Mods | MIT. | `ENTSCHIEDEN` | 2026-10-19 |
 | 10 | Archiv bei Owner-Wechsel | Das Archiv gehört zur Insel-Linie und geht bei `/ob transfer` mit an den neuen Owner. Reset-Cooldown und Restore-Limits binden an Insel-Linie **und** Akteur. Details: `docs/spec/05-insel-lebenszyklus-und-coop.md`. | `ENTSCHIEDEN` | 2026-10-19 |
 | 11 | Unterstützte Server-Plattformen | Linux x64 offiziell (Pflichttests); Windows x64 mit Boot- und Join-Smoke-Test; Linux ARM64 nur, wenn die SQLite-Natives nachweislich funktionieren. | `ENTSCHIEDEN` | 2026-10-19 |
-| 12 | Weg für biomabhängige Spawns | Wird erst am Phase-0B-Gate entschieden, anhand der Spike-Ergebnisse und der Reihenfolge in `docs/spec/08-cobblemon.md` (Daten-Lösung → eigener Insel-Spawner → Eskalation). | `OFFEN` (nach Spike) | – |
+| 12 | Weg für biomabhängige Spawns | Cobblemons natürliches Spawning ohne Datenänderung, ergänzt um eine lokale `SpawningInfluence` pro Insel (Position nur auf aktiver Insel, kein Hub, Budget, Buffs). Eigener Insel-Spawner bleibt Rückfallebene. Details: `docs/adr/003-spawn-weg.md`. | `ENTSCHIEDEN` | 2026-10-19 |
 | 13 | Programmiersprache | Durchgehend Java 21, kein Kotlin im eigenen Code. | `ENTSCHIEDEN` | 2026-10-19 |
 | 14 | Alter Code (Stand `af8cf39`) | Neuanfang. Der alte Code wird nicht übernommen und bleibt nur als Ideenquelle in der Git-Historie. | `ENTSCHIEDEN` | 2026-10-19 |
 | 15 | Git-Ablauf | Arbeit direkt auf `main` ist erlaubt. Spikes weiterhin getrennt (`spike/*` bzw. Wegwerf-Kopien). Tag nach jeder Phasenabnahme. | `ENTSCHIEDEN` | 2026-10-19 |
@@ -39,3 +39,4 @@
 | 2026-10-19 | 3–8 | Empfehlungen aus Masterprompt v4 §24 vom Owner übernommen |
 | 2026-10-19 | 9–12 | Aus dem Review von v4 ergänzt |
 | 2026-10-19 | 1, 2, 9–11, 13–16 | Phase-0A-Rückfragen vom Owner beantwortet: alle Empfehlungen übernommen, Arbeit auf `main` erlaubt |
+| 2026-10-19 | 12 | Phase-0B-Gate: Spawn-Weg nach ADR 003 vom Owner bestätigt; Freigabe für Phase 1 |
