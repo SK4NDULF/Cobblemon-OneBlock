@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "oneblock_spike",
+  "version": "0.0.0-spike",
+  "name": "OneBlock Phase 0B Spike",
+  "environment": "*",
+  "entrypoints": { "main": ["io.github.sk4ndulf.cobblemon.oneblock.spike.SpikeMod"] },
+  "depends": {
+    "fabricloader": ">=0.17.2",
+    "fabric-api": "*",
+    "minecraft": "1.21.1",
+    "java": ">=21",
+    "cobblemon": "1.8.2+1.21.1"
+  }
+}

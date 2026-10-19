@@ -1,0 +1,13 @@
+{
+  "hitbox": "player",
+  "names": ["Spike Trainer"],
+  "battleConfiguration": { "canChallenge": true },
+  "canDespawn": false,
+  "party": {
+    "type": "pool",
+    "minPokemon": 1,
+    "maxPokemon": 1,
+    "isStatic": true,
+    "pool": [ { "pokemon": "caterpie", "weight": 1, "npcLevels": "5-5" } ]
+  }
+}

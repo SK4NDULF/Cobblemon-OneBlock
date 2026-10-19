@@ -1,0 +1,39 @@
+plugins {
+    id 'fabric-loom' version '1.11.8'
+}
+
+version = '0.0.0-spike'
+group = 'io.github.sk4ndulf.cobblemon.oneblock'
+
+repositories {
+    maven { url = 'https://maven.impactdev.net/repository/development/' }
+    mavenCentral()
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+    modImplementation("com.cobblemon:fabric:${cobblemon_version}") { transitive = false }
+    modImplementation "net.fabricmc:fabric-language-kotlin:${fabric_kotlin_version}"
+    implementation "org.xerial:sqlite-jdbc:${sqlite_jdbc_version}"
+    include "org.xerial:sqlite-jdbc:${sqlite_jdbc_version}"
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+}
+
+tasks.withType(JavaCompile).configureEach { it.options.release = 21 }
+
+dependencies {
+    testImplementation "net.jqwik:jqwik:1.9.3"
+    testImplementation "org.junit.jupiter:junit-jupiter:5.14.4"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+test {
+    useJUnitPlatform { includeEngines 'jqwik', 'junit-jupiter' }
+    testLogging { events 'passed', 'failed'; exceptionFormat 'full' }
+}
