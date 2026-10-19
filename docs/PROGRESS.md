@@ -4,63 +4,51 @@
 
 ## Aktive Phase
 
-**0B – Feasibility.** Phase 0A ist abgeschlossen: Alle Rückfragen sind beantwortet und in `docs/DECISIONS.md` eingetragen (Nr. 1, 2, 9–11, 13–16).
+**0B – Feasibility: abgeschlossen, wartet auf das Phase-0-Gate.** Phase 1 beginnt erst nach dem OK des Owners.
 
 ## Erledigt
 
-- Repository auf Owner-Wunsch geleert (Branch `claude/tender-keller-7hqmwy`, Commit `def9a42`). Der alte Stand ist nur noch in der Git-Historie (`main`, Commit `af8cf39`).
-- `CLAUDE.md`, `docs/DECISIONS.md` und `docs/spec/00–14` eingecheckt.
-- Spec-Dateien 00–03 und `DECISIONS.md` gelesen.
-- Owner-Antworten eingetragen, `LICENSE` (MIT) angelegt, `main` auf den neuen Stand gebracht.
+### Phase 0A
+- Repository geleert, Spec v4.1 und `CLAUDE.md` eingecheckt, Owner-Antworten in `docs/DECISIONS.md` (Nr. 1, 2, 9–11, 13–16), `LICENSE` (MIT).
 
-## Befunde Phase 0A
+### Phase 0B
+- Spike auf Branch `spike/0b-feasibility` (Commit `f6383a6`), getestet auf einem headless Dedicated Server (Linux x64) mit Fabric Loader 0.19.5, Fabric API 0.116.17+1.21.1, Cobblemon 1.8.2 und Carpet-Bots als Testspielern.
+- Ergebnisse in `docs/POC_RESULTS.md`, Entscheidungen in `docs/adr/001`–`007`, dazu `ARCHITECTURE.md`, `docs/RISK_REGISTER.md`, `docs/DEPENDENCY_MATRIX.md`.
 
-### Repository-Ist-Zustand
+Kurzfassung:
 
-- Der Branch enthält keinen Code, keinen Build und kein `/reference`.
-- `main` enthält noch die alte Implementierung. Wichtigste Abweichungen von der Spec:
-
-| Bereich | Alter Stand (`main`) | Spec v4.1 |
-|---|---|---|
-| Cobblemon | `1.7.3+1.21.1` | `1.8.2` (fest) |
-| Sprache | Core in Kotlin | Domain „rein Java-orientiert“ (Spec 13) |
-| Speicher | SQLite + MariaDB/HikariCP | nur SQLite pro Welt (`DECISIONS` Nr. 3) |
-| Permissions | LuckPerms-Bridge | keine Abhängigkeit von LuckPerms (Spec 01) |
-| Mixins | 5 Mixins ohne `docs/mixins.md` | jedes Mixin mit Begründung und Integrationstest |
-| Struktur | 3 Gradle-Module (`api`, `core`, `example-addon`) | ein installierbares JAR; Multiprojekt nur, wenn Jar-in-Jar nachweislich funktioniert (Spec 13) |
-
-- Der alte Code wird nicht übernommen (`DECISIONS` Nr. 14). Er bleibt nur als Ideenquelle in der Git-Historie.
-
-### Abhängigkeiten (geprüft am 2026-10-19)
-
-Quelle: Modrinth-API, Projekt `cobblemon`, Loader `fabric`.
-
-- `Cobblemon-fabric-1.8.2+1.21.1.jar`, veröffentlicht am 2026-10-11, SHA-256 `cae8ac328b61354fbe415208b8c6ffc12e7155094d0a87082e85e7914fb380c2`, Lizenz MPL-2.0.
-- `fabric.mod.json` → `depends`: `fabricloader >=0.17.2`, `fabric-api >=0.116.6+1.21.1`, `minecraft 1.21.1`, `java 21`.
-- Jar-in-Jar in Cobblemon 1.8.2: `fabric-language-kotlin-1.13.6+kotlin.2.2.20`, GraalVM JS/Truffle `22.3.0`, `icu4j 71.1`, `mongodb-driver 4.10.2`. Es ist **kein** SQLite-JDBC gebündelt.
-- Folge für Spec 03 [v4.1]: Fabric Language Kotlin bringt Cobblemon 1.8.2 selbst mit. Es muss also nicht separat installiert werden. Die gebündelte Version wird trotzdem in die `DEPENDENCY_MATRIX` (Phase 0B) eingetragen.
-
-### Technische Risiken (Vorschau für Phase 0B)
-
-- Biomabhängige Cobblemon-Spawns in einer eigenen Void-Dimension (`DECISIONS` Nr. 12): größte Unbekannte.
-- SQLite-JDBC-Natives auf Linux ARM64 und Windows x64 (`DECISIONS` Nr. 11).
-- Jar-in-Jar von `sqlite-jdbc` im eigenen Mod: Kollision mit anderen Mods, die ebenfalls `org.sqlite` bündeln.
-- Cobblemon 1.8.x ist neu (1.8.0 am 2026-09-06). Signaturen gegenüber 1.7.x sind ungeprüft.
-
-### Umgebung
-
-- Container: OpenJDK 21.0.12, Gradle unter `/opt/gradle`, Netzwerkzugang zu Modrinth funktioniert.
-- Ein Dedicated Server lässt sich hier headless starten. Client-Join und Ingame-Tests muss der Owner machen.
+| Spike | Ergebnis |
+|---|---|
+| Void-Dimension per Datapack (frische und bestehende Welt) | `VERIFIED` |
+| Natürliche Cobblemon-Spawns in der Void-Dimension | `VERIFIED` (380 Spawns im ersten Lauf) |
+| Biomabhängigkeit (Plains / Wüste / Ozean, Negativkontrolle Bretter) | `VERIFIED` |
+| Lokaler Spawn-Filter pro Insel ohne Mixin | `VERIFIED` (Hub: 0 Spawns) |
+| Wildkampf, NPC-Trainer, Fang serverseitig | `VERIFIED` |
+| Shutdown nach Kampf | `FAILED` ohne Gegenmaßnahme (4/4), sauber mit Rückruf (2/2) |
+| SQLite Jar-in-Jar, WAL, DB-Thread | `VERIFIED` (Linux x64) |
+| Grid-Mathematik | `VERIFIED` (10 Property-Tests) |
+| Paket-Hologramm | serverseitig `VERIFIED`, Darstellung offen |
+| Client-Join, Darstellung | offen (Owner-Test) |
 
 ## Offen
 
-- Phase-0B-Spikes: Dimension, natürliche Spawns, Biome, Capture/Battle, Trainer, Hologramm.
-- Danach: `ARCHITECTURE.md`, `docs/adr/`, `docs/POC_RESULTS.md`, `docs/RISK_REGISTER.md`, `docs/DEPENDENCY_MATRIX.md`.
+- Owner-Tests mit echtem Cobblemon-Client (siehe unten).
+- Owner-Entscheidung `DECISIONS` Nr. 12 (Spawn-Weg). Vorschlag: ADR 003, Weg 0 (Cobblemon-Standard plus lokale Influence).
+- Freigabe für Phase 1.
+
+## Owner-Tests am Phase-0-Gate
+
+Mit dem Spike-JAR (`oneblock-spike-0b-0.0.0-spike.jar`) auf einem Testserver mit Fabric API 0.116.17+1.21.1 und Cobblemon 1.8.2, **keine** echte Welt verwenden:
+
+1. Mit dem normalen Cobblemon-1.8.2-Client joinen. Erwartung: Join klappt ohne Fehlermeldung.
+2. `/execute in cobblemon_oneblock:void run tp @s 0 100 0` mit Creative-Flug. Erwartung: leere Welt, normaler Himmel, kein Fehler.
+3. `/execute in cobblemon_oneblock:void run fill -5 64 -5 5 64 5 minecraft:grass_block`, darauf landen, `/spikeholo show ~ ~2 ~ Test`. Erwartung: Text schwebt sichtbar. Dann `/spikeholo clear`: Text verschwindet.
+4. Ein wildes Pokémon in der Overworld bekämpfen, den Kampf beenden, das eigene Pokémon draußen lassen, Server mit `/stop` beenden. Im Log nach `Exception stopping the server` suchen und mitteilen, ob sie auftaucht.
 
 ## Blocker
 
-Keine.
+Keine. Wartet auf Owner-Tests und Gate-Freigabe.
 
 ## Nächste Aktion
 
-Spec-Dateien für 0B lesen (03, 04, 07 Hologramm, 08, 09, 11 Threading, 13), dann den ersten Spike aufsetzen: Void-Dimension + Cobblemon 1.8.2 auf einem headless Dedicated Server.
+Nach dem Gate-OK: Phase 1 (Foundation) auf `main` beginnen. Leseplan: Spec 02, 03, 11, 12, 13, 14.
