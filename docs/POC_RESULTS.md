@@ -131,6 +131,16 @@ Beobachtungen:
 - Carpet + Cobblemon: `Method overwrite conflict for getClimateSettings` (Carpet-Mixin vs. Cobblemon-Accessor). Betrifft nur die Testumgebung (Tier C).
 - `CobblemonEvents.SHINY_CHANCE_CALCULATION` existiert (`STATIC`). Möglicher Weg für lokale Shiny-Buffs ohne globale Config. Ungetestet, Phase 4.
 
-## Owner-Tests mit echtem Client (offen)
+## Owner-Tests mit echtem Client (2026-10-19)
 
-Siehe Phasenbericht im Chat bzw. `docs/PROGRESS.md`.
+Durchgeführt vom Owner auf seinem eigenen Rechner mit dem Testserver-Paket (Spike-JAR wie oben, Fabric API 0.116.17+1.21.1, Cobblemon 1.8.2, ohne Carpet) und einem echten Cobblemon-1.8.2-Client.
+
+| Test | Ergebnis laut Owner | Folge |
+|---|---|---|
+| 0 Server per Startskript starten | geklappt | Startskript funktioniert auf dem Owner-Rechner |
+| 1 Join mit Cobblemon-Client, `op` | geklappt | Kein Zusatz-Clientmod nötig (R-10 erledigt) |
+| 2 Teleport in `cobblemon_oneblock:void` | geklappt | Dimension im Client darstellbar |
+| 3 Paket-Hologramm anzeigen und entfernen | geklappt | §9 Darstellung bestätigt (Chunk-Reload, Relog, Dimensionswechsel weiter ungetestet) |
+| 4 Kampf, Pokémon draußen lassen, `/stop` | **keine** `Exception stopping the server` im Log | §6 mit echtem Client nicht reproduziert (1 Lauf) |
+
+Zu Test 4: Mit Carpet-Fake-Spielern trat der Fehler 4/4 auf, mit echtem Client 0/1. Die Ursache des Unterschieds ist nicht geklärt. ADR 005 bleibt als billige Schutzmaßnahme bestehen.

@@ -17,9 +17,9 @@ Mit dieser Maßnahme liefen 2 von 2 Wiederholungen sauber durch. `recall()` ist 
 
 ## Abgrenzung
 
-- Das Problem liegt wahrscheinlich in Cobblemon, nicht in unserem Mod. Gefunden wurde es mit Carpet-Fake-Spielern. Der Owner-Test mit echtem Client steht noch aus.
+- Das Problem liegt wahrscheinlich in Cobblemon, nicht in unserem Mod. Gefunden wurde es mit Carpet-Fake-Spielern (4/4). Im Owner-Test mit echtem Client am 2026-10-19 trat es nicht auf (0/1). Die Ursache des Unterschieds ist offen.
 - Unabhängig vom Ergebnis bleibt die Maßnahme sinnvoll: Sie ist billig, idempotent und schützt vor Datenverlust.
-- Ein Bericht an Cobblemon ist sinnvoll, sobald es mit echtem Client reproduziert ist.
+- Ein Bericht an Cobblemon erst, wenn es mit echtem Client reproduziert ist.
 
 ## Folgen
 

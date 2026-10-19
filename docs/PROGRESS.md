@@ -24,19 +24,18 @@ Kurzfassung:
 | Biomabhängigkeit (Plains / Wüste / Ozean, Negativkontrolle Bretter) | `VERIFIED` |
 | Lokaler Spawn-Filter pro Insel ohne Mixin | `VERIFIED` (Hub: 0 Spawns) |
 | Wildkampf, NPC-Trainer, Fang serverseitig | `VERIFIED` |
-| Shutdown nach Kampf | `FAILED` ohne Gegenmaßnahme (4/4), sauber mit Rückruf (2/2) |
+| Shutdown nach Kampf | Fake-Spieler: `FAILED` ohne Gegenmaßnahme (4/4), sauber mit Rückruf (2/2); echter Client: sauber (0/1) |
 | SQLite Jar-in-Jar, WAL, DB-Thread | `VERIFIED` (Linux x64) |
 | Grid-Mathematik | `VERIFIED` (10 Property-Tests) |
-| Paket-Hologramm | serverseitig `VERIFIED`, Darstellung offen |
-| Client-Join, Darstellung | offen (Owner-Test) |
+| Paket-Hologramm | `VERIFIED` (Anzeigen/Entfernen im echten Client) |
+| Client-Join, Darstellung | Owner-Test 2026-10-19: alle 4 Tests bestanden |
 
 ## Offen
 
-- Owner-Tests mit echtem Cobblemon-Client (siehe unten).
 - Owner-Entscheidung `DECISIONS` Nr. 12 (Spawn-Weg). Vorschlag: ADR 003, Weg 0 (Cobblemon-Standard plus lokale Influence).
 - Freigabe für Phase 1.
 
-## Owner-Tests am Phase-0-Gate
+## Owner-Tests am Phase-0-Gate (erledigt 2026-10-19, alle bestanden)
 
 Mit dem Spike-JAR (`oneblock-spike-0b-0.0.0-spike.jar`) auf einem Testserver mit Fabric API 0.116.17+1.21.1 und Cobblemon 1.8.2, **keine** echte Welt verwenden:
 
@@ -47,7 +46,7 @@ Mit dem Spike-JAR (`oneblock-spike-0b-0.0.0-spike.jar`) auf einem Testserver mit
 
 ## Blocker
 
-Keine. Wartet auf Owner-Tests und Gate-Freigabe.
+Keine. Wartet auf die Spawn-Entscheidung (Nr. 12) und die Freigabe für Phase 1.
 
 ## Nächste Aktion
 
