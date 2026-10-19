@@ -12,8 +12,8 @@ import io.github.sk4ndulf.cobblemon.oneblock.core.cobblemon.BuffType
 import io.github.sk4ndulf.cobblemon.oneblock.core.biome.BiomeEditor
 import io.github.sk4ndulf.cobblemon.oneblock.core.biome.BiomeService
 import io.github.sk4ndulf.cobblemon.oneblock.core.cobblemon.CobblemonIntegration
-import io.github.sk4ndulf.cobblemon.oneblock.core.island.BiomePools
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.IslandData
+import io.github.sk4ndulf.cobblemon.oneblock.core.island.OneBlockPools
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.IslandNames
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.OneBlockDimension
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.PartyService
@@ -92,7 +92,6 @@ object ObCommands {
                                     .executes { rename(it, StringArgumentType.getString(it, "name")) }
                             )
                     )
-                    .then(TechCommands.build())
                     .then(
                         Commands.literal("biome")
                             .requires { ObPermissions.check(it, ObPermissions.COMMAND_BIOME, 0) }
@@ -612,10 +611,7 @@ object ObCommands {
         source.sendSuccess({ ServerLang.msg("cobblemon_oneblock.reload.start") }, true)
         OneBlockCore.configManager.loadAll()
         ServerLang.load(OneBlockCore.configManager.mainConfig.language, OneBlockCore.LOGGER)
-        OneBlockCore.lootTable.load()
-        BiomePools.load(OneBlockCore.configManager.configDir, OneBlockCore.LOGGER)
-        OneBlockCore.loadTechTree()
-        OneBlockCore.pointSources.load()
+        OneBlockPools.load(OneBlockCore.configManager.configDir, OneBlockCore.LOGGER)
 
         // Reconnecting the pool and testing the connection blocks — keep it off the server thread.
         CompletableFuture.supplyAsync { OneBlockCore.connectDatabase() }
@@ -623,7 +619,7 @@ object ObCommands {
                 server.execute {
                     if (error == null) {
                         OneBlockCore.reloadIslands()
-                        OneBlockCore.lootTable.buildPool(server)
+                        OneBlockPools.build(server, OneBlockCore.LOGGER)
                         CobblemonIntegration.applySpawnMultiplier()
                         source.sendSuccess({ ServerLang.msg("cobblemon_oneblock.reload.ok") }, true)
                     } else {

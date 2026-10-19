@@ -7,11 +7,10 @@ import io.github.sk4ndulf.cobblemon.oneblock.core.command.ObCommands
 import io.github.sk4ndulf.cobblemon.oneblock.core.config.ConfigManager
 import io.github.sk4ndulf.cobblemon.oneblock.core.db.Database
 import io.github.sk4ndulf.cobblemon.oneblock.core.db.PlayerRepository
-import io.github.sk4ndulf.cobblemon.oneblock.core.island.BiomePools
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.DropCollector
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.IslandManagerImpl
 import io.github.sk4ndulf.cobblemon.oneblock.core.island.IslandRepository
-import io.github.sk4ndulf.cobblemon.oneblock.core.island.OneBlockLootTable
+import io.github.sk4ndulf.cobblemon.oneblock.core.island.OneBlockPools
 import io.github.sk4ndulf.cobblemon.oneblock.core.lang.ServerLang
 import io.github.sk4ndulf.cobblemon.oneblock.core.biome.BiomeRepository
 import io.github.sk4ndulf.cobblemon.oneblock.core.biome.BiomeService
@@ -19,10 +18,6 @@ import io.github.sk4ndulf.cobblemon.oneblock.core.cobblemon.BuffService
 import io.github.sk4ndulf.cobblemon.oneblock.core.cobblemon.CobblemonIntegration
 import io.github.sk4ndulf.cobblemon.oneblock.core.moderation.BanService
 import io.github.sk4ndulf.cobblemon.oneblock.core.permission.ProtectionManager
-import io.github.sk4ndulf.cobblemon.oneblock.core.progression.NpcPoints
-import io.github.sk4ndulf.cobblemon.oneblock.core.progression.PointSourceConfig
-import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechService
-import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechTreeFile
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.HubManager
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.OneBlockDimension
 import net.fabricmc.api.ModInitializer
@@ -54,11 +49,8 @@ object OneBlockCore : ModInitializer {
     var islandManager: IslandManagerImpl? = null
         private set
 
-    val lootTable = OneBlockLootTable(FabricLoader.getInstance().configDir.resolve(MOD_ID), LOGGER)
 
-    val techTreeFile = TechTreeFile(FabricLoader.getInstance().configDir.resolve(MOD_ID), LOGGER)
 
-    val pointSources = PointSourceConfig(FabricLoader.getInstance().configDir.resolve(MOD_ID), LOGGER)
 
     val playerRepository: PlayerRepository?
         get() = database?.let { PlayerRepository(it) }
@@ -80,17 +72,13 @@ object OneBlockCore : ModInitializer {
 
         configManager.loadAll()
         ServerLang.load(configManager.mainConfig.language, LOGGER)
-        lootTable.load()
-        BiomePools.load(FabricLoader.getInstance().configDir.resolve(MOD_ID), LOGGER)
-        loadTechTree()
-        pointSources.load()
+        OneBlockPools.load(FabricLoader.getInstance().configDir.resolve(MOD_ID), LOGGER)
 
         OneBlockAPIHolder.set(OneBlockAPIImpl(eventBus))
         ObCommands.register()
         ProtectionManager.register()
 
         CobblemonIntegration.register()
-        NpcPoints.register()
 
         PlayerBlockBreakEvents.AFTER.register { level, player, pos, state, _ ->
             if (level is ServerLevel && player is ServerPlayer) {
@@ -105,7 +93,7 @@ object OneBlockCore : ModInitializer {
 
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             HubManager.onServerStarted(server)
-            lootTable.buildPool(server)
+            OneBlockPools.build(server, LOGGER)
             CobblemonIntegration.checkVersion()
             CobblemonIntegration.applySpawnMultiplier()
             OneBlockDimension.overworld(server)?.let { BiomeService.reapplyAll(it) }
@@ -189,18 +177,6 @@ object OneBlockCore : ModInitializer {
         )
     }
 
-    /**
-     * Reads techtree.json5 and hands the validated tree to [TechService].
-     *
-     * Kept separate from island loading because the tree is config, not world state: it is
-     * read once at startup and again on `/ob reload`, while island tech state comes from the
-     * database and is reloaded with the islands.
-     */
-    fun loadTechTree() {
-        techTreeFile.load()
-        TechService.setTree(techTreeFile.tree)
-    }
-
     /** (Re-)creates the island registry from the database. Server thread only. */
     fun reloadIslands() {
         val db = database
@@ -209,7 +185,6 @@ object OneBlockCore : ModInitializer {
             return
         }
         islandManager = IslandManagerImpl(IslandRepository(db)).also { it.loadAll() }
-        TechService.loadAll(db)
         BuffService.loadAll(db)
         BiomeService.reload(BiomeRepository(db))
         BanService.reload(db)

@@ -165,6 +165,22 @@ class MigrationRunner(private val database: Database, private val logger: Logger
                 "ALTER TABLE islands ADD COLUMN name VARCHAR(48)",
             )
         },
+        Migration(11, "drop the tech tree tables (the system was removed, see WORKLOG)") { _ ->
+            // Migrations are append-only, so 9 stays exactly as it shipped and this one undoes
+            // it. Dropping the tables is safe: nothing reads them any more and the data has no
+            // meaning without the tree.
+            //
+            // The three columns migration 9 added to existing tables — islands.tech_points,
+            // islands.tech_points_earned and island_members.may_spend_tech — are deliberately
+            // NOT dropped. Dropping a column behaves differently across SQLite and MariaDB and
+            // is the classic way a migration bricks a server's startup, and three unused
+            // columns cost nothing. The quest system will either reuse them or a later
+            // migration will clear them once there is a reason to touch that table anyway.
+            listOf(
+                "DROP TABLE IF EXISTS island_tech",
+                "DROP TABLE IF EXISTS island_claims",
+            )
+        },
     )
 
     fun run() {

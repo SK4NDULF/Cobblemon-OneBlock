@@ -13,12 +13,11 @@ import io.github.sk4ndulf.cobblemon.oneblock.core.biome.BiomeService
 import io.github.sk4ndulf.cobblemon.oneblock.core.config.MainConfig
 import io.github.sk4ndulf.cobblemon.oneblock.core.lang.ServerLang
 import io.github.sk4ndulf.cobblemon.oneblock.core.moderation.AuditLog
-import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechEffects
-import io.github.sk4ndulf.cobblemon.oneblock.core.progression.TechService
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.GridMath
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.HubManager
 import io.github.sk4ndulf.cobblemon.oneblock.core.world.OneBlockDimension
 import net.minecraft.core.BlockPos
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
@@ -160,8 +159,10 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
         usedSlots.add(slot)
         index(island)
 
-        val level = OneBlockDimension.overworld(player.server)
-        if (level != null) {
+        // An island exists in all three dimensions at the same coordinates, so all three
+        // anchors are placed at creation rather than lazily on first arrival — a player who
+        // portals over should find a OneBlock waiting, not an empty platform.
+        for (level in OneBlockDimension.loadedLevels(player.server)) {
             ensureFoundation(level, island)
             placeInitialBlock(level, island)
         }
@@ -227,7 +228,7 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
     // --- OneBlock break handling (event registered once in OneBlockCore) ------------------------
 
     fun handleBreak(level: ServerLevel, player: ServerPlayer, pos: BlockPos, state: net.minecraft.world.level.block.state.BlockState) {
-        if (level.dimension() != OneBlockDimension.OVERWORLD_KEY) return
+        if (!OneBlockDimension.isOurs(level)) return
         val island = activeByAnchor[pos] ?: return
 
         // Count the break BEFORE asking loot providers, so a provider sees a break count
@@ -238,23 +239,17 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
         // chest roll, then the configured block pool. A provider that answers therefore also
         // suppresses the chest for that break — it asked for a specific block, it gets it.
         val provided = LootRegistryImpl.query(island, level)
-        val chestTable =
-            if (provided == null) ChestLoot.roll(level.random, TechEffects.chestChanceBonus(island.id)) else null
+        val chestTable = if (provided == null) ChestLoot.roll(level, level.random) else null
         val next = provided
             ?: chestTable?.let { ChestLoot.chestState(level.random) }
-            ?: OneBlockCore.lootTable.next(level.random, island.id)
+            ?: OneBlockPools.next(level, level.random)
         level.setBlockAndUpdate(pos, next)
         // Only after the block exists — the chest's block entity is created by the placement.
         chestTable?.let { ChestLoot.fill(level, pos, it) }
 
-        // The yield bonus is rolled against the block that was *just broken*, not the one being
-        // placed. That is what a player means by "this drops twice", and it also means a
-        // treasure chest can never be doubled: a chest belongs to no biome set.
-        val doubled = level.random.nextDouble() < BiomePools.yieldChance(island.id, state.block)
-
         // Vanilla has not dropped anything yet at this point (see DropCollector); this only
         // registers the anchor to be swept at the end of the tick.
-        DropCollector.queue(pos, player, doubled)
+        DropCollector.queue(pos, player)
         ProgressionService.onBreak(island, level.server)
         repository.updateProgressAsync(island.id, island.breakCount, island.points, island.borderLevel)
         OneBlockCore.eventBus.post(OneBlockBreakEvent(island, player, state, next))
@@ -284,7 +279,7 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
     }
 
     private fun placeInitialBlock(level: ServerLevel, island: IslandData) {
-        level.setBlockAndUpdate(island.oneBlockPos(), OneBlockCore.lootTable.next(level.random, island.id))
+        level.setBlockAndUpdate(island.oneBlockPos(), OneBlockPools.next(level, level.random))
     }
 
     /**
@@ -315,17 +310,24 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
      * [sendToIsland] and the next sweep repair it as soon as it matters.
      */
     fun repairAnchors(server: MinecraftServer) {
-        val level = OneBlockDimension.overworld(server) ?: return
-        for (island in activeBySlot.values) {
-            val pos = island.oneBlockPos()
-            if (level.chunkSource.getChunkNow(pos.x shr 4, pos.z shr 4) == null) continue
+        for (level in OneBlockDimension.loadedLevels(server)) {
+            for (island in activeBySlot.values) {
+                val pos = island.oneBlockPos()
+                // Only loaded chunks: forcing them would keep every island of every dimension
+                // resident, which on a busy server is three times the memory for nothing.
+                if (level.chunkSource.getChunkNow(pos.x shr 4, pos.z shr 4) == null) continue
 
-            ensureFoundation(level, island)
-            if (level.getBlockState(pos).isAir) {
-                placeInitialBlock(level, island)
-                OneBlockCore.LOGGER.info(
-                    "Restored the missing OneBlock of island {} at {}.", island.id, pos.toShortString(),
-                )
+                ensureFoundation(level, island)
+                if (level.getBlockState(pos).isAir) {
+                    placeInitialBlock(level, island)
+                    // The block is named because it is the only way an admin can see which pool
+                    // a dimension actually drew from without standing there.
+                    OneBlockCore.LOGGER.info(
+                        "Restored the missing OneBlock of island {} in {} at {} as {}.",
+                        island.id, level.dimension().location(), pos.toShortString(),
+                        BuiltInRegistries.BLOCK.getKey(level.getBlockState(pos).block),
+                    )
+                }
             }
         }
     }
@@ -368,8 +370,6 @@ class IslandManagerImpl(private val repository: IslandRepository) : IslandManage
                 // from here every source is claimable again by whoever owns the slot next
                 // (PROGRESSION_REWORK.md §4.3). A player who runs /ob reset gets a brand new
                 // island id and therefore an empty tree immediately, which is what they see.
-                TechService.clear(island.id)
-                BiomePools.forget(island.id)
                 // Slot stays reserved: the area still contains the old builds. Slot reuse
                 // arrives together with chunk clearing (see PROJECT_PLAN.md open points).
                 OneBlockCore.LOGGER.info("Purged archived island {} (slot {}).", island.id, island.slot())

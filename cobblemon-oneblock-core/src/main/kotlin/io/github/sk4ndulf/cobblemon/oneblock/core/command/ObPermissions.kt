@@ -28,7 +28,6 @@ object ObPermissions {
     const val COMMAND_SETTINGS = "cobblemon_oneblock.command.settings"
     const val COMMAND_BIOME = "cobblemon_oneblock.command.biome"
     const val COMMAND_BAN = "cobblemon_oneblock.command.ban"
-    const val COMMAND_TECH = "cobblemon_oneblock.command.tech"
     const val COMMAND_RENAME = "cobblemon_oneblock.command.rename"
 
     // Admin commands (OP level 4 by default).
@@ -36,7 +35,6 @@ object ObPermissions {
     const val ADMIN_SETUP = "cobblemon_oneblock.admin.setup"
     const val ADMIN_BUFF = "cobblemon_oneblock.admin.buff"
     const val ADMIN_MODERATE = "cobblemon_oneblock.admin.moderate"
-    const val ADMIN_TECH = "cobblemon_oneblock.admin.tech"
 
     /** Protection bypass, checked in ProtectionManager rather than on a command. */
     const val ADMIN_BYPASS = "cobblemon_oneblock.admin.bypass"
