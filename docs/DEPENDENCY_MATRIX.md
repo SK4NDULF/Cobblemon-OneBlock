@@ -1,6 +1,6 @@
 # Abhängigkeitsmatrix
 
-> Stand: 2026-10-19 (Phase 0B). Gilt für den Spike; Phase 1 übernimmt diese Versionen. Jede Änderung ist ein Change Request (Spec 03).
+> Stand: 2026-10-19 (Phase 1). Gilt für `oneblock-core` (`gradle.properties`). Jede Änderung ist ein Change Request (Spec 03).
 
 ## Laufzeit (Server und Client)
 
@@ -25,7 +25,7 @@ Cobblemon 1.8.2 deklariert in `fabric.mod.json`: `fabricloader >=0.17.2`, `fabri
 
 | Artefakt | Version | Zweck |
 |---|---|---|
-| Gradle (Wrapper) | 8.14.3 | Build |
+| Gradle (Wrapper) | 8.14.3, `distributionSha256Sum` `bd71102213493060956ec229d946beee57158dbd89d0e62b91bca0fa2c5f3531` gepinnt | Build |
 | Fabric Loom | 1.11.8 | Minecraft-Mod-Build, Remapping |
 | Mappings | Mojang official (1.21.1) | Namen im Quellcode |
 | JDK | OpenJDK 21.0.12 | Kompilieren und Test |
@@ -35,5 +35,7 @@ Cobblemon 1.8.2 deklariert in `fabric.mod.json`: `fabricloader >=0.17.2`, `fabri
 
 ## Hinweise
 
+- `fabric.mod.json` deklariert: `fabricloader >=0.17.2`, `minecraft 1.21.1`, `java >=21`, `fabric-api >=0.116.6+1.21.1`, `cobblemon 1.8.2` (exakt; Build-Metadaten wie `+1.21.1` zählen nicht).
+- CI: GitHub Actions `ubuntu-24.04`, Temurin 21, `gradle/actions/setup-gradle@v4` mit Wrapper-Validierung.
 - Clients brauchen keinen OneBlock-Clientmod, aber den zur Server-Version passenden Cobblemon-Client (Spec 03).
 - Fabric-API-Untermodule werden einzeln im Loader geführt. Der Mod deklariert nur `fabric-api`, nicht einzelne Module.

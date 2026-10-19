@@ -1,115 +1,100 @@
 # Architektur
 
-> Stand: 2026-10-19, Ende Phase 0B. **Es gibt noch keinen Produktionscode.** Dieses Dokument beschreibt die geplante Architektur auf Basis der verifizierten Hooks (`docs/POC_RESULTS.md`). Sobald Code existiert, bildet es den implementierten Stand ab.
+> Stand: 2026-10-19, Phase 1 (Foundation) implementiert. Spielinhalte gibt es noch nicht. Dieses Dokument beschreibt den Code auf `phase/1-foundation` und kennzeichnet Geplantes als solches.
 
 ## Überblick
 
-Ein serverseitiger Fabric-Mod (`cobblemon_oneblock`, Java 21) als schlanker modularer Monolith in **einem** installierbaren JAR. Clients brauchen nur den passenden Cobblemon-Client.
+Ein serverseitiger Fabric-Mod (`cobblemon_oneblock`, Java 21) in **einem** JAR (`oneblock-core`, Gradle-Modul). Clients brauchen nur den passenden Cobblemon-Client. Gebündelt ist nur `sqlite-jdbc` (Jar-in-Jar).
 
 ```text
-            Minecraft 1.21.1 / Fabric API 0.116.17 / Cobblemon 1.8.2
-                                   │
-             ┌─────────────────────┴──────────────────────┐
-             │ adapters                                    │
-             │  fabric/      Lifecycle, Commands, Events   │
-             │  minecraft/   Welt, Teleport, Schutz-Hooks  │
-             │  cobblemon/   Spawn-Influence, Battle,      │
-             │               Capture, Recall (Kotlin-      │
-             │               Interop nur hier)             │
-             │  sqlite/      DB-Thread, Migrationen        │
-             │  ui/          Texte de/en, Actionbar        │
-             └─────────────────────┬──────────────────────┘
-                                   │ Ports (nur echte Test-Nähte)
-             ┌─────────────────────┴──────────────────────┐
-             │ application   Use Cases, OperationCoordinator│
-             └─────────────────────┬──────────────────────┘
-             ┌─────────────────────┴──────────────────────┐
-             │ domain        Grid, Insel, Rollen, Loot,    │
-             │               Progression (reines Java)     │
-             └────────────────────────────────────────────┘
+ Fabric / Minecraft 1.21.1 / Cobblemon 1.8.2
+        │  ServerLifecycleEvents, CommandRegistrationCallback
+        ▼
+ bootstrap.OneBlockMod ──► bootstrap.ModRuntime (eine Instanz pro Serverlauf)
+        │                      │
+        │                      ├─ config.ConfigManager      (Datei, Prüfung, Reload)
+        │                      ├─ storage.DbExecutor        (DB-Thread, begrenzte Queue)
+        │                      │    └─ storage.StorageBootstrap → MigrationRunner, WorldBinding,
+        │                      │                                  operation.OperationJournal, OperationReconciler
+        │                      ├─ bootstrap.Lifecycle       (Zustand + Gründe)
+        │                      ├─ diagnostics.Diagnostics   (Diagnose-IDs)
+        │                      └─ cobblemon.ShutdownRecall  (ADR 005)
+        └─ command.ObCommand   (/ob status, /ob reload) ── localization.Messages (de_de, en_us)
+
+ domain.grid (GridGeometry, SpiralIndex): reines Java, noch von keinem Feature benutzt (Phase 2)
 ```
 
-Ports gibt es nur, wo eine zweite Implementierung oder ein Test sie braucht: `IslandStore` (SQLite), `WorldPort`, `CobblemonPort`, `Clock`, `RandomSource` (Spec 13 [v4.1]).
+## Pakete
 
-## Verifizierte Integrationspunkte
-
-| Zweck | Hook (Mojang-Namen) | Beleg |
+| Paket | Inhalt | Minecraft-Abhängigkeit |
 |---|---|---|
-| Void-Dimension | Datapack `data/cobblemon_oneblock/dimension/void.json` + `dimension_type/void.json` | `POC_RESULTS` §1, ADR 002 |
-| Spawn-Filter pro Insel | `PlayerSpawnerFactory.INSTANCE.getInfluenceBuilders().add(player -> influence)`; `SpawningInfluence.isAllowedPosition(ServerLevel, BlockPos, SpawnablePositionCalculator)` | §4, ADR 003 |
-| Spawn-Budget, Herkunft | `SpawningInfluence.affectSpawnable(…)`; `CobblemonEvents.ENTITY_SPAWN` (abbrechbar) | §2, §4 (statisch + Logging) |
-| Wild/Besitz unterscheiden | `Pokemon.isWild()`, `isPlayerOwned()`, `isNPCOwned()` | §5 |
-| Kampfstart | `BattleBuilder.INSTANCE.pve(player, pokemonEntity)`, `pvn(player, npcEntity)` | §5 |
-| Kampfabbruch | `PokemonBattle.stop()` (nie `end()` direkt) | §5, §6 |
-| Fang absichern | `CobblemonEvents.THROWN_POKEBALL_HIT` (abbrechbar), `POKEMON_CAPTURED` | §5 |
-| Kampf absichern | `CobblemonEvents.BATTLE_STARTED_PRE` (abbrechbar) | §5 |
-| Shutdown-Schutz | `ServerLifecycleEvents.SERVER_STOPPING` → `Pokemon.recall()` für besessene Entities | §6, ADR 005 |
-| Persistenz | `sqlite-jdbc` 3.53.4.0 (Jar-in-Jar), WAL, ein DB-Thread | §7, ADR 004 |
+| `bootstrap` | Entrypoint, `ModRuntime`, `Lifecycle`, `LifecycleState` | ja (`ModRuntime`, `OneBlockMod`) |
+| `config` | Schema, JSON5-Leser, Loader, Manager | nein (Gson) |
+| `diagnostics` | Fehlerklassen, Diagnose-IDs | nein |
+| `domain.grid` | Slot-Grid, Spirale | nein |
+| `storage` | DB-Thread, Verbindungen, Migrationen, Welt-Bindung, Speicher-Start | nein |
+| `operation` | Vorgangs-Journal, Audit-Log, Abgleich | nein |
+| `localization` | Serverseitige Texte | nein (Gson) |
+| `command` | Brigadier-Befehle | ja |
+| `cobblemon` | Cobblemon-Zugriffe (nur `ShutdownRecall`) | ja |
+| `util` | Atomares Schreiben | nein |
 
-Noch **nicht** verifiziert (folgt in der jeweiligen Phase): Block-Break-Hook für den OneBlock (Phase 2), Schutz-Hooks für Interaktion, Explosion, Kolben und Flüssigkeiten (Phase 2), Biom-Änderung per API inkl. Client-Sync (Phase 4), Riding-Grenzen (Phase 4), Respawn-Routing (Phase 2).
+Abweichung von der Vorschlagsstruktur in Spec 13: Es gibt noch keine Ports/Interfaces. Journal und Speicher sprechen direkt SQLite an und werden gegen echte temporäre SQLite-Dateien getestet. Ein Port entsteht erst, wenn eine zweite Implementierung oder eine Test-Naht ihn braucht (Spec 13 [v4.1]).
 
-## Threads und Datenhoheit
+## Threads
 
 | Thread | Darf | Darf nicht |
 |---|---|---|
-| Server-Thread | Welt, Blöcke, Entities, Teleports, alle Cobblemon-Aufrufe, Cache lesen | blockierend auf DB oder Dateien warten (`Future.get()`, `join()`) |
-| DB-Thread (1, Daemon, begrenzte Queue) | SQL, Transaktionen, Migrationen, Journal | Minecraft- oder Cobblemon-Objekte anfassen; liefert nur unveränderliche Records |
-| Worker (optional) | reine Berechnung (Loot-Simulation, Validierung) | Weltzugriff |
+| Server-Thread | Welt, Entities, Cobblemon, Befehle, Lifecycle-Entscheidungen | auf DB oder Dateien warten (einzige Ausnahme: Shutdown, s. u.) |
+| `cobblemon-oneblock-db-N` (Daemon, 1 Thread) | SQL, eigene Dateien (DB, Marker, Backups) | Minecraft- oder Cobblemon-Objekte anfassen; gibt nur unveränderliche Records zurück |
+| `cobblemon-oneblock-io` (Daemon, 1 Thread) | Config-Datei lesen und prüfen bei `/ob reload` | Zustand ändern |
 
-Ablauf einer kritischen Operation (Spec 11 §29): Anfrage auf dem Server-Thread prüfen → Intent auf dem DB-Thread speichern → Callback per `server.execute(…)` → Revision erneut prüfen → Weltänderung → Ergebnis-Stage speichern → erst dann Erfolg an den Spieler. Davor zeigt die UI `PENDING`.
+- Ergebnisse des DB-Threads kommen per `whenCompleteAsync(…, server)` bzw. `handleAsync(…, server)` zurück auf den Server-Thread.
+- Die DB-Queue ist begrenzt (`storage.queueCapacity`). Ist sie voll, schlägt die Aufgabe sofort mit `StorageException` fehl.
+- **Shutdown-Ausnahme:** `DbExecutor.shutdown` wartet blockierend bis `storage.shutdownTimeoutSeconds`. Ein Deadlock ist ausgeschlossen, weil der DB-Thread nie auf den Server-Thread wartet.
+- Die Config wird beim Boot einmal synchron gelesen, vor dem ersten Tick. Das Spiel läuft zu dem Zeitpunkt noch nicht.
 
-**Source of Truth:** SQLite für Inseln, Slots, Mitgliedschaften, Ledger. Minecraft-Saves für Blöcke, Entities, Inventare, Cobblemon-Party/PC. Beide sind nicht gemeinsam atomar (R-02); die Reconciliation beim Start gleicht offene Vorgänge ab.
+## Boot (SERVER_STARTING)
 
-## Grid
+1. `Lifecycle = STARTING`.
+2. Config laden; fehlt die Datei, wird die kommentierte Standarddatei atomar geschrieben. Bei Fehlern: Standardwerte + `OB-CONFIG`-Diagnose.
+3. Weltpfad (`LevelResource.ROOT`) und Seed (`WorldData.worldGenOptions().seed()`) bestimmen.
+4. Auf dem DB-Thread: fehlt die DB, ist aber der Marker vorhanden → Abbruch **vor** dem Öffnen. Sonst öffnen (WAL, `synchronous=FULL`, `foreign_keys`, `busy_timeout`) → `quick_check` → Migrationen (bei bestehender DB vorher geprüftes Backup) → Welt-Bindung → offene Vorgänge abgleichen.
+5. Zurück auf dem Server-Thread: Fehler → `RECOVERY_MODE`; blockierende Vorgänge → `RECOVERY_MODE`; Config ungültig oder Setup offen → `SETUP_PENDING`; sonst `READY`.
 
-Reine Domain-Logik, im Spike per Property-Test belegt (`POC_RESULTS` §8):
+## Shutdown (SERVER_STOPPING)
 
-- `stride = ceil((maxSize + puffer) / 1024) · 1024`, Standard 3072.
-- Zelle `g` umfasst `[g·stride − stride/2, g·stride + stride/2 − 1]` und besteht immer aus ganzen Region-Dateien.
-- Slot-Vergabe über eine quadratische Spirale; Index 0 ist der Hub.
-- Weltgrenze bei Standardwerten: Zellen −9765 … 9765 je Achse.
+1. `Lifecycle = STOPPING`, keine neuen Aktionen.
+2. Alle geladenen Welten: besessene, ausgesandte `PokemonEntity` → `Pokemon.recall()` (ADR 005).
+3. DB-Queue abarbeiten, Verbindung schließen (Timeout → `OB-STORAGE`-Diagnose).
+4. I/O-Thread beenden.
 
-## Boot und Shutdown
+Danach speichert und schließt Minecraft die Welten.
 
-**Boot:** Abhängigkeiten prüfen → Config validieren → SQLite öffnen, Backup vor Migration, migrieren → offene Vorgänge abgleichen → Caches füllen → Influence registrieren, Befehle freigeben → Zustand `READY`, sonst `SETUP_PENDING`, `READ_ONLY` oder `RECOVERY_MODE`.
+## Datenmodell (Schema v1)
 
-Die Influence wird im Mod-Initializer registriert (vor dem ersten Join), sie fragt aber nur den Cache ab. Solange der Zustand nicht `READY` ist, lehnt sie in der Void-Dimension alle Positionen ab (fail-closed).
+| Tabelle | Zweck |
+|---|---|
+| `schema_migrations` | angewandte Migrationen mit SHA-256 |
+| `world_meta` | Installations-ID, Seed, Erstellzeit und -version, später `setup_completed` |
+| `operations` | durable Vorgänge: `request_id` UNIQUE, `stage`, `status` (CHECK), `revision`, `intent`, `result`, `error` |
+| `audit_log` | Audit-Einträge, optional mit Fremdschlüssel auf `operations` |
 
-**Shutdown (`SERVER_STOPPING`):**
-1. Neue Mutationen ablehnen.
-2. Besessene `PokemonEntity` in allen Welten zurückrufen (ADR 005).
-3. Laufende Jobs (Biom, Events) anhalten und Stand speichern.
-4. DB-Queue leeren, Verbindung schließen.
-5. Danach schließt Minecraft die Welten.
+Alle Tabellen sind `STRICT`. `PRAGMA application_id = 0x4F42434D` kennzeichnet die Datei, `user_version` = Schema-Version.
+
+## Verifizierte Integrationspunkte
+
+| Zweck | API | Beleg |
+|---|---|---|
+| Lebenszyklus | `ServerLifecycleEvents.SERVER_STARTING/STOPPING/STOPPED` | Phase 1, S1–S10 |
+| Befehle | `CommandRegistrationCallback.EVENT` | S4 |
+| Client-Sprache | `ServerPlayer.clientInformation().language()` | kompiliert; Laufzeit: Owner-Test O1 |
+| Seed | `MinecraftServer.getWorldData().worldGenOptions().seed()` | S1, S3 |
+| Rückruf | `PokemonEntity.getOwnerUUID()`, `Pokemon.isWild()`, `Pokemon.recall()` | S8 (2/2) |
+| Geplant für Phase 2+ | Void-Dimension, Spawn-Influence, Kampf/Fang | `docs/POC_RESULTS.md` |
 
 ## Testbarkeit
 
-- `domain` ohne Minecraft: JUnit + jqwik.
-- `adapters.sqlite`: Tests gegen eine temporäre Datei-DB.
-- Integration: Fabric GameTests, wo möglich. Dazu ein Dedicated-Server-Lauf mit Carpet-Bots als Testwerkzeug (nur Testumgebung), wie im Spike.
-- Client-Verhalten: Owner-Testlisten pro Phase.
-
-## Geplante Paketstruktur (Phase 1)
-
-```text
-io.github.sk4ndulf.cobblemon.oneblock
-  bootstrap/        Mod-Initializer, Zustandsautomat READY/…
-  config/           Laden, Validieren, atomar speichern
-  domain/           grid/, island/, membership/ (wächst pro Phase)
-  application/      operation/ (OperationCoordinator, Journal)
-  adapters/
-    fabric/         Lifecycle, Commands
-    cobblemon/      CobblemonAdapter (Influence, Recall)
-    sqlite/         Database, Migrations, DbExecutor
-  ops/              Logging, Doctor (später)
-```
-
-Klassen entstehen erst, wenn die Phase sie braucht.
-
-## Phasenplan nach 0B (Detail)
-
-| Phase | Kern | Erste Abnahmetests |
-|---|---|---|
-| 1 Foundation | Gradle-Projekt, gepinnte Versionen, Config mit Schema und atomarem Speichern, SQLite-Adapter mit Migrationen und Backup, Operation-Journal-Grundgerüst, Logging, Startzustände, Shutdown-Reihenfolge inkl. ADR 005, Grid-Domain mit Property-Tests, CI | Clean-Boot mit Cobblemon, Client-Join (Owner), DB-Migration von leer, Kill während Schreibvorgang → sauberer Wiederanlauf, Shutdown nach Kampf ohne CME |
-| 2 Safe MVP | Void-Dimension, Hub, Wizard, Slots, Create/Home, Grundschutz, OneBlock mit Block-Loot | siehe Spec 02 §22 |
-| 3–8 | wie Spec 02 §22 | – |
+- `domain`, `config`, `storage`, `operation`, `localization`, `diagnostics`: JUnit/jqwik ohne Minecraft, SQLite gegen temporäre Dateien.
+- Durability: Kindprozess + `kill -9` (`CrashDurabilityTest`).
+- Minecraft-Teile (`ModRuntime`, `ObCommand`, `ShutdownRecall`): Dedicated-Server-Szenarien S1–S10 (`docs/TEST_MATRIX.md`). Fabric GameTests kommen mit den Welt-Features in Phase 2.

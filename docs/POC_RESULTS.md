@@ -144,3 +144,18 @@ Durchgeführt vom Owner auf seinem eigenen Rechner mit dem Testserver-Paket (Spi
 | 4 Kampf, Pokémon draußen lassen, `/stop` | **keine** `Exception stopping the server` im Log | §6 mit echtem Client nicht reproduziert (1 Lauf) |
 
 Zu Test 4: Mit Carpet-Fake-Spielern trat der Fehler 4/4 auf, mit echtem Client 0/1. Die Ursache des Unterschieds ist nicht geklärt. ADR 005 bleibt als billige Schutzmaßnahme bestehen.
+
+## Nachtrag Phase 1 (2026-10-19): im Produktionscode verifizierte APIs
+
+| API (Mojang-Namen) | Nutzung | Beleg |
+|---|---|---|
+| `ServerLifecycleEvents.SERVER_STARTING` / `SERVER_STOPPING` / `SERVER_STOPPED` | Boot und Shutdown von `ModRuntime` | Dedicated Server S1–S10 |
+| `CommandRegistrationCallback.EVENT` | `/ob` | S4 |
+| `MinecraftServer.getWorldPath(LevelResource.ROOT)` | Weltordner für DB und Marker | S1, S3 |
+| `MinecraftServer.getWorldData().worldGenOptions().seed()` | Welt-Bindung | S1, S3, `StorageBootstrapTest` (Logik) |
+| `MinecraftServer` als `Executor` | Rücksprung auf den Server-Thread | S1, S4 |
+| `ServerLevel.getAllEntities()` | Rückruf vor dem Shutdown | S8 |
+| `ServerPlayer.clientInformation().language()` | Sprache für `/ob`-Texte | nur kompiliert; Laufzeit mit echtem Client offen (Owner-Test O1) |
+| Cobblemon `PokemonEntity.getOwnerUUID()`, `Pokemon.isWild()`, `Pokemon.recall()` | ADR 005 | S8: 2/2 sauber, „Recalled 1 sent-out Pokémon“ |
+| `sqlite-jdbc` `VACUUM INTO`, `SQLiteConfig.setReadOnly` | Backup vor Migration und Prüfung | `MigrationRunnerTest` |
+| Fabric `depends` `"cobblemon": "1.8.2"` | exakte Versionsprüfung, passt auf `1.8.2+1.21.1` | S9: 1.8.1 wird vom Loader mit klarer Meldung abgelehnt |

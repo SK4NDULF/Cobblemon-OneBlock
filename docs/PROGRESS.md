@@ -4,7 +4,7 @@
 
 ## Aktive Phase
 
-**1 – Foundation**, Branch `phase/1-foundation`. Freigegeben vom Owner am 2026-10-19 zusammen mit `DECISIONS` Nr. 12.
+**1 – Foundation: umgesetzt, wartet auf Owner-Abnahme.** Branch `phase/1-foundation`. Nach Abnahme: Merge nach `main` und Tag `phase-1`.
 
 ## Phase-1-Plan
 
@@ -36,11 +36,14 @@ Bewusst **nicht** in Phase 1: Void-Dimension, Hub, Wizard, Inseln, Schutz (alles
 - Spec, Entscheidungen, Spikes, ADR 001–007, `POC_RESULTS`, Risiken, Abhängigkeiten. Owner-Tests am 2026-10-19 bestanden. `DECISIONS` Nr. 12 entschieden (ADR 003 akzeptiert).
 
 ### Phase 1
-- (läuft)
+- Alle 15 Plan-Punkte umgesetzt. Feature-Status: `DEDICATED_SERVER_VERIFIED` außer Client-Sprache (`IMPLEMENTED`, wartet auf Owner-Test O1).
+- 78 automatisierte Tests grün (lokal und GitHub Actions), 10 Dedicated-Server-Szenarien S1–S10 bestanden. Details: `docs/TEST_MATRIX.md`.
+- Neu: `docs/CONFIG.md`, `docs/COMMANDS.md`, `docs/RECOVERY.md`, `docs/TEST_MATRIX.md`, `README.md`; aktualisiert: `ARCHITECTURE.md`, `docs/POC_RESULTS.md`, `docs/RISK_REGISTER.md`, `docs/DEPENDENCY_MATRIX.md`.
 
 ## Offen
 
-- Alle Punkte des Phase-1-Plans.
+- Owner-Test O1 (Join, `/ob status` auf Deutsch und Englisch, Reload, Stopp nach Kampf).
+- Owner-Abnahme Phase 1, danach Merge nach `main` und Tag.
 
 ## Blocker
 
@@ -48,4 +51,4 @@ Keine.
 
 ## Nächste Aktion
 
-Feature 1: Gradle-Projekt.
+Nach Abnahme: Phase 2 (Safe MVP). Leseplan: Spec 04, 05, 06, 07, 12.

@@ -96,8 +96,11 @@ public final class ModRuntime {
         }
         if (error != null) {
             Throwable cause = error instanceof CompletionException && error.getCause() != null ? error.getCause() : error;
+            // A deliberate StorageException explains itself; a stack trace is only useful for unexpected failures.
+            boolean expected = cause instanceof StorageException && cause.getCause() == null;
             String message = cause instanceof StorageException ? cause.getMessage() : "database could not be opened: " + cause;
-            lifecycle.transition(LifecycleState.RECOVERY_MODE, List.of(diagnostics.report(ErrorClass.STORAGE, message, cause)));
+            lifecycle.transition(LifecycleState.RECOVERY_MODE,
+                    List.of(diagnostics.report(ErrorClass.STORAGE, message, expected ? null : cause)));
             return;
         }
         storage = report;

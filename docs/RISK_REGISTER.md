@@ -1,11 +1,11 @@
 # Risikoregister
 
-> Stand: 2026-10-19 (Phase 0B). W = Eintrittswahrscheinlichkeit, A = Auswirkung (niedrig / mittel / hoch / kritisch). Owner aller Risiken: Projekt-Owner; technische Umsetzung: Agent.
+> Stand: 2026-10-19 (Phase 1). W = Eintrittswahrscheinlichkeit, A = Auswirkung (niedrig / mittel / hoch / kritisch). Owner aller Risiken: Projekt-Owner; technische Umsetzung: Agent.
 > Offene kritische Risiken blockieren den Release.
 
 | ID | Risiko | W | A | Gegenmaßnahme | Test | Restrisiko |
 |---|---|---|---|---|---|---|
-| R-01 | Shutdown-CME in Cobblemon 1.8.2 bei ausgesandten Spieler-Pokémon: Entities werden nicht gespeichert, JVM hängt (`POC_RESULTS` §6) | niedrig–mittel (4/4 mit Fake-Spielern, 0/1 mit echtem Client) | kritisch | ADR 005: Rückruf aller besessenen `PokemonEntity` in `SERVER_STOPPING` | Phase-1-Integrationstest „Kampf → Pokémon draußen → `/stop`“; Owner-Test mit echtem Client | Andere, noch unbekannte Auslöser derselben CME |
+| R-01 | Shutdown-CME in Cobblemon 1.8.2 bei ausgesandten Spieler-Pokémon: Entities werden nicht gespeichert, JVM hängt (`POC_RESULTS` §6) | niedrig–mittel (4/4 mit Fake-Spielern, 0/1 mit echtem Client) | kritisch | ADR 005 umgesetzt (`ShutdownRecall`) | Phase 1, S8: 2/2 sauber mit Produktionscode | Andere, noch unbekannte Auslöser derselben CME |
 | R-02 | Welt und SQLite laufen auseinander (Crash, Shutdown-Fehler, Autosave-Rückfall) | mittel | kritisch | Durable Operations mit Stages und Reconciliation (Spec 11); Weltänderungen nur nach persistiertem Intent | Crash-Matrix Phase 1/5 | Ein Rückfall der Welt auf den Autosave bleibt möglich, die Reconciliation muss ihn erkennen |
 | R-03 | Cobblemon ändert `SpawningInfluence`/`PlayerSpawnerFactory` in einem Update | mittel | hoch | Kapselung in `adapters.cobblemon`; Version fest gepinnt; Weg 2 (eigener Spawner) als Rückfall | Integrationstest pro Cobblemon-Version | Versionssprung bleibt Aufwand |
 | R-04 | Spawn-Hot-Path wird teuer (Insel-Lookup pro Position) | mittel | mittel | Reiner In-Memory-Lookup über Grid-Mathematik + Slot-Cache, keine DB | Performance-Budget Phase 4 | – |
@@ -16,5 +16,5 @@
 | R-09 | Mod-Deinstallation: Dimension steht in `level.dat` | niedrig | mittel | Deinstallations-Anleitung; Test vor Release | Phase 8 | – |
 | R-10 | Client-Kompatibilität der Void-Dimension und Datapack-Inhalte mit unverändertem Cobblemon-Client | niedrig | kritisch | Nur Vanilla-Registry-Typen und Cobblemon-eigene Datenformate | Owner-Test 2026-10-19: Join und Void-Dimension ok | Neue Datapack-Inhalte in späteren Phasen erneut prüfen |
 | R-11 | Paket-Hologramm erzeugt Duplikate oder ist unsichtbar | niedrig | niedrig | Actionbar als Standard (ADR 006) | Owner-Test 2026-10-19: Anzeigen/Entfernen ok | Chunk-Reload, Relog, Dimensionswechsel ungetestet |
-| R-12 | Unbekannter Nicht-Daemon-Thread hält die JVM nach einem Shutdown-Fehler am Leben | mittel | mittel | Eigene Executoren immer als Daemon und mit geordnetem Shutdown; Admin-Doku zum Hänger | Shutdown-Test Phase 1 | Fremder Thread bleibt |
+| R-12 | Unbekannter Nicht-Daemon-Thread hält die JVM nach einem Shutdown-Fehler am Leben | mittel | mittel | Eigene Threads (DB, I/O) sind Daemon-Threads und werden im Shutdown beendet (umgesetzt) | S1–S10: alle sauberen Stopps beendeten den Prozess | Fremder Thread bleibt |
 | R-13 | Kotlin-Interop-Fehler (Defaults, Overloads) im Java-Code | mittel | niedrig | Ein Adapter-Paket mit Compile-Tests | Build | – |
