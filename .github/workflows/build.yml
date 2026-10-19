@@ -1,0 +1,42 @@
+name: build
+
+on:
+  push:
+    branches: [main, 'phase/**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          validate-wrappers: true
+
+      - name: Build and test
+        run: ./gradlew build --no-daemon --console=plain
+
+      - name: Upload mod jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobblemon-oneblock-${{ github.sha }}
+          path: oneblock-core/build/libs/*.jar
+          if-no-files-found: error
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-${{ github.sha }}
+          path: oneblock-core/build/reports/tests/
