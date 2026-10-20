@@ -1,0 +1,6 @@
+# Windows scripts and the owner's instructions need CRLF line endings.
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+tools/testserver/ANLEITUNG.txt text eol=crlf
+*.sh text eol=lf
+gradlew text eol=lf

@@ -1,6 +1,6 @@
 # Fortschritt
 
-> Stand: 2026-10-19 · Spec v4.1
+> Stand: 2026-10-20 · Spec v4.1 · Übergabe und Neustart einer Sitzung: `docs/HANDOFF.md`
 
 ## Aktive Phase
 

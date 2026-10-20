@@ -40,3 +40,4 @@
 | 2026-10-19 | 9–12 | Aus dem Review von v4 ergänzt |
 | 2026-10-19 | 1, 2, 9–11, 13–16 | Phase-0A-Rückfragen vom Owner beantwortet: alle Empfehlungen übernommen, Arbeit auf `main` erlaubt |
 | 2026-10-19 | 12 | Phase-0B-Gate: Spawn-Weg nach ADR 003 vom Owner bestätigt; Freigabe für Phase 1 |
+| 2026-10-20 | – | `CLAUDE.md`: Abschnitt „Erste Anweisung“ (nur Phase 0A) durch „Einstieg in eine neue Sitzung“ ersetzt, weil 0A und 0B abgeschlossen sind und Phase 1 umgesetzt ist; Owner-Wunsch: Chats werden gelöscht, Weiterarbeit über `docs/HANDOFF.md` |

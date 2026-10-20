@@ -1,0 +1,66 @@
+COBBLEMON ONEBLOCK - TESTSERVER (Phase 1)
+=========================================
+
+Das ist ein TESTSERVER mit dem echten Mod, Stand Phase 1 (Fundament).
+Es gibt noch KEINE Inseln und kein Gameplay. Getestet wird, ob der Mod sauber
+startet, seine Daten richtig verwaltet und die Befehle funktionieren.
+
+Keine echte Welt hier hineinkopieren. Die Testwelt heisst "testwelt" und darf
+jederzeit geloescht werden. Den alten Phase-0B-Testserver bitte nicht mitbenutzen,
+sondern diesen Ordner extra entpacken.
+
+
+STARTEN (wie beim letzten Mal)
+------------------------------
+Windows:      Doppelklick auf  START-Windows.bat
+Linux / Mac:  ./start-linux-mac.sh
+Bei der EULA-Frage "ja" eingeben. Warten bis "Done (...)!" im Fenster steht.
+Im Client mit  localhost  verbinden, dann im Server-Fenster:  op DEINNAME
+
+
+DIE 5 TESTS
+-----------
+1) STATUS
+   Im Spiel:   /ob status
+   Erwartung: mehrere Zeilen, u. a. "Zustand: Einrichtung ausstehend"
+   (wenn dein Minecraft auf Deutsch steht), dazu Datenbank, Config und
+   "Offene Vorgaenge: 0". Fehlermeldungen in Rot? -> bitte melden.
+
+2) SPRACHE
+   Minecraft auf Englisch umstellen (Optionen -> Sprache -> English (US)),
+   dann wieder  /ob status
+   Erwartung: dieselben Zeilen auf Englisch ("State: setup pending ...").
+   Danach Sprache wieder zurueckstellen.
+
+3) CONFIG-FEHLER
+   Die Datei  config\oneblock\config.json5  im Editor oeffnen.
+   Bei "maxMembers" die 4 durch 99 ersetzen, speichern.
+   Im Spiel:  /ob reload
+   Erwartung: rote Meldung "Config ist ungueltig, nichts wurde geaendert"
+   mit Zeilennummer und "must be between 1 and 20, got 99".
+
+4) CONFIG RICHTIG
+   In derselben Datei die 99 durch 6 ersetzen, speichern.
+   Im Spiel:  /ob reload
+   Erwartung: "Config neu geladen. Uebernommen: setup.maxMembers"
+
+5) STOPP NACH KAMPF
+   - Gib dir ein Pokemon:  /givepokemon pikachu level=50
+   - Ein wildes Pokemon bekaempfen, Kampf beenden, Pikachu NICHT zurueckrufen.
+   - Im Server-Fenster:  stop
+   - In  logs\latest.log  suchen nach:
+       "Recalled 1 sent-out Pokémon"   (sollte da sein)
+       "Exception stopping the server" (sollte NICHT da sein)
+       "Database closed cleanly"       (sollte da sein)
+   - Hat sich das Server-Fenster von selbst geschlossen?
+
+
+ERGEBNISSE MELDEN
+-----------------
+Zum Beispiel so:
+1: ok / nicht ok
+2: ok / nicht ok
+3: ok / nicht ok
+4: ok / nicht ok
+5: Recalled ja/nein, Exception ja/nein, Database closed ja/nein, Fenster zu ja/nein
+Wenn etwas nicht klappt: logs\latest.log mitschicken.
