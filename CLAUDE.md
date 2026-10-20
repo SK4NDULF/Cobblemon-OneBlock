@@ -76,11 +76,10 @@ Was v1-Pflicht ist, was erst nach positivem Spike kommt und was v1.x ist, steht 
 
 Lies nicht in jeder Sitzung die ganze Spec. Starte mit `docs/PROGRESS.md`, dann die Spec-Dateien der aktiven Phase. Aktualisiere `docs/PROGRESS.md` am Ende jeder Phase und **bevor der Kontext voll wird**, damit eine neue Sitzung nahtlos weitermachen kann.
 
-## Erste Anweisung
+## Einstieg in eine neue Sitzung
 
-**Beginne ausschließlich mit Phase 0A.**
+Phase 0A und 0B sind abgeschlossen, Phase 1 ist umgesetzt und wartet auf die Owner-Abnahme (Stand 2026-10-20). **Nicht** wieder bei Phase 0A beginnen.
 
-1. Lies das Repository, das `README`, die Build-Dateien, `docs/DECISIONS.md`, `docs/spec/00-INDEX.md`, die Spec-Dateien 01–03 und den Ordner `/reference`.
-2. Vergleiche den Ist-Zustand mit der Spec: vorhandene Implementierungen, falsche Abhängigkeiten, technische Risiken, offene Cobblemon-1.8.2-Kompatibilitätsfragen.
-3. Stelle **höchstens zehn** Rückfragen in **einer** Nachricht: die `OFFEN`- und `VORSCHLAG`-Punkte aus `docs/DECISIONS.md` plus wirklich neue Fragen aus dem Repository.
-4. **Stoppe und warte auf die Antworten.** Kein Feature-Code, kein Refactor, keine Datenlöschung, kein eigenmächtiger Start von Phase 0B.
+1. Lies `docs/HANDOFF.md` (Übergabe, Branches, offene Owner-Punkte) und `docs/PROGRESS.md` (aktive Phase).
+2. Lies die Spec-Dateien der aktiven Phase laut Leseplan oben.
+3. Mach dort weiter, wo `docs/PROGRESS.md` unter „Nächste Aktion“ steht. Ohne Freigabe des Owners beginnt keine neue Phase.
